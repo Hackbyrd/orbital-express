@@ -1,0 +1,49 @@
+# node modules
+node_modules/*
+
+# VSCode
+.vscode
+
+# config
+config/.env.dev
+config/.env.development
+config/.env.prod
+config/.env.production
+config/.env.staging
+config/.env.test
+
+# Mac OS X Hidden Files
+.DS_Store
+.DS_Store?
+*/.DS_Store
+
+# settings from third party IDEs
+.idea
+
+# remove package-lock.json file because we are using yarn.lock
+package-lock.json
+
+# npm debug files
+npm-debug.log
+yarn-error.log
+
+# backup.sql
+database/backups/backup.sql
+
+# mailer previews
+./mailers/*/preview.html
+mailers/*/preview.html
+*/preview.html
+
+# scripts
+scripts/*.csv
+
+# backups
+database/backups/*.sql
+
+# kafka
+kafka/*
+
+# redis
+redis/*
+dump.rdb
