@@ -1,0 +1,57 @@
+http://docs.sequelizejs.com/class/lib/query-interface.js~QueryInterface.html
+
+const Op = Sequelize.Op
+
+[Op.and]: {a: 5}           // AND (a = 5)
+[Op.or]: [{a: 5}, {a: 6}]  // (a = 5 OR a = 6)
+[Op.gt]: 6,                // > 6
+[Op.gte]: 6,               // >= 6
+[Op.lt]: 10,               // < 10
+[Op.lte]: 10,              // <= 10
+[Op.ne]: 20,               // != 20
+[Op.eq]: 3,                // = 3
+[Op.not]: true,            // IS NOT TRUE
+[Op.between]: [6, 10],     // BETWEEN 6 AND 10
+[Op.notBetween]: [11, 15], // NOT BETWEEN 11 AND 15
+[Op.in]: [1, 2],           // IN [1, 2]
+[Op.notIn]: [1, 2],        // NOT IN [1, 2]
+[Op.like]: '%hat',         // LIKE '%hat'
+[Op.notLike]: '%hat'       // NOT LIKE '%hat'
+[Op.iLike]: '%hat'         // ILIKE '%hat' (case insensitive) (PG only)
+[Op.notILike]: '%hat'      // NOT ILIKE '%hat'  (PG only)
+[Op.regexp]: '^[h|a|t]'    // REGEXP/~ '^[h|a|t]' (MySQL/PG only)
+[Op.notRegexp]: '^[h|a|t]' // NOT REGEXP/!~ '^[h|a|t]' (MySQL/PG only)
+[Op.iRegexp]: '^[h|a|t]'    // ~* '^[h|a|t]' (PG only)
+[Op.notIRegexp]: '^[h|a|t]' // !~* '^[h|a|t]' (PG only)
+[Op.like]: { [Op.any]: ['cat', 'hat']} // LIKE ANY ARRAY['cat', 'hat'] - also works for iLike and notLike
+[Op.overlap]: [1, 2]       // && [1, 2] (PG array overlap operator)
+[Op.contains]: [1, 2]      // @> [1, 2] (PG array contains operator)
+[Op.contained]: [1, 2]     // <@ [1, 2] (PG array contained by operator)
+[Op.any]: [2,3]            // ANY ARRAY[2, 3]::INTEGER (PG only)
+
+[Op.col]: 'user.organization_id' // = "user"."organization_id", with dialect specific column identifiers, PG in this example
+
+// All the above equality and inequality operators plus the following:
+[Op.contains]: 2           // @> '2'::integer (PG range contains element operator)
+[Op.contains]: [1, 2]      // @> [1, 2) (PG range contains range operator)
+[Op.contained]: [1, 2]     // <@ [1, 2) (PG range is contained by operator)
+[Op.overlap]: [1, 2]       // && [1, 2) (PG range overlap (have points in common) operator)
+[Op.adjacent]: [1, 2]      // -|- [1, 2) (PG range is adjacent to operator)
+[Op.strictLeft]: [1, 2]    // << [1, 2) (PG range strictly left of operator)
+[Op.strictRight]: [1, 2]   // >> [1, 2) (PG range strictly right of operator)
+[Op.noExtendRight]: [1, 2] // &< [1, 2) (PG range does not extend to the right of operator)
+[Op.noExtendLeft]: [1, 2]  // &> [1, 2) (PG range does not extend to the left of operator)
+
+-- undo specific migration
+./node_modules/.bin/sequelize db:migrate:undo --env development --name 20180612013815-create-Redelivery-model.js
+
+-- Incrementing and decrementing integer values
+
+const jane = await User.create({ name: "Jane", age: 100, cash: 5000 });
+await jane.increment({
+  'age': 2,
+  'cash': 100
+});
+
+// If the values are incremented by the same amount, you can use this other syntax as well:
+await jane.increment(['age', 'cash'], { by: 2 });
