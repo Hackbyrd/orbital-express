@@ -23,7 +23,7 @@ gulp.task('languages', done =>{
 
 // Languages watch for changes
 gulp.task('languages:watch', done => {
-  gulp.watch(['./language/*.js', './app/**/language/*.js'], gulp.series('languages'));
+  gulp.watch(['./languages/*.js', './app/**/languages/*.js'], gulp.series('languages'));
   done();
 });
 

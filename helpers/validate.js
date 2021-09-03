@@ -16,7 +16,7 @@ module.exports = {
 /**
  * Takes in a timezone name and checks if it's valid
  *
- * @timezone: (STRING - REQUIRED) - the timezone name to check
+ * @timezone - (STRING - REQUIRED): the timezone name to check
  *
  * return true or false
  */

@@ -24,7 +24,7 @@ function compile() {
   // variables
   const APP_DIR = '../app'; // app directory
   const LOCALES_DIR = '../locales'; // locales directory
-  const LANGUAGE_DIR = '../language'; // global language directory
+  const LANGUAGE_DIR = '../languages'; // global language directory
 
   // STORE ALL LANGUAGES HERE
   const LANGUAGES = {};
@@ -55,7 +55,7 @@ function compile() {
 
   // for each feature directory
   directories.forEach(dir => {
-    const LANG_DIR = path.join(dir, '/language'); // the language folder name
+    const LANG_DIR = path.join(dir, '/languages'); // the language folder name
     const languageFiles = fs.readdirSync(LANG_DIR)
 
     // append each feature language to the global language object

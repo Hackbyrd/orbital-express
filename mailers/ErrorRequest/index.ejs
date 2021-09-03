@@ -1,0 +1,15 @@
+Error: <strong><%= locals.error ? error.name : 'Name' %></strong><br/>
+Message: <strong><%= locals.error ? error.message : 'Message' %></strong><br/><br/>
+Stack: <strong><%= locals.error ? error.stack : 'Stack' %></strong><br/><br/>
+
+Time: <strong><%= locals.time ? time : 'Tuesday, September 12, 2017 12:07 PM' %></strong><br/>
+Route: <strong><%= locals.reqRoute ? reqRoute : '/example/route' %></strong><br/>
+Account: <strong><%= locals.reqUserType ? reqUserType : 'User' %></strong><br/>
+ID: <%= locals.reqUser ? reqUser.id + ' - ' + reqUser.email : '12 - example@email.com' %><br/>
+
+<% var tempArgs = locals.args ? args : { none: 'none' } %>
+<% var keys = Object.keys(tempArgs); %><br/>
+
+<% for (var i = 0; i < keys.length; i++) { %>
+  <%= keys[i] %>: <strong><%= tempArgs[keys[i]] %></strong><br/>
+<% } %>

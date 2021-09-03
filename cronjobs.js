@@ -4,7 +4,7 @@
  * https://www.npmjs.com/package/cron
  * This is the clock process on heroku
  *
- * Important! - Should only have 1 dyno process running for this. heroku ps:scale clock=1
+ * !Important: Should only have 1 dyno process running for this. heroku ps:scale clock=1
  */
 
 'use strict';

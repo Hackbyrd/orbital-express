@@ -1,10 +1,9 @@
 /**
  * Email Service
  *
- * Services:
- * 1. SendGrid: https://github.com/sendgrid/sendgrid-nodejs
+ * Nodemailer: https://nodemailer.com/about/
  *
- * Use Case: https://github.com/sendgrid/sendgrid-nodejs/blob/master/use-cases/README.md#email-use-cases
+ * Use MailTrap or NodeMailerApp for testing
  *
  * HTML/CSS Inliner: http://foundation.zurb.com/emails/inliner-v2.html
  */
@@ -12,17 +11,23 @@
 'use strict';
 
 // ENV variables
-const { NODE_ENV, SENDGRID_KEY, DO_NOT_SEND_EMAIL_IN_TEST_MODE } = process.env;
+const {
+  NODE_ENV,
+  MAILER_DOMAIN,
+  MAILER_HOST,
+  MAILER_PORT,
+  MAILER_SECURE,
+  MAILER_AUTH_USER,
+  MAILER_AUTH_PASS
+} = process.env;
 
-// built-in node modules
+// built-in
 const path = require('path');
 
 // third-party
 const ejs = require('ejs');
-const sgMail = require('@sendgrid/mail');
-
-// set api key
-sgMail.setApiKey(SENDGRID_KEY);
+const nodemailer = require('nodemailer'); // https://nodemailer.com/about/
+const htmlToText = require('html-to-text'); // https://www.npmjs.com/package/html-to-text
 
 // !IMPORTANT Yahoo.com has a DMARC policy in place that prevents mail with yahoo.com in the from address from being delivered if it is sent from outside Yahoo’s infrastructure.
 // https://sendgrid.com/blog/yahoo-dmarc-update/
@@ -77,52 +82,77 @@ const BLOCKED_EMAILS = [
 ];
 
 const emailObj = {
-  send,
-  dmarc,
   BLOCKED_EMAILS,
 
   // Any default emails to use
   emails: {
-    support: { address: 'support@express-master-boilerplate.com', name: 'Express Master Boilerplate Support' },
-    welcome: { address: 'welcome@express-master-boilerplate.com', name: 'Express Master Boilerplate Welcome' },
-    storage: { address: 'storage@express-master-boilerplate.com', name: 'Express Master Boilerplate Storage' },
-    errors: { address: 'errors@express-master-boilerplate.com', name: 'Express Master Boilerplate Errors' },
-    doNotReply: { address: 'donotreply@express-master-boilerplate.com', name: 'Express Master Boilerplate Do Not Reply' }
-  }
+    support: { address: `support@${MAILER_DOMAIN}`, name: 'Support' },
+    welcome: { address: `welcome@${MAILER_DOMAIN}`, name: 'Welcome' },
+    storage: { address: `storage@${MAILER_DOMAIN}`, name: 'Storage' },
+    errors: { address: `errors@${MAILER_DOMAIN}`, name: 'Errors' },
+    doNotReply: { address: `donotreply@${MAILER_DOMAIN}`, name: 'Do Not Reply' }
+  },
+
+  // functions
+  dmarc,
+  send
 };
 
 /**
+ * Checks to see if the from is from a domain that has a DMARC policy in place
+ * https://sendgrid.com/blog/yahoo-dmarc-update/
+ *
+ * @from - (STRING- REQUIRED): the from email
+ *
+ * returns null if does not violate the DMARC policy
+ * returns the extension if it does violate the DMARC policy
+ */
+function dmarc(from) {
+  // check to see if violates extension
+  for (let i = 0; i < BLOCKED_EMAILS.length; i++) {
+    let extension = BLOCKED_EMAILS[i]; // domain extention like '@yahoo.com
+
+    // if extension is found in the from
+    if (from.indexOf(extension) >= 0) {
+      return extension;
+    }
+  }
+
+  return null;
+} // END dmarc
+
+/**
  * Send a custom email
- * NOTE: ARGS must be all STRING values!!
+ * !NOTE: ARGS must be all STRING values
  *
  * @params {
  *   @from - (STRING - REQUIRED): Where this email is from (email)
  *   @name - (STRING - REQUIRED): Where this email is from (name)
- *   @subjec - (STRING - REQUIRED): The subject of the email
+ *   @subject - (STRING - REQUIRED): The subject of the email
  *   @template - (STRING - REQUIRED): The template file to send in mailers
  *   @tos - (STRING ARRAY - REQUIRED): Array of emails to send to
  *   @ccs - (STRING ARRAY - OPTIONAL): Array of emails to CC
  *   @bccs - (STRING ARRAY - OPTIONAL): Array of emails to BCC
+ *   @attachments - (OBJECT ARRAY - OPTIONAL): Any attachments. Docs: https://nodemailer.com/message/attachments/
  *   @args - (OBJECT - OPTIONAL): The variables to pass to the email template (refer to args in template using -arg- syntax). MUST BE ALL STRING VALUES
  * }
- *
- * @callback - (FUNCTION - OPTIONAL) callback(err, result) --> result.statusCode, result.body, result.headers
  */
-async function send({ from, name, subject, template, tos, ccs, bccs, args }, callback) {
+async function send({ from, name, subject, template, tos, ccs, bccs, attachments, args }) {
+  return new Promise((resolve, reject) => {
     // validate from, subject, template
     if (typeof from !== 'string' || typeof name !== 'string' || typeof subject !== 'string' || typeof template !== 'string') {
-      return callback(new Error('Email must have a from, name, subject, and template in order to send.'));
+      return reject(new Error('Email must have a from, name, subject, and template in order to send.'));
     }
 
     // check to see if from field violates the DMARC policy
-    let extension = dmarc(from); //
+    let extension = dmarc(from);
     if (extension) {
-      return callback(new Error(`Cannot send an email from a "${extension}" domain because it violates the DMARC policy.`));
+      return reject(new Error(`Cannot send an email from a "${extension}" domain because it violates the DMARC policy.`));
     }
 
     // validate tos
     if (tos === null || tos === undefined || tos.length === 0) {
-      return callback(new Error('Email must be sent to at least one recipient.'));
+      return reject(new Error('Email must be sent to at least one recipient.'));
     }
 
     // set ccs to empty array if not specified
@@ -133,6 +163,11 @@ async function send({ from, name, subject, template, tos, ccs, bccs, args }, cal
     // set bccs to empty array if not specified
     if (bccs === null || bccs === undefined) {
       bccs = [];
+    }
+
+    // set attachments to empty array if not specified
+    if (attachments === null || attachments === undefined) {
+      attachments = [];
     }
 
     // set variables to empty object if not specified
@@ -185,77 +220,49 @@ async function send({ from, name, subject, template, tos, ccs, bccs, args }, cal
     args.isTestEmail = NODE_ENV === 'production' ? '' : 'THIS IS A TEST EMAIL';
 
     // convert file
-    ejs.renderFile(path.join(__dirname, `../../mailers/${template}/index.ejs`), args, async (err, rawHtml) => {
-      if (err) return callback(err);
+    ejs.renderFile(path.join(__dirname, `../mailers/${template}/index.ejs`), args, async (err, rawHtml) => {
+      if (err) {
+        return reject(err);
+      }
 
       // create message
-      let msg = {
+      // Docs: https://nodemailer.com/message/addresses/
+      let message = {
+        from: {
+          name: name,
+          address: from
+        },
         to: tos,
         ccs: ccs,
         bccs: bccs,
+        attachments: attachments,
         subject: subject,
-        from: {
-          name: name,
-          email: from
-        },
-        content: [
-          {
-            type: 'text/html',
-            value: rawHtml
-          }
-        ]
+        text: htmlToText.convert(rawHtml), // convert the html to text
+        html: rawHtml
       };
-
-      // NOTE: COMMENT OR UNCOMMENT this out if you don't want to send emails
-      if (DO_NOT_SEND_EMAIL_IN_TEST_MODE === 'true') {
-        console.log('YOU MUST TURN ON TEST EMAILS TO SEND EMAILS IN TESTS.');
-        return callback(null, true);
-      }
 
       // send email
       try {
-        await sgMail.send(msg);
-
-        return callback(null, true);
-      } catch(err) {
-        let newErrorMessageArr = [];
-
-        // compile error message
-        err.response.body.errors.forEach(e => {
-          newErrorMessageArr.push(e.message);
+        let transporter = nodemailer.createTransport({
+          host: MAILER_HOST,
+          port: MAILER_PORT,
+          secure: Boolean(MAILER_SECURE), // true for 465, false for other ports
+          auth: {
+            user: MAILER_AUTH_USER, // generated ethereal user
+            pass: MAILER_AUTH_PASS, // generated ethereal password
+          }
         });
 
-        // Extract error msg and response msg
-        const { message, code, response } = err;
-        const { headers, body } = response;
+        // send mail with defined transport object
+        let info = await transporter.sendMail(message);
+        return resolve(info);
+      } catch (error) {
 
         // return error
-        return callback(new Error(newErrorMessageArr.join('. ')), false);
+        return reject(error);
       }
     }); // END convert file
-} // END mail
-
-/**
- * Checks to see if the from is from a domain that has a DMARC policy in place
- * https://sendgrid.com/blog/yahoo-dmarc-update/
- *
- * @from - (STRING- REQUIRED): the from email
- *
- * returns null if does not violate the DMARC policy
- * returns the extension if it does violate the DMARC policy
- */
-function dmarc(from) {
-  // check to see if violates extension
-  for (let i = 0; i < BLOCKED_EMAILS.length; i++) {
-    let extension = BLOCKED_EMAILS[i]; // domain extention like '@yahoo.com
-
-    // if extension is found in the from
-    if (from.indexOf(extension) >= 0) {
-      return extension;
-    }
-  }
-
-  return null;
-} // END dmarc
+  });
+} // END send
 
 module.exports = emailObj;

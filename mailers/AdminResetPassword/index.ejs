@@ -1,0 +1,14 @@
+<!--
+Variables:
+isTestEmail
+expires
+resetPasswordConfirmationLink
+-->
+
+<html>
+  <body>
+    <center><span style="color:red"><%= locals.isTestEmail ? isTestEmail : '' %></span><br/></center>
+    <p>The link will expire in <%= locals.expires ? expires : '1 hour' %>.</p>
+    <a href="<%= locals.resetPasswordConfirmationLink ? resetPasswordConfirmationLink : 'https://google.com' %>" class="btn">Confirm New Password</a>
+  </body>
+</html>
