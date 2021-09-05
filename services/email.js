@@ -246,7 +246,7 @@ async function send({ from, name, subject, template, tos, ccs, bccs, attachments
         let transporter = nodemailer.createTransport({
           host: MAILER_HOST,
           port: MAILER_PORT,
-          secure: Boolean(MAILER_SECURE), // true for 465, false for other ports
+          secure: MAILER_PORT === 465, // true for 465, false for other ports
           auth: {
             user: MAILER_AUTH_USER, // generated ethereal user
             pass: MAILER_AUTH_PASS, // generated ethereal password
