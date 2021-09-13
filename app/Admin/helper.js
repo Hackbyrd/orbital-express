@@ -1,5 +1,5 @@
 /**
- * ORDER HELPER
+ * ADMIN HELPER
  */
 
 'use strict';

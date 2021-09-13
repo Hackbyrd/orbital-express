@@ -3,4 +3,4 @@
  * Make sure to do MODEL NAME (Lower-case & Singular)!!! DO NOT DO TABLE NAME (Pascal-case & Plural)
  */
 
-module.exports = ['order'];
+module.exports = ['admin'];

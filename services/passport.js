@@ -37,6 +37,7 @@ module.exports = async passport => {
     process.nextTick(async () => {
       try {
         const getUser = await models.user.findOne({
+          paranoid: false, // This will also retrieve soft-deleted records
           where: {
             email: email
           }
@@ -104,6 +105,7 @@ module.exports = async passport => {
     process.nextTick(async () => {
       try {
         const admin = await models.admin.findOne({
+          paranoid: false, // This will also retrieve soft-deleted records
           where: {
             email: email
           }

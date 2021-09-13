@@ -1,1 +1,22 @@
-{"GLOBAL[Language]":"English","GLOBAL[Welcome]":"Welcome","GLOBAL[Invalid Arguments]":"One or more request arguments are invalid.","GLOBAL[Unauthorized]":"You do not have permission to make this request.","GLOBAL[Internal Server Error]":"Oops... something went wrong.","GLOBAL[Service Unavailable]":"Server is in the process of shutting down or restarting.","ORDER[Example Message]":"Example Message"}
+{
+	"GLOBAL[Language]": "English",
+	"GLOBAL[Welcome]": "Welcome",
+	"GLOBAL[Invalid Arguments]": "One or more request arguments are invalid.",
+	"GLOBAL[Unauthorized]": "You do not have permission to make this request.",
+	"GLOBAL[Internal Server Error]": "Oops... something went wrong.",
+	"GLOBAL[Service Unavailable]": "Server is in the process of shutting down or restarting.",
+	"ORDER[Example Message]": "Example Message",
+	"ADMIN[Invalid Password Format]": "ADMIN[Invalid Password Format]",
+	"ADMIN[Invalid Password Reset Token]": "ADMIN[Invalid Password Reset Token]",
+	"ADMIN[Passwords Not Equal]": "ADMIN[Passwords Not Equal]",
+	"ADMIN[Terms of Service Not Accepted]": "ADMIN[Terms of Service Not Accepted]",
+	"ADMIN[Admin Already Exists]": "ADMIN[Admin Already Exists]",
+	"ADMIN[Invalid Time Zone]": "ADMIN[Invalid Time Zone]",
+	"ADMIN[Invalid Login Credentials]": "ADMIN[Invalid Login Credentials]",
+	"ADMIN[Admin Account Inactive]": "ADMIN[Admin Account Inactive]",
+	"ADMIN[Admin Account Deleted]": "ADMIN[Admin Account Deleted]",
+	"ADMIN[Admin Account Does Not Exist]": "ADMIN[Admin Account Does Not Exist]",
+	"ADMIN[Same Email]": "ADMIN[Same Email]",
+	"ADMIN[Email Already Taken]": "ADMIN[Email Already Taken]",
+	"ADMIN[Password Authentication Failed]": "ADMIN[Password Authentication Failed]"
+}

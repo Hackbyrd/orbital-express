@@ -55,3 +55,7 @@ await jane.increment({
 
 // If the values are incremented by the same amount, you can use this other syntax as well:
 await jane.increment(['age', 'cash'], { by: 2 });
+
+Paranoid Table (deletedAt Column)
+// A paranoid table is one that, when told to delete a record, it will not truly delete it. Instead, a special column called deletedAt will have its value set to the timestamp of that deletion request. This means that paranoid tables perform a soft-deletion of records, instead of a hard-deletion.
+// For select (findOne, findAll etc) automatically ignore all rows when deletedAt is not null, if you really want to let the query see the soft-deleted records, you can pass the paranoid: false option to the query method
