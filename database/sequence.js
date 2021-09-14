@@ -3,4 +3,8 @@
  * Make sure to do MODEL NAME (Lower-case & Singular)!!! DO NOT DO TABLE NAME (Pascal-case & Plural)
  */
 
-module.exports = ['admin'];
+'use strict';
+
+module.exports = [
+  'admin'
+];
