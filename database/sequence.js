@@ -6,5 +6,6 @@
 'use strict';
 
 module.exports = [
-  'admin'
+  'admin',
+  'order'
 ];
