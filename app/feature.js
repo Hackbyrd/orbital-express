@@ -2,22 +2,22 @@
  * !IMPORTANT: MAKE SURE NAME IS SINGULAR AND PASCAL CASE!
  *
  * Generate / Delete Feature Folder:
- * node app/generate generate [NEW_FEATURE_FOLDER_NAME]
- * node app/generate generate [EXISTING_FEATURE_FOLDER_NAME] action [NEW_ACTION_FILE_NAME]
- * node app/generate generate [EXISTING_FEATURE_FOLDER_NAME] task [NEW_TASK_FILE_NAME]
- * node app/generate delete [NEW_FEATURE_FOLDER_NAME]
- * node app/generate delete [EXISTING_FEATURE_FOLDER_NAME] action [NEW_ACTION_FILE_NAME]
- * node app/generate delete [EXISTING_FEATURE_FOLDER_NAME] task [NEW_TASK_FILE_NAME]
- * node app/generate stringify [ABSOLUTE_PATH_OF_FILE_TO_STRINGIFY]
+ * node app/feature generate|gen|-g [NEW_FEATURE_FOLDER_NAME]
+ * node app/feature generate|gen|-g [EXISTING_FEATURE_FOLDER_NAME] action|-a [NEW_ACTION_FILE_NAME]
+ * node app/feature generate|gen|-g [EXISTING_FEATURE_FOLDER_NAME] task|-t [NEW_TASK_FILE_NAME]
+ * node app/feature delete|del|-d [NEW_FEATURE_FOLDER_NAME]
+ * node app/feature delete|del|-d [EXISTING_FEATURE_FOLDER_NAME] action|-a [NEW_ACTION_FILE_NAME]
+ * node app/feature delete|del|-d [EXISTING_FEATURE_FOLDER_NAME] task|-t [NEW_TASK_FILE_NAME]
+ * node app/feature stringify|str|-s [ABSOLUTE_PATH_OF_FILE_TO_STRINGIFY]
  *
  *
  * Yarn Commands: Generate / Delete Feature Folder:
  * yarn gen [NEW_FEATURE_FOLDER_NAME]
- * yarn gen [EXISTING_FEATURE_FOLDER_NAME] action [NEW_ACTION_FILE_NAME]
- * yarn gen [EXISTING_FEATURE_FOLDER_NAME] task [NEW_TASK_FILE_NAME]
+ * yarn gen [EXISTING_FEATURE_FOLDER_NAME] action|-a [NEW_ACTION_FILE_NAME]
+ * yarn gen [EXISTING_FEATURE_FOLDER_NAME] task|-t [NEW_TASK_FILE_NAME]
  * yarn del [NEW_FEATURE_FOLDER_NAME]
- * yarn del [EXISTING_FEATURE_FOLDER_NAME] action [NEW_ACTION_FILE_NAME]
- * yarn del [EXISTING_FEATURE_FOLDER_NAME] task [NEW_TASK_FILE_NAME]
+ * yarn del [EXISTING_FEATURE_FOLDER_NAME] action|-a [NEW_ACTION_FILE_NAME]
+ * yarn del [EXISTING_FEATURE_FOLDER_NAME] task|-t [NEW_TASK_FILE_NAME]
  * yarn str [ABSOLUTE_PATH_OF_FILE_TO_STRINGIFY]
  *
  * TODO: yarn gen lang en-US English // adds a new language file to all features
@@ -37,30 +37,37 @@ const { LOCALES, LANGUAGES } = require('../helpers/constants');
 const version = 'v1';
 
 // choose which method to run
-if (method === 'generate') {
+if (method === 'generate' || method === 'gen' || method === '-g') {
   switch (process.argv[4]) {
     case 'action':
+    case '-a':
       generateAction();
       break;
     case 'task':
+    case '-t':
       generateTask();
       break;
     default:
       generate();
   }
-} else if (method === 'delete') {
+} else if (method === 'delete' || method === 'del' || method === '-d') {
   switch (process.argv[4]) {
     case 'action':
+    case '-a':
       destroyAction();
       break;
     case 'task':
+    case '-t':
       destroyTask();
       break;
     default:
       destroy();
   }
-} else {
+} else if (method === 'stringify' || method === 'str' || method === '-') {
   stringify();
+} else {
+  console.error(`\nError: Invalid command. Please try "generate", "delete", or "stringify"`);
+  process.exit(1);
 }
 
 // ALL TEXTS - Use yarn str on a template file to generate text
