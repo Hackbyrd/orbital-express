@@ -28,7 +28,7 @@
 // built in modules
 const fs = require('fs');
 const path = require('path');
-const method = process.argv[2].trim(); // choose the method ['generate', 'delete', 'stringify']
+const method = process.argv[2].trim(); // choose the method ['generate|gen|-g', 'delete|del|-d', 'stringify|str|-s']
 
 // helpers
 const { LOCALES, LANGUAGES } = require('../helpers/constants');
@@ -66,7 +66,7 @@ if (method === 'generate' || method === 'gen' || method === '-g') {
 } else if (method === 'stringify' || method === 'str' || method === '-') {
   stringify();
 } else {
-  console.error(`\nError: Invalid command. Please try "generate", "delete", or "stringify"`);
+  console.error(`\nError: Invalid command. Please try 'generate|gen|-g', 'delete|del|-d', 'stringify|str|-s'`);
   process.exit(1);
 }
 
