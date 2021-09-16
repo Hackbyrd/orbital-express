@@ -80,7 +80,7 @@ function workerFileText({ upperName, lowerName, pascalName, camelName }) { retur
 function languageFileText({ upperName, lowerName, pascalName, camelName, locale, language }) { return `/**\n * ${pascalName} Language File: ${language}\n *\n * This file holds all ${language} language translations for the ${pascalName} feature.\n * This file is compiled by /services/language.js to generate the final ${language} locale\n * All ${language} translations aggregated from all features can be found in /locales/${locale}.json\n */\n\n'use strict';\n\nmodule.exports = {\n  '${upperName}[Example Message]': 'Example Message'\n};\n`; }
 function actionIndexFileText({ upperName, lowerName, pascalName, camelName, actions }) { return `/**\n * ${upperName} ACTION\n *\n * Aggregates all action method files to be exported here\n * !NOTE: This file is updated automatically using the feature gen/del commands and is sorted alphabetically\n */\n\n'use strict';\n\nmodule.exports = {${actions === undefined ? '\n  ...require(\'./V1Example\')\n' : (actions ? `\n  ${actions}\n` : '')}}\n`; }
 function actionFileText({ upperName, lowerName, pascalName, camelName, method }) { return `/**\n * ${upperName} ${method} ACTION\n */\n\n'use strict';\n\n// ENV variables\nconst { NODE_ENV, REDIS_URL } = process.env;\n\n// third-party\nconst _ = require('lodash'); // general helper methods: https://lodash.com/docs\nconst Op = require('sequelize').Op; // for model operator aliases like $gte, $eq\nconst io = require('socket.io-emitter')(REDIS_URL); // to emit real-time events to client-side applications: https://socket.io/docs/emit-cheatsheet/\nconst joi = require('@hapi/joi'); // argument validations: https://github.com/hapijs/joi/blob/master/API.md\nconst Queue = require('bull'); // add background tasks to Queue: https://github.com/OptimalBits/bull/blob/develop/REFERENCE.md#queueclean\nconst moment = require('moment-timezone'); // manage timezone and dates: https://momentjs.com/timezone/docs/\nconst convert = require('convert-units'); // https://www.npmjs.com/package/convert-units\nconst slugify = require('slugify'); // convert string to URL friendly string: https://www.npmjs.com/package/slugify\nconst sanitize = require("sanitize-filename"); // sanitize filename: https://www.npmjs.com/package/sanitize-filename\nconst passport = require('passport'); // handle authentication: http://www.passportjs.org/docs/\nconst currency = require('currency.js'); // handling currency operations (add, subtract, multiply) without JS precision issues: https://github.com/scurker/currency.js/\nconst accounting = require('accounting'); // handle outputing readable format for currency: http://openexchangerates.github.io/accounting.js/\n\n// services\nconst email = require('../../../services/email');\nconst { SOCKET_ROOMS, SOCKET_EVENTS } = require('../../../services/socket');\nconst { ERROR_CODES, errorResponse, joiErrorsMessage } = require('../../../services/error');\n\n// models\nconst models = require('../../../models');\n\n// helpers\nconst { getOffset, getOrdering, convertStringListToWhereStmt } = require('../../../helpers/cruqd');\nconst { randomString } = require('../../../helpers/logic');\nconst { LIST_INT_REGEX } = require('../../../helpers/constants');\n\n// queues\nconst ${pascalName}Queue = new Queue('${pascalName}Queue', REDIS_URL);\n\n// methods\nmodule.exports = {\n  ${method}\n}\n\n/**\n * Method Description\n *\n * GET  /${version}/${lowerName}s/<method>\n * POST /${version}/${lowerName}s/<method>\n *\n * Must be logged out | Must be logged in | Can be both logged in or logged out\n * Roles: ['admin', 'user']\n *\n * req.params = {}\n * req.args = {\n *   @alpha - (STRING - REQUIRED): Alpha argument description\n *   @beta - (BOOLEAN - OPTIONAL) [DEFAULT - 100]: Beta argument description\n *   @gamma - (NUMBER - OPTIONAL or REQUIRED): Cato argument description\n *   @delta - (STRING - REQUIRED): Delta argument description\n *   @zeta - (STRING - REQUIRED) [VALID - 'a', 'b']: Zeta argument description\n * }\n *\n * Success: Return something\n * Errors:\n *   400: BAD_REQUEST_INVALID_ARGUMENTS\n *   401: UNAUTHORIZED\n *   500: INTERNAL_SERVER_ERROR\n *\n * !IMPORTANT: This is an important message\n * !NOTE: This is a note\n * TODO: This is a todo\n */\nasync function ${method}(req) {\n  const schema = joi.object({\n    alpha: joi.string().trim().min(1).lowercase().required().error(new Error(req.__('${upperName}_${method}_Invalid_Argument[alpha]'))),\n    beta: joi.boolean().default(true).optional().error(new Error(req.__('${upperName}_${method}_Invalid_Argument[beta]'))),\n    gamma: joi.number().integer().min(1).max(10).error(new Error(req.__('${upperName}_${method}_Invalid_Argument[gamma]'))),\n    delta: joi.string().trim().lowercase().min(3).email().required().error(new Error(req.__('${upperName}_${method}_Invalid_Argument[delta]'))),\n    zeta: joi.string().trim().valid('a', 'b').required().error(new Error(req.__('${upperName}_${method}_Invalid_Argument[zeta]')))\n  }).with('alpha', 'beta') // must come together\n    .xor('beta', 'gamma') // one and not the other must exists\n    .or('gamma', 'delta'); // at least one must exists\n\n  // validate\n  const { error, value } = schema.validate(req.args);\n  if (error)\n    return Promise.resolve(errorResponse(req, ERROR_CODES.BAD_REQUEST_INVALID_ARGUMENTS, joiErrorsMessage(error)));\n  req.args = value; // updated arguments with type conversion\n\n  try {\n    /***** DO WORK HERE *****/\n\n    // assemble data\n    const data = { key: 'value' };\n\n    // ADD BACKGROUND JOB TO QUEUE\n    const job = await ${pascalName}Queue.add('${method}Task', data);\n\n    // SOCKET EMIT EVENT\n    io.to(\`\${SOCKET_ROOMS.GLOBAL}\`).emit(SOCKET_EVENTS.EXAMPLE_EVENT, data);\n    io.to(\`\${SOCKET_ROOMS.ADMIN}\${'_adminId_'}\`).emit(SOCKET_EVENTS.EXAMPLE_EVENT, data);\n\n    // return\n    return Promise.resolve({\n      status: 200,\n      success: true,\n      jobId: job.id,\n      data: data\n    });\n  } catch (error) {\n    return Promise.reject(error);\n  }\n} // END ${method}\n`; }
-function taskIndexFileText({ upperName, lowerName, pascalName, camelName }) { return `/**\n * ${upperName} TASK\n *\n * Aggregates all background task files to be exported here\n */\n\n'use strict';\n\nmodule.exports = {\n  ...require('./V1ExampleTask')\n}\n`; }
+function taskIndexFileText({ upperName, lowerName, pascalName, camelName, tasks }) { return `/**\n * ${upperName} TASK\n *\n * Aggregates all background task files to be exported here\n * !NOTE: This file is updated automatically using the feature gen/del commands and is sorted alphabetically\n */\n\n'use strict';\n\nmodule.exports = {${tasks === undefined ? '\n  ...require(\'./V1ExampleTask\')\n' : (tasks ? `\n  ${tasks}\n` : '')}}\n`; }
 function taskFileText({ upperName, lowerName, pascalName, camelName, method }) { return `/**\n * ${upperName} ${method} TASK\n */\n\n'use strict';\n\n// ENV variables\nconst { NODE_ENV, REDIS_URL } = process.env;\n\n// third-party\nconst _ = require('lodash'); // general helper methods: https://lodash.com/docs\nconst Op = require('sequelize').Op; // for model operator aliases like $gte, $eq\nconst io = require('socket.io-emitter')(REDIS_URL); // to emit real-time events to client-side applications: https://socket.io/docs/emit-cheatsheet/\nconst joi = require('@hapi/joi'); // argument validations: https://github.com/hapijs/joi/blob/master/API.md\nconst Queue = require('bull'); // add background tasks to Queue: https://github.com/OptimalBits/bull/blob/develop/REFERENCE.md#queueclean\nconst moment = require('moment-timezone'); // manage timezone and dates: https://momentjs.com/timezone/docs/\nconst convert = require('convert-units'); // https://www.npmjs.com/package/convert-units\nconst slugify = require('slugify'); // convert string to URL friendly string: https://www.npmjs.com/package/slugify\nconst sanitize = require("sanitize-filename"); // sanitize filename: https://www.npmjs.com/package/sanitize-filename\nconst passport = require('passport'); // handle authentication: http://www.passportjs.org/docs/\nconst currency = require('currency.js'); // handling currency operations (add, subtract, multiply) without JS precision issues: https://github.com/scurker/currency.js/\nconst accounting = require('accounting'); // handle outputing readable format for currency: http://openexchangerates.github.io/accounting.js/\n\n// services\nconst email = require('../../../services/email');\nconst { SOCKET_ROOMS, SOCKET_EVENTS } = require('../../../services/socket');\nconst { ERROR_CODES, errorResponse, joiErrorsMessage } = require('../../../services/error');\n\n// models\nconst models = require('../../../models');\n\n// helpers\nconst { getOffset, getOrdering, convertStringListToWhereStmt } = require('../../../helpers/cruqd');\nconst { randomString } = require('../../../helpers/logic');\nconst { LIST_INT_REGEX } = require('../../../helpers/constants');\n\n// queues\nconst ${pascalName}Queue = new Queue('${pascalName}Queue', REDIS_URL);\n\n// methods\nmodule.exports = {\n  ${method}\n}\n\n/**\n * Method Description\n *\n * @job = {\n *   @id - (INTEGER - REQUIRED): ID of the background job\n *   @data = {\n *     @alpha - (STRING - REQUIRED): Alpha argument description\n *     @beta - (BOOLEAN - OPTIONAL) [DEFAULT - 100]: Beta argument description\n *     @gamma - (NUMBER - OPTIONAL or REQUIRED): Cato argument description\n *     @delta - (STRING - REQUIRED): Delta argument description\n *     @zeta - (STRING - REQUIRED) [VALID - 'a', 'b']: Zeta argument description\n *   }\n * }\n *\n * Success: Return something\n *\n * !IMPORTANT: This is an important message\n * !NOTE: This is a note\n * TODO: This is a todo\n */\nasync function ${method}(job) {\n  const schema = joi.object({\n    alpha: joi.string().trim().min(1).lowercase().required().error(new Error(req.__('${upperName}_V1Example_Invalid_Argument[alpha]'))),\n    beta: joi.boolean().default(true).optional().error(new Error(req.__('${upperName}_V1Example_Invalid_Argument[beta]'))),\n    gamma: joi.number().integer().min(1).max(10).error(new Error(req.__('${upperName}_V1Example_Invalid_Argument[gamma]'))),\n    delta: joi.string().trim().lowercase().min(3).email().required().error(new Error(req.__('${upperName}_V1Example_Invalid_Argument[delta]'))),\n    zeta: joi.string().trim().valid('a', 'b').required().error(new Error(req.__('${upperName}_V1Example_Invalid_Argument[zeta]')))\n  }).with('alpha', 'beta') // must come together\n    .xor('beta', 'gamma') // one and not the other must exists\n    .or('gamma', 'delta'); // at least one must exists\n\n  // validate\n  const { error, value } = schema.validate(job.data);\n  if (error)\n    return Promise.resolve(new Error(joiErrorsMessage(error)));\n  job.data = value; // updated arguments with type conversion\n\n  try {\n    /***** DO WORK HERE *****/\n\n    // assemble data\n    const data = { key: 'value' };\n\n    // ADD BACKGROUND JOB TO QUEUE\n    const job = await ${pascalName}Queue.add('${method}', data);\n\n    // SOCKET EMIT EVENT\n    io.to(\`\${SOCKET_ROOMS.GLOBAL}\`).emit(SOCKET_EVENTS.EXAMPLE_EVENT, data);\n    io.to(\`\${SOCKET_ROOMS.ADMIN}\${'_adminId_'}\`).emit(SOCKET_EVENTS.EXAMPLE_EVENT, data);\n\n    // return\n    return Promise.resolve();\n  } catch (error) {\n    return Promise.reject(error);\n  }\n} // END ${method}\n`; }
 function integrationTestFileText({ upperName, lowerName, pascalName, camelName, method }) { return `/**\n * TEST ${upperName} ${method} METHOD\n */\n\n'use strict';\n\n// build-in node modules\nconst path = require('path');\n\n// load test env\nrequire('dotenv').config({ path: path.join(__dirname, '../../../../config/.env.test') });\n\n// ENV variables\nconst { NODE_ENV, REDIS_URL } = process.env;\n\n// third party\nconst i18n = require('i18n'); // https://github.com/mashpie/i18n-node\nconst Queue = require('bull'); // add background tasks to Queue: https://github.com/OptimalBits/bull/blob/develop/REFERENCE.md#queueclean\nconst moment = require('moment-timezone'); // manage timezone and dates: https://momentjs.com/timezone/docs/\nconst currency = require('currency.js'); // handling currency operations (add, subtract, multiply) without JS precision issues: https://github.com/scurker/currency.js/\n\n// server & models\nconst app = require('../../../../server');\nconst models = require('../../../../models');\n\n// assertion library\nconst { expect } = require('chai');\nconst request = require('supertest');\n\n// services\nconst { errorResponse, ERROR_CODES } = require('../../../../services/error');\n\n// helpers\nconst { adminLogin, userLogin, reset, populate } = require('../../../../helpers/tests');\n\n// queues\nconst ${pascalName}Queue = new Queue('${pascalName}Queue', REDIS_URL);\n\ndescribe.skip('${pascalName}.${method}', async () => {\n  // grab fixtures here\n  const adminFix = require('../../../../test/fixtures/fix1/admin');\n  const userFix = require('../../../../test/fixtures/fix1/user');\n\n  // url of the api method we are testing\n  const routeVersion = '/${version}';\n  const routePrefix = '/${lowerName}s';\n  const routeMethod = '/<method>';\n  const routeUrl = \`\${routeVersion}\${routePrefix}\${routeMethod}\`;\n\n  // clear database\n  beforeEach(async () => {\n    await reset();\n  });\n\n  // Logged Out\n  describe.skip('Role: Logged Out', async () => {\n    // populate database with fixtures and empty queues\n    beforeEach(async () => {\n      await populate('fix1');\n      await ${pascalName}Queue.empty();\n    });\n\n    it('[logged-out] should test something', async () => {\n      try {\n        // execute tests here\n        \n        // example code below\n        const res = await request(app).get(routeUrl);\n        expect(res.statusCode).to.equal(401);\n        expect(res.body).to.deep.equal(errorResponse(i18n, ERROR_CODES.UNAUTHORIZED));\n        \n      } catch (error) {\n        throw error;\n      }\n    }); // END [logged-out] should test something\n  }); // END Role: Logged Out\n\n  // Role: Admin\n  describe.skip('Role: Admin', async () => {\n    const jwt = 'jwt-admin';\n\n    // populate database with fixtures and empty queues\n    beforeEach(async () => {\n      await populate('fix1');\n      await ${pascalName}Queue.empty();\n    });\n\n    it('[admin] should test something', async () => {\n      const admin1 = adminFix[0]; // grab admin from fixtures\n\n      try {\n        // execute tests here\n        // example code below\n\n        // login admin\n        const { token } = await adminLogin(app, routeVersion, request, admin1);\n\n        // request params\n        const params = {\n          id: 1\n        };\n\n        // execute request\n        const res = await request(app)\n          .post(routeUrl)\n          .set('authorization', \`\${jwt} \${token}\`)\n          .send(params);\n\n        // check response\n        expect(res.statusCode).to.equal(200); // 201\n        expect(res.body).to.have.property('success', true);\n      } catch (error) {\n        throw error;\n      }\n    }); // END should test something\n  }); // END Role: Admin\n\n  // Role: User\n  describe.skip('Role: User', async () => {\n    const jwt = 'jwt-user';\n\n    // populate database with fixtures and empty queues\n    beforeEach(async () => {\n      await populate('fix1');\n      await ${pascalName}Queue.empty();\n    });\n\n    it('[user] should test something', async () => {\n      const user1 = userFix[0]; // grab user from fixtures\n\n      try {\n        // execute tests here\n        // example code below\n\n        // login user\n        const { token } = await userLogin(app, routeVersion, request, user1);\n\n        // request params\n        const params = {\n          id: 1\n        };\n\n        // execute request\n        const res = await request(app)\n          .post(routeUrl)\n          .set('authorization', \`\${jwt} \${token}\`)\n          .send(params);\n\n        // check response\n        expect(res.statusCode).to.equal(200); // 201\n        expect(res.body).to.have.property('success', true);\n      } catch (error) {\n        throw error;\n      }\n    }); // END should test something\n  }); // END Role: User\n}); // END ${pascalName}.${method}\n`; }
 function tasksTestFileText({ upperName, lowerName, pascalName, camelName, method }) { return `/**\n * TEST ${upperName} ${method} METHOD\n */\n\n'use strict';\n\n// build-in node modules\nconst path = require('path');\n\n// load test env\nrequire('dotenv').config({ path: path.join(__dirname, '../../../../config/.env.test') });\n\n// ENV variables\nconst { NODE_ENV, REDIS_URL } = process.env;\n\n// third party\nconst i18n = require('i18n'); // https://github.com/mashpie/i18n-node\nconst Queue = require('bull'); // add background tasks to Queue: https://github.com/OptimalBits/bull/blob/develop/REFERENCE.md#queueclean\nconst moment = require('moment-timezone'); // manage timezone and dates: https://momentjs.com/timezone/docs/\nconst currency = require('currency.js'); // handling currency operations (add, subtract, multiply) without JS precision issues: https://github.com/scurker/currency.js/\n\n// server & models\nconst app = require('../../../../server');\nconst models = require('../../../../models');\n\n// assertion library\nconst { expect } = require('chai');\nconst request = require('supertest');\n\n// tasks\nconst { ${method} } = require('../../../../app/${pascalName}/tasks');\n\n// services\nconst { errorResponse, ERROR_CODES } = require('../../../../services/error');\n\n// helpers\nconst { adminLogin, userLogin, reset, populate } = require('../../../../helpers/tests');\n\n// queues\nconst ${pascalName}Queue = new Queue('${pascalName}Queue', REDIS_URL);\n\ndescribe.skip('${pascalName}.${method}', async () => {\n  // grab fixtures here\n  const adminFix = require('../../../../test/fixtures/fix1/admin');\n  const userFix = require('../../../../test/fixtures/fix1/user');\n\n  // clear database, populate database with fixtures and empty queues\n  beforeEach(async () => {\n    await reset();\n    await populate('fix1');\n    await ${pascalName}Queue.empty();\n  });\n\n  it('should test something', async () => {\n    try {\n      // execute tests here\n    } catch (error) {\n      throw error;\n    }\n  }); // END should test something\n}); // END ${pascalName}.${method}\n`; }
@@ -88,9 +88,8 @@ function sequenceFileText(featureNames) { return `/**\n * This is the table orde
 // function testFeatureIndexFileText({ upperName, lowerName, pascalName, camelName, method }) { return `/**\n * This file runs all test files in the app/${pascalName} feature folder.\n * !Important: DO NOT EDIT THIS FILE.\n */\n\n'use strict';\n\n// require built-in node modules\nconst path = require('path');\n\n// require third-party node modules\nconst glob = require('glob');\n\n// variables\nconst JS_FILES = glob.sync('app/${pascalName}/tests/**/*.js');\n\n// require / run all the tests\nJS_FILES.forEach(f => require(path.join('../../../', f)));\n` }
 
 /**
- * 1. Generate Feature Folder
- * 2. Update Test Folder
- * 3. Update database/sequence.js
+ * 1. Generate Feature Folder with actions, languages, tasks, tests, controller, error, helper, model, routes, and worker
+ * 2. Update database/sequence.js
  */
 function generate() {
   const newDir = process.argv[3]; // NEW_FEATURE
@@ -257,6 +256,7 @@ function generate() {
 /**
  * 1. Generate Action File
  * 2. Generate Integration Test File
+ * 3. Update Action Index File
  */
 function generateAction() {
   const newFileName = process.argv[5]; // FILE
@@ -296,33 +296,38 @@ function generateAction() {
   fs.writeSync(fd, actionFileText({ ...NAMES, method: newFileName }), 0, 'utf-8');
   fs.closeSync(fd);
 
-  console.log(`✅ Created ${path.join(featActionsDirPath, newFileNameJS)}...`);
+  console.log(`✅ Created ${path.join(featActionsDirPath, newFileNameJS)}`);
 
   // action test file
   fd = fs.openSync(path.join(featTestsDirPath, `integration/${newFileNameJS}`), 'w');
   fs.writeSync(fd, integrationTestFileText({ ...NAMES, method: newFileName }), 0, 'utf-8');
   fs.closeSync(fd);
 
+  console.log(`✅ Created ${path.join(featTestsDirPath, `integration/${newFileNameJS}`)}`);
+
   // update action index file
   let featActionIndexFileText = fs.readFileSync(featActionsIndexPath, 'utf8').replace(/ /g, '').replace(/\n/g, '').replace(/\t/g, ''); // grab file text and remove all spaces
   let requireActionFiles = featActionIndexFileText.substring(featActionIndexFileText.indexOf('module.exports')).split('{')[1].split('}')[0].split(','); // get all the actions
+  let requireText = `...require('./${newFileName}')`; // the require code
+
   // remove [''] if th file does not have any require files (empty)
   if (requireActionFiles.length === 1 && requireActionFiles[0] === '')
     requireActionFiles = [];
-  requireActionFiles.push(`...require('./${newFileName}')`);
+  requireActionFiles.push(requireText);
   requireActionFiles = requireActionFiles.sort(); // sort alphabetically
   let requireActionFilesStr = requireActionFiles.join(',\n  ');
   fd = fs.openSync(path.join(featActionsIndexPath), 'w');
   fs.writeSync(fd, actionIndexFileText({ ...NAMES, actions: requireActionFilesStr }), 0, 'utf-8');
   fs.closeSync(fd);
 
-  console.log(`✅ Created ${path.join(featTestsDirPath, `integration/${newFileNameJS}`)}...\n`);
+  console.log(`✅ Added "${requireText}" to ${path.join(featTestsDirPath, `actions/index.js`)}\n`);
   console.log(`👉 Remember to update the following in ${featDir} feature:\n1. routes.js\n2. controller.js\n`);
 } // END generateAction
 
 /**
  * 1. Generate Task File
  * 2. Generate Task Test File
+ * 3. Update Task Index File
  */
 function generateTask() {
   const newFileName = process.argv[5]; // FILE
@@ -330,6 +335,7 @@ function generateTask() {
   const featDirPath = path.join(__dirname, featDir);
   const featTasksDirPath = path.join(featDirPath, 'tasks');
   const featTestsDirPath = path.join(featDirPath, 'tests');
+  const featTasksIndexPath = path.join(featTasksDirPath, 'index.js');
 
   console.log(`Generating ${newFileName} file in tasks folder of ${featDir} feature...\n`);
 
@@ -361,21 +367,37 @@ function generateTask() {
   fs.writeSync(fd, taskFileText({ ...NAMES, method: newFileName }), 0, 'utf-8');
   fs.closeSync(fd);
 
-  console.log(`✅ Created ${path.join(featTasksDirPath, newFileNameJS)}...`);
+  console.log(`✅ Created ${path.join(featTasksDirPath, newFileNameJS)}`);
 
   // task test file
   fd = fs.openSync(path.join(featTestsDirPath, `tasks/${newFileNameJS}`), 'w');
   fs.writeSync(fd, tasksTestFileText({ ...NAMES, method: newFileName }), 0, 'utf-8');
   fs.closeSync(fd);
 
-  console.log(`✅ Created ${path.join(featTestsDirPath, `tasks/${newFileNameJS}`)}...\n`);
-  console.log(`👉 Remember to update the following in ${featDir} feature:\n1. worker.js\n2. tasks/index.js\n`);
+  console.log(`✅ Created ${path.join(featTestsDirPath, `tasks/${newFileNameJS}`)}`);
+
+  // update tasks index file
+  let featTaskIndexFileText = fs.readFileSync(featTasksIndexPath, 'utf8').replace(/ /g, '').replace(/\n/g, '').replace(/\t/g, ''); // grab file text and remove all spaces
+  let requireTaskFiles = featTaskIndexFileText.substring(featTaskIndexFileText.indexOf('module.exports')).split('{')[1].split('}')[0].split(','); // get all the actions
+  let requireText = `...require('./${newFileName}')`; // the require code
+
+  // remove [''] if th file does not have any require files (empty)
+  if (requireTaskFiles.length === 1 && requireTaskFiles[0] === '')
+  requireTaskFiles = [];
+  requireTaskFiles.push(`...require('./${newFileName}')`);
+  requireTaskFiles = requireTaskFiles.sort(); // sort alphabetically
+  let requireTaskFilesStr = requireTaskFiles.join(',\n  ');
+  fd = fs.openSync(path.join(featTasksIndexPath), 'w');
+  fs.writeSync(fd, taskIndexFileText({ ...NAMES, tasks: requireTaskFilesStr }), 0, 'utf-8');
+  fs.closeSync(fd);
+
+  console.log(`✅ Added "${requireText}" to ${path.join(featTestsDirPath, `tasks/index.js`)}\n`);
+  console.log(`👉 Remember to update the following in ${featDir} feature:\n1. worker.js\n`);
 } // END generateTask
 
 /**
- * 1. Deletes Feature Folder
- * 2. Deletes Test Folder
- * 3. Updates database/sequence.js
+ * 1. Deletes Feature Folder and everything in it
+ * 2. Updates database/sequence.js
  */
 function destroy() {
   const rmDir = process.argv[3]; // NEW_FEATURE
@@ -418,6 +440,7 @@ function destroy() {
 /**
  * 1. Deletes Action File
  * 2. Deletes Integration Test File
+ * 3. Update Action Index File
  */
 function destroyAction() {
   const rmFileName = process.argv[5] // file name
@@ -466,32 +489,36 @@ function destroyAction() {
   fs.rmSync(rmActionsDirPathFile, { recursive: true });
   console.log(`✅ Deleted ${rmActionsDirPathFile}`);
 
+  // delete test integration file
+  fs.rmSync(rmTestsDirPathIntegrationFile, { recursive: true });
+  console.log(`✅ Deleted ${rmTestsDirPathIntegrationFile}`);
+
   // update action index file
   let rmActionIndexFileText = fs.readFileSync(rmActionsIndexPath, 'utf8').replace(/ /g, '').replace(/\n/g, '').replace(/\t/g, ''); // grab file text and remove all spaces
   let requireActionFiles = rmActionIndexFileText.substring(rmActionIndexFileText.indexOf('module.exports')).split('{')[1].split('}')[0].split(','); // get all the actions
-  requireActionFiles.push(`...require('./${rmFileName}')`);
-  requireActionFiles = requireActionFiles.filter(actionFile => actionFile.indexOf(`...require('./${rmFileName}')`) < 0); // will filter out this the targeted file
+  let requireText = `...require('./${rmFileName}')`; // the require code
+  requireActionFiles = requireActionFiles.filter(actionFile => actionFile.indexOf(requireText) < 0); // will filter out this the targeted file
   requireActionFiles = requireActionFiles.sort(); // sort alphabetically
   let requireActionFilesStr = requireActionFiles.join(',\n  ');
   let fd = fs.openSync(path.join(rmActionsIndexPath), 'w');
   fs.writeSync(fd, actionIndexFileText({ ...NAMES, actions: requireActionFilesStr }), 0, 'utf-8');
   fs.closeSync(fd);
 
-  // delete test integration file
-  fs.rmSync(rmTestsDirPathIntegrationFile, { recursive: true });
-  console.log(`✅ Deleted ${rmTestsDirPathIntegrationFile}\n`);
+  console.log(`✅ Removed "${requireText}" from ${rmActionsIndexPath}\n`);
   console.log(`👉 Remember to update the following in ${rmDir} feature:\n1. routes.js\n2. controller.js\n`);
 } // END destroyAction
 
 /**
  * 1. Deletes Task File
  * 2. Deletes Task Test File
+ * 3. Update Task Index File
  */
 function destroyTask() {
   const rmFileName = process.argv[5] // file name
   const rmDir = process.argv[3]; // NEW_FEATURE
   const rmDirPath = path.join(__dirname, rmDir);
   const rmTasksDirPath = path.join(rmDirPath, 'tasks');
+  const rmTasksIndexPath = path.join(rmTasksDirPath, 'index.js');
   const rmTestsDirPath = path.join(rmDirPath, 'tests');
 
   console.log(`Deleting ${rmFileName} tasks files...\n`);
@@ -511,6 +538,14 @@ function destroyTask() {
   // add .js
   const rmFileNameJS = rmFileName.indexOf('.js') < 0 ? `${rmFileName}.js` : rmFileName;
 
+  // names
+  const upperName = rmDir.toUpperCase();
+  const lowerName = rmDir.toLowerCase();
+  const pascalName = rmDir[0].toUpperCase() + '' + rmDir.substring(1);
+  const camelName = rmDir[0].toLowerCase() + '' + rmDir.substring(1);
+
+  const NAMES = { upperName, lowerName, pascalName, camelName };
+
   // files to remove
   const rmTasksDirPathFile = path.join(rmTasksDirPath, rmFileNameJS);
   const rmTestsDirPathTasksFile = path.join(rmTestsDirPath, 'tasks', rmFileNameJS);
@@ -527,8 +562,21 @@ function destroyTask() {
 
   // delete test tasks file
   fs.rmSync(rmTestsDirPathTasksFile, { recursive: true });
-  console.log(`✅ Deleted ${rmTestsDirPathTasksFile}\n`);
-  console.log(`👉 Remember to update the following in ${rmDir} feature:\n1. worker.js\n2. tasks/index.js\n`);
+  console.log(`✅ Deleted ${rmTestsDirPathTasksFile}`);
+
+  // update action index file
+  let rmTaskIndexFileText = fs.readFileSync(rmTasksIndexPath, 'utf8').replace(/ /g, '').replace(/\n/g, '').replace(/\t/g, ''); // grab file text and remove all spaces
+  let requireTaskFiles = rmTaskIndexFileText.substring(rmTaskIndexFileText.indexOf('module.exports')).split('{')[1].split('}')[0].split(','); // get all the actions
+  let requireText = `...require('./${rmFileName}')`; // the require code
+  requireTaskFiles = requireTaskFiles.filter(actionFile => actionFile.indexOf(requireText) < 0); // will filter out this the targeted file
+  requireTaskFiles = requireTaskFiles.sort(); // sort alphabetically
+  let requireTaskFilesStr = requireTaskFiles.join(',\n  ');
+  let fd = fs.openSync(path.join(rmTasksIndexPath), 'w');
+  fs.writeSync(fd, taskIndexFileText({ ...NAMES, tasks: requireTaskFilesStr }), 0, 'utf-8');
+  fs.closeSync(fd);
+
+  console.log(`✅ Removed "${requireText}" from ${rmTasksIndexPath}\n`);
+  console.log(`👉 Remember to update the following in ${rmDir} feature:\n1. worker.js\n`);
 } // END destroyTask
 
 /**
