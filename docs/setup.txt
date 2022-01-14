@@ -114,13 +114,13 @@ https://docs.github.com/en/authentication/connecting-to-github-with-ssh/generati
 ===============================================================================
 
 7. Create Databases on local computer using the Postico Client App
-  create database name 'nitra_dev' and 'nitra_test'
+  create database name 'orbital_dev' and 'orbital_test'
 
 ===============================================================================
 
 8. Download Redis In Memory Database
   Download from "https://redis.io/download"
-  Unzip and move folder to under main directory "nitra-api"
+  Unzip and move folder to under main directory "orbital-express"
   Remember the version, and delete the version so the folder is just called "redis"
   Change into the "redis" folder and create an empty text file with the version number so you can remember what version of redis you have. Example File Name: "v6.2.6"
   Next, run the follow commands (Last command is to run the server):
@@ -136,7 +136,7 @@ https://docs.github.com/en/authentication/connecting-to-github-with-ssh/generati
 ===============================================================================
 
 10. Set up Configurations:
-  Create two new files under nitra-api/config/
+  Create two new files under orbital-express/config/
     .env.development
     .env.test
   Copy .env.template contents into the two files above and edit based on your configurations
@@ -165,7 +165,7 @@ https://docs.github.com/en/authentication/connecting-to-github-with-ssh/generati
 
 ===============================================================================
 
-14. Run Full Application (Make sure nitra_dev database is created)
+14. Run Full Application (Make sure orbital_dev database is created)
   1. Run Main Server
     yarn s
 
@@ -183,5 +183,5 @@ https://docs.github.com/en/authentication/connecting-to-github-with-ssh/generati
 
 ===============================================================================
 
-15. Run All Tests (Redis must be running and nitra_test database must be created)
+15. Run All Tests (Redis must be running and orbital_test database must be created)
   yarn test
