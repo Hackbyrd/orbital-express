@@ -1,0 +1,73 @@
+Actions Comment Header:
+
+/**
+ * <DESCRIPTION>
+ *
+ * GET  <URL>
+ * POST <URL>
+ *
+ * Must be logged out | Must be logged in | Can be both logged in or logged out
+ * Roles: ['']
+ *
+ * req.params = {
+ *   id - (NUMBER - REQURED): user id
+ * }
+ *
+ * req.args = {
+ *   email - (STRING - REQUIRED): The email of the user,
+ *   password - (STRING - REQUIRED): The unhashed password of the user
+ *   age - (NUMBER - OPTIONAL): The age of the user
+ * }
+ *
+ * Success: Return logged in user.
+ * Errors:
+ *   400: Login failed. Incorrect email and/or password.
+ *   400: Your account is inactive, cannot log in.
+ *   401: Please confirm your email to log in.
+ *   401: Your company is inactive, cannot log in.
+ */
+
+General Function/Method Header:
+
+/**
+ * <DESCRIPTION>
+ *
+ * @arg1 - (NUMBER - REQUIRED) [DEFAULT - 100]: <ARGUMENT 1 DESCRIPTION>
+ * @arg2 - (NUMBER - OPTIONAL) [DEFAULT - 100]: <ARGUMENT 2 DESCRIPTION>
+ *
+ * return: true / false or <{ OBJECT }>
+ */
+
+-------------------------------------------------------------------------------
+
+Versioning: MAJOR.MINOR.PATCH (Ex. v2.3.2)
+
+package.json Versioning on update
+~1.2.3 will match all 1.2.x versions but will miss 1.3.0.
+^1.2.3 will match any 1.x.x release including 1.3.0, but will hold off on 2.0.0.
+
+Important: When installing a new node module. Please install the EXACT version by adding the flag "--exact" to the "yarn add" command
+>> yarn add <MODULE_NAME> --exact
+
+-------------------------------------------------------------------------------
+--------------------------------- Conventions ---------------------------------
+-------------------------------------------------------------------------------
+
+1. All code variables are camelCase
+2. Database Table names are plural and PascalCase
+3. Database Table Column names are camelCase
+4. Database ENUM datatype names are ALL CAPS and NO SPACES OR UNDERSCORES OR DASHES
+5. URLs for api requests have no spaces, no dashes, no underscores and no camelCase. "thisisaurl"
+6. URLs for pages will be dashes and lowercase
+7. Folder/File names can have dashes but must be lowercase. The only exception is feature folders (folders unders the "app" folder)
+7. Controllers are plurals
+8. Actions are singular
+
+------------------------------------------------------------------------------------
+--------------------------------- Common Variables ---------------------------------
+------------------------------------------------------------------------------------
+err = error
+req = request
+res = response
+result = result
+args = arguments

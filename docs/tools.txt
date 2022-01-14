@@ -1,0 +1,250 @@
+Tools:
+moment.js - time
+sendgrid - email
+twilio - text
+stripe - payment
+shippo - address verification / shipping
+googlemaps - mapping
+routific - routing
+sequelize - ORM
+accounting - currency
+recharts - charts
+font-awesome - icons
+convert-units.js - unit conversion
+aws - s3 storage
+async - asynchronous calls
+faker - fake data
+gm - image manipulation
+joi - request parameter validation
+lodash - helper methods for objects and arrays
+multer - upload images
+passport - authentication
+jwt-simple - authentication
+pg - connect to postgres
+querystring - convert url query to object and vice versa
+request - make request
+socket - real-time
+
+https://github.com/sorrycc/awesome-javascript -- list of js libraries
+
+https://tutorialzine.com
+
+https://display.js.org/ -- use it like react for displaying data in multiple places
+https://pushjs.org/ -- desktop push notifications through the browser
+
+// Highlight text
+https://mburakerman.com/hrjs/ -- highlight text in an element
+https://markjs.io/
+https://github.com/MaxArt2501/share-this -- highlight any text and share it immedietly
+
+// Beautiful and Pretty Checkboxes
+https://github.com/lokesh-coder/pretty-checkbox -- pretty checkboxes
+http://labelauty.js.org/
+http://rmariuzzo.github.io/checkboxes.js/ -- checkbox functionality
+
+// Zoom On Image
+http://emersonthompson.com.br/zoomove/ -- dynamically zoom images on mouse hover
+https://github.com/imgix/drift -- dynamically zoom images on mouse hover
+
+https://github.com/picturepan2/devices.css -- images of mobile devices using pure CSS
+https://github.com/scurker/currency.js -- solves currency issue
+https://craig.is/killing/mice -- keyboard shortcuts
+
+// Text Manipulation
+https://github.com/finnfiddle/words-to-numbers -- convert words to numbers
+https://rikschennink.github.io/fitty/ -- Changes font size to fit into container
+https://dollarshaveclub.github.io/shave/
+https://camwiegert.github.io/baffle/ -- javascript library for obfuscating and revealing text in DOM elements.
+http://leaverou.github.io/stretchy/ -- Form element autosizing, the way it should be.
+https://mattboldt.com/demos/typed-js/ -- With Typed.js you can replace the boring placeholders in input fields with animated ones. Just write down one or more example strings and this jQuery plugin will display them in your form as if they are being typed in. There are also some customization options such as different cursors, type speed, looping, and more.
+https://kushagragour.in/lab/superplaceholderjs/ -- With Superplaceholder you can add one or more messages of your choice as placeholders to input fields. The library will then display these messages with a cool animation as if someone is typing them in. Thanks to the rich customization options, you have a great deal of control over how and when the animations will be shown.
+http://textillate.js.org/ -- A simple plugin for CSS3 text animations.
+http://letteringjs.com/ -- A jQuery plugin for radical web typography
+http://nosir.github.io/cleave.js/ -- Format your <input/> content when you are typing
+https://github.com/jackmoore/autosize -- autosize textarea boxes to fill the exact number of characters inside the box
+
+// Alerts
+http://rubaxa.github.io/Ply/ -- better alerts
+https://lab.hakim.se/flipside/ -- alert and confirmation dialog
+http://github.hubspot.com/vex/docs/welcome/ -- better dialogs and alerts
+https://github.com/jaredreich/notie -- Notie.js alerts and notifications
+http://justindomingue.github.io/ohSnap/ -- notifications and alerts
+https://sweetalert2.github.io/ -- like the one in V2
+http://carlosroso.com/notyf/ -- notification animation, use for every page on index layout when there is a new order
+
+// Drag and Drop
+https://shopify.github.io/draggable/examples/flexbox.html# -- drag and drop
+https://rubaxa.github.io/Sortable/ -- drag and drop
+
+// File Uploaders
+https://fineuploader.com/demos.html#gallery-view -- file uploader
+https://pqina.nl/ -- file uploader
+https://uppy.io/
+http://www.dropzonejs.com/
+
+// Dropdown and Select
+https://select2.org/configuration and https://github.com/zflat/select2-foundation -- drop downs
+https://joshuajohnson.co.uk/Choices/
+https://selectize.github.io/selectize.js/
+https://harvesthq.github.io/chosen/
+
+// Modals
+http://izimodal.marcelodolce.com/#modal-default -- better modals
+http://humaan.com/modaal/ -- another modal library
+
+https://sarcadass.github.io/granim.js/examples.html -- background gradients animation
+https://rishabhp.github.io/bideo.js/ -- background videos
+https://vocajs.com/
+
+// Date & Time Pickers
+http://felicegattuso.com/projects/datedropper/
+https://flatpickr.js.org/examples/
+
+https://multiple.js.org/
+
+// Tooltip
+https://popper.js.org/
+https://atomiks.github.io/tippyjs/ -- tooltip library powered by popper.js
+https://kushagragour.in/lab/hint/ -- tooltip library
+http://github.hubspot.com/drop/docs/welcome/ -- tooltip dropdown
+http://kazzkiq.github.io/balloon.css/
+
+http://kenwheeler.github.io/slick/
+https://gasparesganga.com/labs/jquery-loading-overlay/
+
+https://bitshadow.github.io/iconate/ -- transform icons on click
+
+// Colors
+https://github.com/gka/chroma.js -- manipulate colors like darken or lighten a color
+https://yeun.github.io/open-color/
+
+https://webgradients.com/ -- background web gradients
+
+// CSS Loaders and Spinners
+http://www.raphaelfabeni.com.br/css-loader/ -- css loading
+https://connoratherton.com/loaders -- css loaders
+https://webkul.github.io/csspin/
+https://kimmobrunfeldt.github.io/progressbar.js/
+http://usablica.github.io/progress.js/ -- ProgressJs is a JavaScript and CSS3 library which helps developers create and manage progress bars for any object on the page.
+
+// Content Placeholder / Loader
+https://github.com/zalog/placeholder-loading **
+https://github.com/Chalarangelo/mocka
+
+https://canvas-gauges.com/documentation/examples/ -- custom UI gauges
+https://osrec.github.io/currencyFormatter.js/ -- currency formatter
+
+https://github.com/ApoorvSaxena/lozad.js -- lazy load images
+
+https://iraul.github.io/pushy-buttons/ -- pushy buttons animation
+http://alexcorvi.github.io/anchorme.js/ -- extracts URLS from a text
+
+https://popmotion.io/ -- better animations using javascript
+
+// Charts
+https://naver.github.io/billboard.js/ -- charts
+http://www.chartjs.org/ -- charts
+http://recharts.org/#/en-US/
+http://gionkunz.github.io/chartist-js/
+
+// Image Modal and Lightbox
+https://github.com/appleple/SmartPhoto
+https://feimosi.github.io/baguetteBox.js/
+
+http://polarnotion.github.io/turntable/ -- create a flipbook rotate of a image
+
+http://github.hubspot.com/odometer/docs/welcome/ -- odometer number animation, like number of visitors on a site, or number of orders placed
+https://alvarotrigo.com/fullPage/ -- full page transition on scroll
+
+http://bricklayer.js.org/ -- pinterest style images layout
+http://maxwellito.github.io/vivus/ -- Vivus is a lightweight JavaScript class (with no dependencies) that allows you to animate SVGs, giving them the appearence of being drawn. There are a variety of different animations available, as well as the option to create a custom script to draw your SVG in whatever way you like.
+
+https://www.gradient-animator.com/ -- gradient animator, generate your own gradients and copy and paste the code
+
+https://github.com/dawnlabs/carbon -- create beautiful images of your code
+
+// Search / Filter
+http://listjs.com/ -- Tiny, invisible and simple, yet powerful and incredibly fast vanilla JavaScript that adds search, sort, filters and flexibility to plain HTML lists, tables, or anything.
+
+// Browser Based Code Editor
+https://microsoft.github.io/monaco-editor/
+
+// Credit Card
+https://github.com/jessepollak/card
+
+// CSS JS Animations
+https://github.com/daneden/animate.css
+http://stickerjs.cmiscm.com/ -- Sticker animation
+
+// Icons
+https://icons8.com/c/animated-icons
+https://jonsuh.com/hamburgers/ -- hamburger Icons
+
+// Hover buttons
+https://varin6.github.io/Hover-Buttons/
+http://gijsroge.github.io/tilt.js/ -- any Div can be tilted
+
+// Chatting UI
+https://github.com/botui/botui
+https://space10-community.github.io/conversational-form/landingpage/ -- turn forms in to conversations
+
+// Random Strings
+https://github.com/ai/nanoid
+
+// Cool JavaScript plugin that allows you to zoom-out on a page and see the whole document in one view, after which you can click anywhere to zoom back in and scroll down directly to where you clicked.
+http://achrafkassioui.com/birdview/
+
+// Timelines
+https://ilkeryilmaz.github.io/timelinejs/
+
+// Videos & IFrames
+http://fitvidsjs.com/ -- A lightweight, easy-to-use jQuery plugin for fluid width video embeds.
+https://dollarshaveclub.github.io/reframe.js/ -- makes iframes and videos responsive
+
+// Parallax
+https://dixonandmoe.com/rellax/
+
+// Backgrounds
+http://maroslaw.github.io/rainyday.js/ -- rain
+https://marcbruederlin.github.io/particles.js/ -- particles background
+http://www.schillmania.com/projects/snowstorm/ -- snow
+https://multiple.js.org/ -- multiple divs using same background
+
+// Off canvas & slide out navigation
+http://offcanvas.vasilis.co/
+https://slideout.js.org/
+
+// Pull to Refresh
+https://www.boxfactura.com/pulltorefresh.js/
+
+// Scroll and show which section is currently being viewed
+https://leocs.me/menuspy/
+
+// Guided Tours
+https://xbsoftware.com/products/enjoyhint/
+https://introjs.com/
+http://clu3.github.io/bootstro.js/#
+http://github.hubspot.com/shepherd/docs/welcome/
+http://linkedin.github.io/hopscotch/
+https://easelinc.github.io/tourist/
+
+// Hide Header on Scroll
+http://wicky.nillia.ms/headroom.js/
+
+// Sound & Audio
+http://www.waudjs.com/
+
+// CSV Parser
+https://www.papaparse.com/ -- The powerful, in-browser CSV parser
+
+// Internet Offline
+http://github.hubspot.com/offline/docs/welcome/
+
+https://zingchart.github.io/zingtouch/ -- A JavaScript gesture detection library for the modern web
+
+// Adapative Background
+http://www.kennethcachia.com/background-check/ -- Automatically switch to a darker or a lighter version of an element depending on the brightness of images behind it.
+https://briangonzalez.github.io/jquery.adaptive-backgrounds.js/ -- A jQuery plugin for extracting dominant colors from images and applying it to its parent.
+
+// Optimizations / Loading
+https://clusterize.js.org/ -- Tiny plugin to display large data sets easily

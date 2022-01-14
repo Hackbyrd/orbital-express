@@ -1,0 +1,6 @@
+HTTPS Status Codes:
+200 - OK Success
+201 - Created Success, something was created
+202 - Accepted but still processing
+400 - Bad Request, invalid data
+401 - Unauthorized, do not have permissions

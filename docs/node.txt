@@ -1,4 +1,4 @@
 URLSearchParams:
-var params = new URLSearchParams('user=abc&q=xyz');
+let params = new URLSearchParams('user=abc&q=xyz');
 console.log(params.get('user'));
 console.log(params.get('q'));

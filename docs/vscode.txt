@@ -1,0 +1,6 @@
+How to fold code?
+  cmd + k + 0 => fold all
+  cmd + k, cmd + [n] => fold code in lvl n
+  cmd + k + j => unfold all
+  cmd + k + [ => fold region
+  cmd + k + ] => unfold region

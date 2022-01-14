@@ -1,0 +1,21 @@
+PSQL Database Commands:
+
+\l                     -> list all databases
+\c [DB_NAME]           -> connect and use database
+\d                     -> list all tables
+\d+ <table_name>       -> show column information for database
+\q                     -> quit psql connection
+CREATE DATABASE testdb -> create a database
+DROP DATABASE testdb   -> delete a database
+GRANT ALL PRIVILEGES ON DATABASE testdb to user; -> grant permissions for testdb to user
+
+Rebuild a single index:
+  REINDEX INDEX my_index;
+Rebuild all the indexes on the table my_table:
+  REINDEX TABLE my_table;
+
+JSONB Queries
+https://hackernoon.com/how-to-query-jsonb-beginner-sheet-cheat-4da3aa5082a3
+
+Delete postmaster.pid:
+rm ~/Library/Application\ Support/Postgres/var-12/postmaster.pid

@@ -1,0 +1,9 @@
+brew upgrade yarn
+yarn --version
+
+https://yarnpkg.com/en/docs/migrating-from-npm
+https://yarnpkg.com/en/docs/usage
+https://yarnpkg.com/lang/en/docs/cli/run/
+
+yarn upgrade package@1.1.1
+yarn outdated

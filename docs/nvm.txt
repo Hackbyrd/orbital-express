@@ -1,0 +1,3 @@
+nvm list
+nvm use v16.13.2
+nvm alias default 16.13.2

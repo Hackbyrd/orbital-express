@@ -40,7 +40,8 @@ module.exports = {
     dialectOptions: {
       decimalNumbers: true, // postgres returns string decimals, this will convert it to a decimal
       ssl: {
-        require: true
+        require: true,
+        rejectUnauthorized: false
       }
     }
   }

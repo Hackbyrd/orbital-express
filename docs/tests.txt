@@ -1,0 +1,34 @@
+Running Tests
+1. Run all tests
+$ mocha
+
+2. You can run specific test files, in this case only run logic.js test
+$ mocha test/helpers/logic.js
+
+3. Passing --grep <pattern> on the command line will run tests and suites with names matching the pattern.
+$ mocha --grep auth
+
+4. Adding --invert to a command line with --grep <pattern> runs tests and suites with names that do not match the pattern.
+$ mocha test/helper/logic.js
+
+Attach these to a "describe" or an "it" function
+.only() -- only run these tests
+.skip() -- skip these tests
+
+When importing from fixtures, remember to do a deep copy of the fixtures since we might modify it in the tests.
+If you do not do a deep copy and you do modify the fixture variable in the test, this affects all future tests.
+Bad: const user1 = userFix[0];
+Good: const user1 = { ...userFix[0] };
+
+Add timeout to function
+this.setTimeout(10000)
+
+Chai Library: http://chaijs.com/api/bdd/
+let expect = require('chai').expect;
+let foo = 'bar';
+let beverages = { tea: [ 'chai', 'matcha', 'oolong' ] };
+
+expect(foo).to.be.a('string');
+expect(foo).to.equal('bar');
+expect(foo).to.have.lengthOf(3);
+expect(beverages).to.have.property('tea').with.lengthOf(3);

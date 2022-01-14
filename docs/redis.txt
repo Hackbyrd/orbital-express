@@ -1,0 +1,12 @@
+Download Your Version of Redis Here:
+http://download.redis.io/releases/
+
+After downloading upgraded redis, you must run make command
+cd redis-x.x.x
+make
+make test
+
+Start Server:
+yarn redis
+or
+src/redis-server
