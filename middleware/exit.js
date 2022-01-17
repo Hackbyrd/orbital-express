@@ -1,5 +1,5 @@
 /**
- * Middleware for graceful exit
+ * Middleware for gracefully exiting server and database connection
  */
 
 'use strict';

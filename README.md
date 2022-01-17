@@ -101,16 +101,52 @@ This command runs the cronjob.js file. What is a cronjob? You can think of it as
 
 ---
 ## index.js / server.js
+As mentioned previously, the **"index.js"** file is the entry point to run the web server. If you dive deeper into the code, you will find that we setting up a server cluster so that we can spin up a new server for every CPU process there is on the server. We are using the node module **"throng"** to help us achieve this concurrency. The actual server can be found in the file **"server.js"**. You can see we reference server.js in the index.js code.
+
+<br />
+
+### Server.js and Middlewares Explained
+The server.js file is where the actual server is created and configured, including all the middlewares we want to include in our API. If you look at the code, you'll notice we are using many third-party node modules. These modules are actually added to our server as **middleware** via
+> app.use()
+
+What is middleware? To understand this, we must think of the lifecycle of an API request.
+
+<br />
+
+Incoming API Request (req) > middleware1(req) > middleware2(req) > middleware3(req) > Outgoing Response back to client giving them the result of their request.
+
+<br />
+A middleware is just a component (function/method) that you pass the request object of the API request to. It performs an action and it may or may not update the request object. After if performs its action, it then calls the next middleware (component) down the chain until there is nothing left to call, in which case, that's when a response is returned.
+
+<br/>
+
+The middleware lifecycle can simply be thought of as just passing in a request object down a chain of functions until there are no functions left to call, in which case, we return the final result (response) back to the web client (Front-End).
+
+<br/>
+
+We won't explain all the server.js middleware node modules that we included, but please note that the **order** of the middlewares that are being added matters because it reflects in what order the incoming request object is being processed. In server.js, the last middleware that runs is the routes middleware, but if dig deeper into the routes files of each **"Feature Folder"**, the next middleware down the chain is the controller, then in the controller, the actions will be called, then after the actions, we either return an error (if this is the case, the error middleware will be called) or we return success (in this case there are no more middlewares left to execute so we return the response/result of the request back to the client).
 
 <br/>
 
 ---
-## What is middleware and how it works?
+## Custom Middlewares
+We have a ##"middleware"## folder where you can add your own custom middlewares. We already created a few in which case you can check out the files individually and read the comments to understand what they do.
+
+[middleware/args.js](middleware/args.js)<br />
+[middleware/args.js](middleware/auth.js)<br />
+[middleware/args.js](middleware/error.js)<br />
+[middleware/args.js](middleware/exit.js)
 
 <br/>
 
 ---
 ## The Config Folder / Environment Set Up
+
+
+<br/>
+
+---
+## Database Folder / Configuration
 
 <br/>
 
@@ -128,16 +164,10 @@ This command runs the cronjob.js file. What is a cronjob? You can think of it as
 ### error.js
 ### Languages Folder
 
-
 <br/>
 
 ---
-## Database Folder / Configuration
-
-<br/>
-
----
-## Services
+## Global Services
 
 <br/>
 
@@ -147,19 +177,19 @@ This command runs the cronjob.js file. What is a cronjob? You can think of it as
 <br/>
 
 ---
-## Mailers
-
-
-<br/>
-
----
-## Deploying to Heroku
-
-
-<br/>
-
----
 ## Global Helpers
+
+
+<br/>
+
+---
+## Global Tests
+
+
+<br/>
+
+---
+## Mailers
 
 
 <br/>
@@ -171,3 +201,19 @@ This command runs the cronjob.js file. What is a cronjob? You can think of it as
 <br/>
 
 ---
+## The Gulpfile
+
+
+<br/>
+
+---
+## Deploying to Heroku
+
+
+<br/>
+
+---
+## More Documentation
+
+
+<br/>
