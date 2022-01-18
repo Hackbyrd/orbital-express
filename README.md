@@ -3,9 +3,9 @@ A better way to organize and develop on your express.js node application. Built 
 <br/><br/>
 ## Important
 ### Orbital-Express assumes you already have the base foundation of JavaScript, node.js and express.js
-Use node.js v16.x.x
-Use express.js v5.x.x
-Knowledge of ES6 and Advanced JavaScript is highly **recommended**
+- Use node.js v16.x.x
+- Use express.js v5.x.x
+- Knowledge of ES6 and Advanced JavaScript is highly **recommended**
 
 [View Markdown Cheatsheet](https://www.markdownguide.org/cheat-sheet)
 <br/><br/>
@@ -139,16 +139,108 @@ We have a ##"middleware"## folder where you can add your own custom middlewares.
 
 <br/>
 
+The most important one to know is the **"args.js"** file. In short, we create and append a variable to the **req** object called **req.args**. This variable contains the request body IF it is a POST request, or the request query IF it is a GET request. We do this because you as the developer don't need to know or remember if the API request you are working on is a POST or a GET. All you need to know is that the arguments are going to be attach to **req.args** so you can focus on building your feature.
+
 ---
 ## The Config Folder / Environment Set Up
+When building any application, its common to have variables be different depending on what environment we are in. There are four main environments that we have:
 
+<br />
+
+- Production
+- Staging
+- Development
+- Test
+
+Each of these environments will have their own set of config variables containing sensitive information like API keys, secret keys, etc. that can be used across the entire application codebase. By default, we provide a file called
+> .env.template
+
+This can be found under the **config** folder. It is up to you to create your own config files for each environment you need. The following is an example of what we recommend creating in the config folder:
+
+- config
+  - .env.development
+  - .env.production
+  - .env.staging
+  - .env.test
+
+You should copy the contents of the **.env.template** and create the files above and paste the copied content into the newly created config file. Then fill in all the config variables. The **.env.development**, **.env.production**, **.env.staging** and **.env.test** files are added to the .gitignore for security reasons and therefore **WILL NOT** show up on github. This is because you don't want other random people getting access to your important API keys and variables. Every time you add a new config variable, we recommend updating the **.env.template** file because this will be included in the git repository and any new developers who pull your changes or develop on your project can add the correct config variables need to run your project servers.
+
+### config/config.js
+In the **config** folder you'll find another file called **config.js**. This file is used to configure our ORM, Sequelize's migration tool. In short, it's the configuration to all the Sequelize-CLI to connect to the database to run migrations. Please note, that we have to configure this AGAIN in the **database/index.js** file seperately. We will go into more detail on in the **Database Folder / Configuration** section below.
+
+### heroku-sync.js
+In heroku, you need to add the config variables manually and sometimes this can be very time consuming and this process may be prone to errors. So we created the **heroku-sync.js** file to sync your **config/.env.production** or your **config/.env.staging** file to your deployed app on heroku with a single command. Example below.
+
+> node ./config/heroku-sync .env.production orbital-express-api true
+
+Please check out [config/heroku-sync.js](config/heroku-sync.js) for more details.
 
 <br/>
 
 ---
 ## Database Folder / Configuration
+In the **database** folder, there are few important things to note.
+
+1. The Set Up via index.js
+2. The Schema via schema.sql
+3. The Backups via backups folder
+4. The Seed Data via seed folder
+5. The Ordering of the table creation via sequence.js
+
+<br />
+
+### 1 .The Set Up via index.js
+**index.js** is where we set up the configuration for the API server to connect to the database. As mentioned earlier, if you remember, we also connect to the database in the **config/config.js** file but for a different reason, the sequelize migrations. By contrast, the **database/index.js** is configuration sequelize ORM for the actual web app API server. You need to have both set up correctly.
+
+<br />
+
+### 2. The Schema via schema.sql
+This file may be misleading, because its a .sql file. Are we uploading this to PostgreSQL as our database schema? NO, we are not. This is purely for our notes and we should record ANY changes to the database here. You can think of this file are our master database schema plan for the entire application. However, the actual place where we modify the database is in the **migrations** folder.
+
+<br />
+
+### 3. The Backups via backups folder
+One thing we find ourselves doing very often is backing up the database, whether its for development purposes or just to keep a backup somewhere. That's what this folder is for. To store any backup. We have a built in command to make this very easy.
+
+> yarn backup
+
+Yes, that's it. It will make of backup of the current database and store it in this **database/backups** folder automatically. You can find the actual command in the **package.json** "scripts" section. Try it out!
+
+<br />
+
+But having a backup isn't enough, we also need a way to restore it back to the actual database. Dont' worry, we have a command for that as well.
+
+> yarn restore
+
+This will drop the current database and replace it with the backup. You can also find this command in the **package.json** "scripts" section.
 
 <br/>
+
+### 4. The Seed Data via seed folder
+This is the folder where we put our seed data for our development database. We will also have a seperate seed data folder (called fixtures) for tests but more on that later one. What is seed data? Basically, seed data is data we create ahead of time in the form of a JavaScript object so that we can load that data into the database instead of manually creating it over and over again via API requests. You can think of it as a template or a snapshot of data we want to have in our development database.
+
+The structure of the seed data folder is the following:
+
+- database
+  - seed
+    - set1
+      - table1
+      - table2
+      - table3
+    - set2
+      - table1
+      - table2
+      - table3
+
+You might be asking, "what is a set"? A set folder is just there to help you separate out different versions of what data you want to upload in the database.
+
+**Best Practices**: <br />
+I do recommend not creating so many different **"sets"**. Just create a few with the bare minimum, otherwise you'll find yourself trying to update all the sets every time you add a new table or column into the database.
+
+<br />
+
+### 5. The Ordering of the table creation via sequence.js
+This file you don't really need to tough because it is updated automatically when you generate or destroy a feature via the commands we will highlight in the next section (**yarn gen** or **yarn del**). Basically, if you open up the file, you will see that its an array of all the existing tables. The order of the elements in this array matter a lot. This is because when we upload seed data OR fixture data (for testing), there are table foreign keys and dependencies. For example, what if you have two tables called "Company" and "User" and a "User" belongs to a "Company". You have to add the "Company" seed data/fixtures first before you add the "User" seed data/fixtures. Please don't modify this file unless you have to manually override something.
 
 ---
 ## The App Directory and Features
@@ -215,5 +307,7 @@ We have a ##"middleware"## folder where you can add your own custom middlewares.
 ---
 ## More Documentation
 
+### Conventions
+Please read the [docs/conventions.txt](docs/conventions.txt) file to get a better understanding of the best pratices and conventions we are using throughout the application.
 
 <br/>

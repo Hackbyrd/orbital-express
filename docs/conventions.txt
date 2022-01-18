@@ -62,6 +62,7 @@ Important: When installing a new node module. Please install the EXACT version b
 7. Folder/File names can have dashes but must be lowercase. The only exception is feature folders (folders unders the "app" folder)
 7. Controllers are plurals
 8. Actions are singular
+9. All helper/constants.js variables are UPPER CASE with underscores and NO DASHES
 
 ------------------------------------------------------------------------------------
 --------------------------------- Common Variables ---------------------------------
