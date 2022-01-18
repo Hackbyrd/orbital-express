@@ -242,6 +242,8 @@ I do recommend not creating so many different **"sets"**. Just create a few with
 ### 5. The Ordering of the table creation via sequence.js
 This file you don't really need to tough because it is updated automatically when you generate or destroy a feature via the commands we will highlight in the next section (**yarn gen** or **yarn del**). Basically, if you open up the file, you will see that its an array of all the existing tables. The order of the elements in this array matter a lot. This is because when we upload seed data OR fixture data (for testing), there are table foreign keys and dependencies. For example, what if you have two tables called "Company" and "User" and a "User" belongs to a "Company". You have to add the "Company" seed data/fixtures first before you add the "User" seed data/fixtures. Please don't modify this file unless you have to manually override something.
 
+<br />
+
 ---
 ## The App Directory and Features
 
@@ -260,6 +262,12 @@ This file you don't really need to tough because it is updated automatically whe
 
 ---
 ## Global Services
+The **services** directory is where you put your own wrappers on any third-party APIs you are using. We created commonly use files already such as email.js and error.js. We **HIGHLY RECOMMEND** writing your own wrappers instead of directly using these API node modules direectly in your main code. This is because you should be de-coupling your third-party code instead of directly using it in your platform. The reason why you do this is so your app is not soley dependent on this library/service you are using and you can easily switch it out in the future. Also it makes it easier to modify and test.
+
+1. email.js
+2. error.js
+3. language.js
+4. socket.js
 
 <br/>
 
@@ -270,7 +278,13 @@ This file you don't really need to tough because it is updated automatically whe
 
 ---
 ## Global Helpers
+The **helpers** directory is where you should place all your global helper methods that are used acrosse your entire application. This is different from the Feature's helper.js file which stores helper methods that are only relevant to that feature folder. We already wrote some global helper files for you including the [helpers/constants.js](helpers/constants.js) file. This file houses ALL the **GLOBAL** constant variables used in the applications. Thus, you should be adding any new or custom varibles you want to add to this file if you want them to be used globally.
 
+1. constants.js
+2. cruqd.js
+3. logic.js
+4. tests.js
+5. validate.js
 
 <br/>
 
@@ -288,26 +302,52 @@ This file you don't really need to tough because it is updated automatically whe
 
 ---
 ## Custom Scripts
-
+This is where you place any custom script you want to write. It may or may not be related to this application. For example, if you want to scrap data or perform a one time database operation, put the script in this folder.
 
 <br/>
 
 ---
 ## The Gulpfile
+The [gulpfile.js](gulpfile.js) is a service that is running in the background. When running, it is constantly watching for changes in certain files in order to perform specific tasks as a response to those changes.
 
+To run the gulpfile run this
+> yarn gulp
+
+Our gulpfile specifically watches for the following:
+1. If we make changes to the mailers index.ejs files, it will re-compile and update the preview.html
+2. If we make changes to the languages JavaScript files, it will re-compile and update the locales JSON files.
+
+You can add your own custom watches if you want.
 
 <br/>
 
 ---
 ## Deploying to Heroku
+The framework was built to work with Heroku's ecosystem. Do the follow to get this app deployed on heroku.
 
+1. Create a Heroku app
+2. Add Heroku PostgreSQL database package
+3. Add Heroku Redis database package
+4. Add config variables, either manually or using the config/heroku-sync.js
+5. Connect your project's Github's main branch to this Heroku app.
+6. Click Deploy.
+7. Add a custom domain name with SSL certificate (Optional)
+
+Basically, all you have to do is push to main branch and then click deploy and it will automatically deploy. The main server, the worker server and the cronjobs server will automatically deploy and any migration will run automatically. We set this up in the [Procfile](Procfile) for Heroku to know what we want to deploy.
 
 <br/>
 
 ---
 ## More Documentation
 
+<br />
+
 ### Conventions
 Please read the [docs/conventions.txt](docs/conventions.txt) file to get a better understanding of the best pratices and conventions we are using throughout the application.
+
+<br />
+
+### Built-In Command Line Commands
+Please read [docs/commands.txt](docs/commands.txt) file to see what commands you can use to save you time on writing boilerplate code and just executing certain actions without remembering the specific commands.
 
 <br/>

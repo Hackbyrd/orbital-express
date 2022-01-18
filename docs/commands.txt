@@ -1,0 +1,108 @@
+All Command Line Commands:
+
+---------------------------------------------------
+------------------- Run Servers -------------------
+---------------------------------------------------
+
+# Start Redis server (If not already started)
+yarn redis
+
+# Start main web server in production
+yarn start
+
+# Start main web server in development
+yarn start:dev
+yarn s
+
+# Start the Background Worker Server (for background jobs) in development
+yarn worker
+yarn w
+
+# Start cronjobs (for scheduled jobs) in development
+yarn cron
+
+# Runs the gulpfile.js watcher which compiles the mailers and languages
+yarn gulp
+
+# Start ngrok (for testing webhooks in development)
+yarn ngrok
+
+# Run tests
+yarn test
+yarn t
+
+--------------------------------------------------------
+------------------- Database Related -------------------
+--------------------------------------------------------
+
+# Migrate database in development
+yarn migrate
+yarn mg
+
+# Migrate database in production
+yarn migrate:prod
+
+# Rollback database in development
+yarn rollback
+yarn rb
+
+# Generate migration file under "migrations" directory for a new table
+yarn model
+
+# Generate migration file under "migrations" directory for new updates to the database
+# Use this if you want to add new cols or make any modifications to tables
+yarn migration
+
+# Back up current database data into a .sql file in the "database/backups" directory
+yarn backup
+
+# Restore a backup.sql file in the "database/backups" directory to the database
+yarn restore
+
+# Add seed data to database
+yarn seed
+
+----------------------------------------------------------
+------------------- Feature Generation -------------------
+----------------------------------------------------------
+
+# Generate / Delete Feature Folder
+yarn gen [NEW_FEATURE_FOLDER_NAME]
+yarn gen [EXISTING_FEATURE_FOLDER_NAME] action|-a [NEW_ACTION_FILE_NAME]
+yarn gen [EXISTING_FEATURE_FOLDER_NAME] task|-t [NEW_TASK_FILE_NAME]
+yarn del [NEW_FEATURE_FOLDER_NAME]
+yarn del [EXISTING_FEATURE_FOLDER_NAME] action|-a [NEW_ACTION_FILE_NAME]
+yarn del [EXISTING_FEATURE_FOLDER_NAME] task|-t [NEW_TASK_FILE_NAME]
+
+# This is a special command to stringify any file. This is useful if you want to create your own custom commands that generate files.
+yarn str [ABSOLUTE_PATH_OF_FILE_TO_STRINGIFY]
+
+Examples with User Feature:
+
+# Create a User feature folder under the "app" directory
+yarn gen User
+
+# Create a "V1Create.js" file under the User/actions directory
+yarn gen User -a V1Create
+
+# Create a "V1Export.js" file under the User/tasks directory
+yarn gen User -t V1Export
+
+# Removes the User feature folder from the "app" directory
+yarn del User
+
+# Removes the "V1Create.js" file from the User/actions directory
+yarn del User -a V1Create
+
+# Removes the "V1Export.js" file from the User/tasks directory
+yarn del User -t V1Export
+
+---------------------------------------------
+------------------- Other -------------------
+---------------------------------------------
+
+# Formats the code via Prettier.js using the .prettierrc.js configuration
+yarn format
+
+# Manually compiles language file into one global languages file. Not that important since if you run the gulpfile, this is done automatically
+yarn lang

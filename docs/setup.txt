@@ -175,10 +175,10 @@ https://docs.github.com/en/authentication/connecting-to-github-with-ssh/generati
   3. Run Background Worker Server (For background jobs)
     yarn worker
 
-  4. Run Cronjobs (for timed jobs)
+  4. Run Cronjobs (for scheduled jobs)
     yarn cron
 
-  5. Run ngrok (for dev webhooks)
+  5. Run ngrok (for testing webhooks in development)
     yarn ngrok
 
 ===============================================================================

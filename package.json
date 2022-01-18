@@ -39,10 +39,7 @@
     "ngrok:auth": "./node_modules/ngrok/bin/ngrok authtoken",
     "redis": "./redis/src/redis-server",
     "test": "./node_modules/mocha/bin/mocha \"test/**/*.js\" --timeout 100000 --exit",
-    "t": "yarn test",
-    "stage": "git push origin dev && git checkout staging && git merge dev && git push origin staging && git checkout dev",
-    "prod": "git push origin dev && git checkout master && git merge dev && git push origin master && git checkout dev",
-    "deploy": "yarn stage && yarn prod"
+    "t": "yarn test"
   },
   "dependencies": {
     "@hapi/joi": "17.1.1",
