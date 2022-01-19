@@ -133,9 +133,9 @@ We won't explain all the server.js middleware node modules that we included, but
 We have a ##"middleware"## folder where you can add your own custom middlewares. We already created a few in which case you can check out the files individually and read the comments to understand what they do.
 
 [middleware/args.js](middleware/args.js)<br />
-[middleware/args.js](middleware/auth.js)<br />
-[middleware/args.js](middleware/error.js)<br />
-[middleware/args.js](middleware/exit.js)
+[middleware/auth.js](middleware/auth.js)<br />
+[middleware/error.js](middleware/error.js)<br />
+[middleware/exit.js](middleware/exit.js)
 
 <br/>
 
@@ -290,13 +290,31 @@ The **helpers** directory is where you should place all your global helper metho
 
 ---
 ## Global Tests
+The **test** directory is the entry point to run tests. When you run
 
+> yarn test
+
+you are essentially running all the tests in this **test** directory. There are four directories
+
+1. app
+2. fixtures
+3. helpers
+4. services
+
+### app directory
+The app directory doesn't really have code in it. If you read the [test/app/README.txt](test/app/README.txt) file, you'll find that we are running [test/app/index.js](test/app/index.js) to stitch together all the test files from the app feature folders. We do this because as we described in the beginning of this guide, we want to break up the app by feature and not by type of file. So we are able to write tests in their corresponding feature folder, instead of placing all the tests in this test folder.
+
+### fixtures
+The fixtures directory is similar to the database/seed directory but instead of loading data into the development database, we are loading test data into the test database. We follow the same structure as the database/seed but instead of having **"set"** folders, we have **"fix"** folders containing the javascript files that mirror the database tables. Lastly, you'll find an **"assets"** folder here. This folder is just to place any assets (images, files, videos, etc...) to be used in the tests.
+
+### helpers and services
+The last two folders are just there for you to place the tests for the global helpers and global services. Name the test file after the file you are trying to test. It's as simple as that. You are NOT testing the feature folder helpers here. This is only for the GLOBAL helpers and services.
 
 <br/>
 
 ---
 ## Mailers
-
+We need a way to effectively create emails with good developer experience. That's what they mailers directory is for. Let's dive deeper into what the process looks like.
 
 <br/>
 
