@@ -83,14 +83,16 @@ Every app needs an entry point. In our case, the file that kicks everything off 
 Either of these commands run the index.js file. This file runs the actually web server to process any API requests coming in.
 > yarn server
 <br/>
-yarn s
+
+> yarn s
 
 <br/>
 
 Either of these commands run the worker.js file. This file runs the background jobs. What's a background job? You can think of it as way to run code that may take longer to process compared to a normal API request or a task you just want to run in the background, outside of a normal API request. So for example, what if you need to generate a report and it could take up to 5 mins to generate because of just how intensive the task is. Instead of writing an API request to do this task, you write the function to process this task in on the background job server. This way, once it's completed, we can notify the correct parties that the task is complete.
 > yarn worker
 <br/>
-yarn w
+
+> yarn w
 
 <br/>
 
