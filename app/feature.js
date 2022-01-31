@@ -5,9 +5,11 @@
  * node app/feature generate|gen|-g [NEW_FEATURE_FOLDER_NAME]
  * node app/feature generate|gen|-g [EXISTING_FEATURE_FOLDER_NAME] action|-a [NEW_ACTION_FILE_NAME]
  * node app/feature generate|gen|-g [EXISTING_FEATURE_FOLDER_NAME] task|-t [NEW_TASK_FILE_NAME]
+ * node app/feature generate|gen|-g [EXISTING_FEATURE_FOLDER_NAME] mail|-m [NEW_MAILER_FILE_NAME]
  * node app/feature delete|del|-d [NEW_FEATURE_FOLDER_NAME]
  * node app/feature delete|del|-d [EXISTING_FEATURE_FOLDER_NAME] action|-a [NEW_ACTION_FILE_NAME]
  * node app/feature delete|del|-d [EXISTING_FEATURE_FOLDER_NAME] task|-t [NEW_TASK_FILE_NAME]
+ * node app/feature delete|del|-d [EXISTING_FEATURE_FOLDER_NAME] mail|-m [NEW_MAILER_FILE_NAME]
  * node app/feature stringify|str|-s [ABSOLUTE_PATH_OF_FILE_TO_STRINGIFY]
  *
  *
@@ -15,9 +17,11 @@
  * yarn gen [NEW_FEATURE_FOLDER_NAME]
  * yarn gen [EXISTING_FEATURE_FOLDER_NAME] action|-a [NEW_ACTION_FILE_NAME]
  * yarn gen [EXISTING_FEATURE_FOLDER_NAME] task|-t [NEW_TASK_FILE_NAME]
+ * yarn gen [EXISTING_FEATURE_FOLDER_NAME] mail|-m [NEW_MAILER_FILE_NAME]
  * yarn del [NEW_FEATURE_FOLDER_NAME]
  * yarn del [EXISTING_FEATURE_FOLDER_NAME] action|-a [NEW_ACTION_FILE_NAME]
  * yarn del [EXISTING_FEATURE_FOLDER_NAME] task|-t [NEW_TASK_FILE_NAME]
+ * yarn del [EXISTING_FEATURE_FOLDER_NAME] mail|-m [NEW_MAILER_FILE_NAME]
  * yarn str [ABSOLUTE_PATH_OF_FILE_TO_STRINGIFY]
  *
  * TODO: yarn gen lang en-US English // adds a new language file to all features
@@ -47,6 +51,10 @@ if (method === 'generate' || method === 'gen' || method === '-g') {
     case '-t':
       generateTask();
       break;
+    case 'mail':
+    case '-m':
+      generateMail();
+      break;
     default:
       generate();
   }
@@ -59,6 +67,10 @@ if (method === 'generate' || method === 'gen' || method === '-g') {
     case 'task':
     case '-t':
       destroyTask();
+      break;
+    case 'mail':
+    case '-m':
+      destroyMail();
       break;
     default:
       destroy();
@@ -82,21 +94,23 @@ function actionIndexFileText({ upperName, lowerName, pascalName, camelName, acti
 function actionFileText({ upperName, lowerName, pascalName, camelName, method }) { return `/**\n * ${upperName} ${method} ACTION\n */\n\n'use strict';\n\n// ENV variables\nconst { NODE_ENV, REDIS_URL } = process.env;\n\n// third-party\nconst _ = require('lodash'); // general helper methods: https://lodash.com/docs\nconst Op = require('sequelize').Op; // for model operator aliases like $gte, $eq\nconst io = require('socket.io-emitter')(REDIS_URL); // to emit real-time events to client-side applications: https://socket.io/docs/emit-cheatsheet/\nconst joi = require('@hapi/joi'); // argument validations: https://github.com/hapijs/joi/blob/master/API.md\nconst Queue = require('bull'); // add background tasks to Queue: https://github.com/OptimalBits/bull/blob/develop/REFERENCE.md#queueclean\nconst moment = require('moment-timezone'); // manage timezone and dates: https://momentjs.com/timezone/docs/\nconst convert = require('convert-units'); // https://www.npmjs.com/package/convert-units\nconst slugify = require('slugify'); // convert string to URL friendly string: https://www.npmjs.com/package/slugify\nconst sanitize = require("sanitize-filename"); // sanitize filename: https://www.npmjs.com/package/sanitize-filename\nconst passport = require('passport'); // handle authentication: http://www.passportjs.org/docs/\nconst currency = require('currency.js'); // handling currency operations (add, subtract, multiply) without JS precision issues: https://github.com/scurker/currency.js/\nconst accounting = require('accounting'); // handle outputing readable format for currency: http://openexchangerates.github.io/accounting.js/\n\n// services\nconst email = require('../../../services/email');\nconst { SOCKET_ROOMS, SOCKET_EVENTS } = require('../../../services/socket');\nconst { ERROR_CODES, errorResponse, joiErrorsMessage } = require('../../../services/error');\n\n// models\nconst models = require('../../../models');\n\n// helpers\nconst { getOffset, getOrdering, convertStringListToWhereStmt } = require('../../../helpers/cruqd');\nconst { randomString } = require('../../../helpers/logic');\nconst { LIST_INT_REGEX } = require('../../../helpers/constants');\n\n// queues\nconst ${pascalName}Queue = new Queue('${pascalName}Queue', REDIS_URL);\n\n// methods\nmodule.exports = {\n  ${method}\n}\n\n/**\n * Method Description\n *\n * GET  /${version}/${lowerName}s/<method>\n * POST /${version}/${lowerName}s/<method>\n *\n * Must be logged out | Must be logged in | Can be both logged in or logged out\n * Roles: ['admin', 'user']\n *\n * req.params = {}\n * req.args = {\n *   @alpha - (STRING - REQUIRED): Alpha argument description\n *   @beta - (BOOLEAN - OPTIONAL) [DEFAULT - 100]: Beta argument description\n *   @gamma - (NUMBER - OPTIONAL or REQUIRED): Cato argument description\n *   @delta - (STRING - REQUIRED): Delta argument description\n *   @zeta - (STRING - REQUIRED) [VALID - 'a', 'b']: Zeta argument description\n * }\n *\n * Success: Return something\n * Errors:\n *   400: BAD_REQUEST_INVALID_ARGUMENTS\n *   401: UNAUTHORIZED\n *   500: INTERNAL_SERVER_ERROR\n *\n * !IMPORTANT: This is an important message\n * !NOTE: This is a note\n * TODO: This is a todo\n */\nasync function ${method}(req) {\n  const schema = joi.object({\n    alpha: joi.string().trim().min(1).lowercase().required().error(new Error(req.__('${upperName}_${method}_Invalid_Argument[alpha]'))),\n    beta: joi.boolean().default(true).optional().error(new Error(req.__('${upperName}_${method}_Invalid_Argument[beta]'))),\n    gamma: joi.number().integer().min(1).max(10).error(new Error(req.__('${upperName}_${method}_Invalid_Argument[gamma]'))),\n    delta: joi.string().trim().lowercase().min(3).email().required().error(new Error(req.__('${upperName}_${method}_Invalid_Argument[delta]'))),\n    zeta: joi.string().trim().valid('a', 'b').required().error(new Error(req.__('${upperName}_${method}_Invalid_Argument[zeta]')))\n  }).with('alpha', 'beta') // must come together\n    .xor('beta', 'gamma') // one and not the other must exists\n    .or('gamma', 'delta'); // at least one must exists\n\n  // validate\n  const { error, value } = schema.validate(req.args);\n  if (error)\n    return Promise.resolve(errorResponse(req, ERROR_CODES.BAD_REQUEST_INVALID_ARGUMENTS, joiErrorsMessage(error)));\n  req.args = value; // updated arguments with type conversion\n\n  try {\n    /***** DO WORK HERE *****/\n\n    // assemble data\n    const data = { key: 'value' };\n\n    // ADD BACKGROUND JOB TO QUEUE\n    const job = await ${pascalName}Queue.add('${method}Task', data);\n\n    // SOCKET EMIT EVENT\n    io.to(\`\${SOCKET_ROOMS.GLOBAL}\`).emit(SOCKET_EVENTS.EXAMPLE_EVENT, data);\n    io.to(\`\${SOCKET_ROOMS.ADMIN}\${'_adminId_'}\`).emit(SOCKET_EVENTS.EXAMPLE_EVENT, data);\n\n    // return\n    return Promise.resolve({\n      status: 200,\n      success: true,\n      jobId: job.id,\n      data: data\n    });\n  } catch (error) {\n    return Promise.reject(error);\n  }\n} // END ${method}\n`; }
 function taskIndexFileText({ upperName, lowerName, pascalName, camelName, tasks }) { return `/**\n * ${upperName} TASK\n *\n * Aggregates all background task files to be exported here\n * !NOTE: This file is updated automatically using the feature gen/del commands and is sorted alphabetically\n */\n\n'use strict';\n\nmodule.exports = {${tasks === undefined ? '\n  ...require(\'./V1ExampleTask\')\n' : (tasks ? `\n  ${tasks}\n` : '')}}\n`; }
 function taskFileText({ upperName, lowerName, pascalName, camelName, method }) { return `/**\n * ${upperName} ${method} TASK\n */\n\n'use strict';\n\n// ENV variables\nconst { NODE_ENV, REDIS_URL } = process.env;\n\n// third-party\nconst _ = require('lodash'); // general helper methods: https://lodash.com/docs\nconst Op = require('sequelize').Op; // for model operator aliases like $gte, $eq\nconst io = require('socket.io-emitter')(REDIS_URL); // to emit real-time events to client-side applications: https://socket.io/docs/emit-cheatsheet/\nconst joi = require('@hapi/joi'); // argument validations: https://github.com/hapijs/joi/blob/master/API.md\nconst Queue = require('bull'); // add background tasks to Queue: https://github.com/OptimalBits/bull/blob/develop/REFERENCE.md#queueclean\nconst moment = require('moment-timezone'); // manage timezone and dates: https://momentjs.com/timezone/docs/\nconst convert = require('convert-units'); // https://www.npmjs.com/package/convert-units\nconst slugify = require('slugify'); // convert string to URL friendly string: https://www.npmjs.com/package/slugify\nconst sanitize = require("sanitize-filename"); // sanitize filename: https://www.npmjs.com/package/sanitize-filename\nconst passport = require('passport'); // handle authentication: http://www.passportjs.org/docs/\nconst currency = require('currency.js'); // handling currency operations (add, subtract, multiply) without JS precision issues: https://github.com/scurker/currency.js/\nconst accounting = require('accounting'); // handle outputing readable format for currency: http://openexchangerates.github.io/accounting.js/\n\n// services\nconst email = require('../../../services/email');\nconst { SOCKET_ROOMS, SOCKET_EVENTS } = require('../../../services/socket');\nconst { ERROR_CODES, errorResponse, joiErrorsMessage } = require('../../../services/error');\n\n// models\nconst models = require('../../../models');\n\n// helpers\nconst { getOffset, getOrdering, convertStringListToWhereStmt } = require('../../../helpers/cruqd');\nconst { randomString } = require('../../../helpers/logic');\nconst { LIST_INT_REGEX } = require('../../../helpers/constants');\n\n// queues\nconst ${pascalName}Queue = new Queue('${pascalName}Queue', REDIS_URL);\n\n// methods\nmodule.exports = {\n  ${method}\n}\n\n/**\n * Method Description\n *\n * @job = {\n *   @id - (INTEGER - REQUIRED): ID of the background job\n *   @data = {\n *     @alpha - (STRING - REQUIRED): Alpha argument description\n *     @beta - (BOOLEAN - OPTIONAL) [DEFAULT - 100]: Beta argument description\n *     @gamma - (NUMBER - OPTIONAL or REQUIRED): Cato argument description\n *     @delta - (STRING - REQUIRED): Delta argument description\n *     @zeta - (STRING - REQUIRED) [VALID - 'a', 'b']: Zeta argument description\n *   }\n * }\n *\n * Success: Return something\n *\n * !IMPORTANT: This is an important message\n * !NOTE: This is a note\n * TODO: This is a todo\n */\nasync function ${method}(job) {\n  const schema = joi.object({\n    alpha: joi.string().trim().min(1).lowercase().required().error(new Error(req.__('${upperName}_V1Example_Invalid_Argument[alpha]'))),\n    beta: joi.boolean().default(true).optional().error(new Error(req.__('${upperName}_V1Example_Invalid_Argument[beta]'))),\n    gamma: joi.number().integer().min(1).max(10).error(new Error(req.__('${upperName}_V1Example_Invalid_Argument[gamma]'))),\n    delta: joi.string().trim().lowercase().min(3).email().required().error(new Error(req.__('${upperName}_V1Example_Invalid_Argument[delta]'))),\n    zeta: joi.string().trim().valid('a', 'b').required().error(new Error(req.__('${upperName}_V1Example_Invalid_Argument[zeta]')))\n  }).with('alpha', 'beta') // must come together\n    .xor('beta', 'gamma') // one and not the other must exists\n    .or('gamma', 'delta'); // at least one must exists\n\n  // validate\n  const { error, value } = schema.validate(job.data);\n  if (error)\n    return Promise.resolve(new Error(joiErrorsMessage(error)));\n  job.data = value; // updated arguments with type conversion\n\n  try {\n    /***** DO WORK HERE *****/\n\n    // assemble data\n    const data = { key: 'value' };\n\n    // ADD BACKGROUND JOB TO QUEUE\n    const job = await ${pascalName}Queue.add('${method}', data);\n\n    // SOCKET EMIT EVENT\n    io.to(\`\${SOCKET_ROOMS.GLOBAL}\`).emit(SOCKET_EVENTS.EXAMPLE_EVENT, data);\n    io.to(\`\${SOCKET_ROOMS.ADMIN}\${'_adminId_'}\`).emit(SOCKET_EVENTS.EXAMPLE_EVENT, data);\n\n    // return\n    return Promise.resolve();\n  } catch (error) {\n    return Promise.reject(error);\n  }\n} // END ${method}\n`; }
-function integrationTestFileText({ upperName, lowerName, pascalName, camelName, method }) { return `/**\n * TEST ${upperName} ${method} METHOD\n */\n\n'use strict';\n\n// build-in node modules\nconst path = require('path');\n\n// load test env\nrequire('dotenv').config({ path: path.join(__dirname, '../../../../config/.env.test') });\n\n// ENV variables\nconst { NODE_ENV, REDIS_URL } = process.env;\n\n// third party\nconst i18n = require('i18n'); // https://github.com/mashpie/i18n-node\nconst Queue = require('bull'); // add background tasks to Queue: https://github.com/OptimalBits/bull/blob/develop/REFERENCE.md#queueclean\nconst moment = require('moment-timezone'); // manage timezone and dates: https://momentjs.com/timezone/docs/\nconst currency = require('currency.js'); // handling currency operations (add, subtract, multiply) without JS precision issues: https://github.com/scurker/currency.js/\n\n// server & models\nconst app = require('../../../../server');\nconst models = require('../../../../models');\n\n// assertion library\nconst { expect } = require('chai');\nconst request = require('supertest');\n\n// services\nconst { errorResponse, ERROR_CODES } = require('../../../../services/error');\n\n// helpers\nconst { adminLogin, userLogin, reset, populate } = require('../../../../helpers/tests');\n\n// queues\nconst ${pascalName}Queue = new Queue('${pascalName}Queue', REDIS_URL);\n\ndescribe.skip('${pascalName}.${method}', async () => {\n  // grab fixtures here\n  const adminFix = require('../../../../test/fixtures/fix1/admin');\n  const userFix = require('../../../../test/fixtures/fix1/user');\n\n  // url of the api method we are testing\n  const routeVersion = '/${version}';\n  const routePrefix = '/${lowerName}s';\n  const routeMethod = '/<method>';\n  const routeUrl = \`\${routeVersion}\${routePrefix}\${routeMethod}\`;\n\n  // clear database\n  beforeEach(async () => {\n    await reset();\n  });\n\n  // Logged Out\n  describe.skip('Role: Logged Out', async () => {\n    // populate database with fixtures and empty queues\n    beforeEach(async () => {\n      await populate('fix1');\n      await ${pascalName}Queue.empty();\n    });\n\n    it('[logged-out] should test something', async () => {\n      try {\n        // execute tests here\n        \n        // example code below\n        const res = await request(app).get(routeUrl);\n        expect(res.statusCode).to.equal(401);\n        expect(res.body).to.deep.equal(errorResponse(i18n, ERROR_CODES.UNAUTHORIZED));\n        \n      } catch (error) {\n        throw error;\n      }\n    }); // END [logged-out] should test something\n  }); // END Role: Logged Out\n\n  // Role: Admin\n  describe.skip('Role: Admin', async () => {\n    const jwt = 'jwt-admin';\n\n    // populate database with fixtures and empty queues\n    beforeEach(async () => {\n      await populate('fix1');\n      await ${pascalName}Queue.empty();\n    });\n\n    it('[admin] should test something', async () => {\n      const admin1 = adminFix[0]; // grab admin from fixtures\n\n      try {\n        // execute tests here\n        // example code below\n\n        // login admin\n        const { token } = await adminLogin(app, routeVersion, request, admin1);\n\n        // request params\n        const params = {\n          id: 1\n        };\n\n        // execute request\n        const res = await request(app)\n          .post(routeUrl)\n          .set('authorization', \`\${jwt} \${token}\`)\n          .send(params);\n\n        // check response\n        expect(res.statusCode).to.equal(200); // 201\n        expect(res.body).to.have.property('success', true);\n      } catch (error) {\n        throw error;\n      }\n    }); // END should test something\n  }); // END Role: Admin\n\n  // Role: User\n  describe.skip('Role: User', async () => {\n    const jwt = 'jwt-user';\n\n    // populate database with fixtures and empty queues\n    beforeEach(async () => {\n      await populate('fix1');\n      await ${pascalName}Queue.empty();\n    });\n\n    it('[user] should test something', async () => {\n      const user1 = userFix[0]; // grab user from fixtures\n\n      try {\n        // execute tests here\n        // example code below\n\n        // login user\n        const { token } = await userLogin(app, routeVersion, request, user1);\n\n        // request params\n        const params = {\n          id: 1\n        };\n\n        // execute request\n        const res = await request(app)\n          .post(routeUrl)\n          .set('authorization', \`\${jwt} \${token}\`)\n          .send(params);\n\n        // check response\n        expect(res.statusCode).to.equal(200); // 201\n        expect(res.body).to.have.property('success', true);\n      } catch (error) {\n        throw error;\n      }\n    }); // END should test something\n  }); // END Role: User\n}); // END ${pascalName}.${method}\n`; }
-function tasksTestFileText({ upperName, lowerName, pascalName, camelName, method }) { return `/**\n * TEST ${upperName} ${method} METHOD\n */\n\n'use strict';\n\n// build-in node modules\nconst path = require('path');\n\n// load test env\nrequire('dotenv').config({ path: path.join(__dirname, '../../../../config/.env.test') });\n\n// ENV variables\nconst { NODE_ENV, REDIS_URL } = process.env;\n\n// third party\nconst i18n = require('i18n'); // https://github.com/mashpie/i18n-node\nconst Queue = require('bull'); // add background tasks to Queue: https://github.com/OptimalBits/bull/blob/develop/REFERENCE.md#queueclean\nconst moment = require('moment-timezone'); // manage timezone and dates: https://momentjs.com/timezone/docs/\nconst currency = require('currency.js'); // handling currency operations (add, subtract, multiply) without JS precision issues: https://github.com/scurker/currency.js/\n\n// server & models\nconst app = require('../../../../server');\nconst models = require('../../../../models');\n\n// assertion library\nconst { expect } = require('chai');\nconst request = require('supertest');\n\n// tasks\nconst { ${method} } = require('../../../../app/${pascalName}/tasks');\n\n// services\nconst { errorResponse, ERROR_CODES } = require('../../../../services/error');\n\n// helpers\nconst { adminLogin, userLogin, reset, populate } = require('../../../../helpers/tests');\n\n// queues\nconst ${pascalName}Queue = new Queue('${pascalName}Queue', REDIS_URL);\n\ndescribe.skip('${pascalName}.${method}', async () => {\n  // grab fixtures here\n  const adminFix = require('../../../../test/fixtures/fix1/admin');\n  const userFix = require('../../../../test/fixtures/fix1/user');\n\n  // clear database, populate database with fixtures and empty queues\n  beforeEach(async () => {\n    await reset();\n    await populate('fix1');\n    await ${pascalName}Queue.empty();\n  });\n\n  it('should test something', async () => {\n    try {\n      // execute tests here\n    } catch (error) {\n      throw error;\n    }\n  }); // END should test something\n}); // END ${pascalName}.${method}\n`; }
+function mailFileText({ upperName, lowerName, pascalName, camelName, method }) { return `<!--\nVariables:\nisTestEmail\nargOne\nargTwo\n-->\n\n<h1>\n  <%= locals.isTestEmail ? isTestEmail : '' %><br/>\n  Hi <%= locals.argOne ? argOne : 'none' %><br/>\n\n  <% for (let i = 0; i < 10; i++) { %>\n    <strong><%= locals.argTwo ? argTwo : 'none' %></strong>\n  <% } %>\n</h1>\n` };
+function integrationTestFileText({ upperName, lowerName, pascalName, camelName, method }) { return `/**\n * TEST ${upperName} ${method} METHOD\n */\n\n'use strict';\n\n// build-in node modules\nconst path = require('path');\n\n// load test env\nrequire('dotenv').config({ path: path.join(__dirname, '../../../../config/.env.test') });\n\n// ENV variables\nconst { NODE_ENV, REDIS_URL } = process.env;\n\n// third party\nconst i18n = require('i18n'); // https://github.com/mashpie/i18n-node\nconst Queue = require('bull'); // add background tasks to Queue: https://github.com/OptimalBits/bull/blob/develop/REFERENCE.md#queueclean\nconst moment = require('moment-timezone'); // manage timezone and dates: https://momentjs.com/timezone/docs/\nconst currency = require('currency.js'); // handling currency operations (add, subtract, multiply) without JS precision issues: https://github.com/scurker/currency.js/\n\n// server & models\nconst app = require('../../../../server');\nconst models = require('../../../../models');\n\n// assertion library\nconst { expect } = require('chai');\nconst request = require('supertest');\n\n// services\nconst { errorResponse, ERROR_CODES } = require('../../../../services/error');\n\n// helpers\nconst { adminLogin, userLogin, reset, populate } = require('../../../../helpers/tests');\n\n// queues\nconst ${pascalName}Queue = new Queue('${pascalName}Queue', REDIS_URL);\n\ndescribe.skip('${pascalName}.${method}', async () => {\n  // grab fixtures here\n  const adminFix = require('../../../../test/fixtures/fix1/admin');\n  const userFix = require('../../../../test/fixtures/fix1/user');\n\n  // url of the api method we are testing\n  const routeVersion = '/${version}';\n  const routePrefix = '/${lowerName}s';\n  const routeMethod = '/<method>';\n  const routeUrl = \`\${routeVersion}\${routePrefix}\${routeMethod}\`;\n\n  // clear database\n  beforeEach(async () => {\n    await reset().catch(err => { console.error(err); throw err; });\n  });\n\n  // Logged Out\n  describe.skip('Role: Logged Out', async () => {\n    // populate database with fixtures and empty queues\n    beforeEach(async () => {\n      try {\n        await populate('fix1');\n        await ${pascalName}Queue.empty();\n      } catch (error) {\n        console.error(error);\n        throw err;\n      }\n    });\n\n    it('[logged-out] should test something', async () => {\n      try {\n        // execute tests here\n        \n        // example code below\n        const res = await request(app).get(routeUrl);\n        expect(res.statusCode).to.equal(401);\n        expect(res.body).to.deep.equal(errorResponse(i18n, ERROR_CODES.UNAUTHORIZED));\n        \n      } catch (error) {\n        console.error(error);\n        throw error;\n      }\n    }); // END [logged-out] should test something\n  }); // END Role: Logged Out\n\n  // Role: Admin\n  describe.skip('Role: Admin', async () => {\n    const jwt = 'jwt-admin';\n\n    // populate database with fixtures and empty queues\n    beforeEach(async () => {\n      try {\n        await populate('fix1');\n        await ${pascalName}Queue.empty();\n      } catch (error) {\n        console.error(error);\n        throw err;\n      }\n    });\n\n    it('[admin] should test something', async () => {\n      const admin1 = adminFix[0]; // grab admin from fixtures\n\n      try {\n        // execute tests here\n        // example code below\n\n        // login admin\n        const { token } = await adminLogin(app, routeVersion, request, admin1);\n\n        // request params\n        const params = {\n          id: 1\n        };\n\n        // execute request\n        const res = await request(app)\n          .post(routeUrl)\n          .set('authorization', \`\${jwt} \${token}\`)\n          .send(params);\n\n        // check response\n        expect(res.statusCode).to.equal(200); // 201\n        expect(res.body).to.have.property('success', true);\n      } catch (error) {\n        console.error(error);\n        throw error;\n      }\n    }); // END should test something\n  }); // END Role: Admin\n\n  // Role: User\n  describe.skip('Role: User', async () => {\n    const jwt = 'jwt-user';\n\n    // populate database with fixtures and empty queues\n    beforeEach(async () => {\n      try {\n        await populate('fix1');\n        await ${pascalName}Queue.empty();\n      } catch (error) {\n        console.error(error);\n        throw err;\n      }\n    });\n\n    it('[user] should test something', async () => {\n      const user1 = userFix[0]; // grab user from fixtures\n\n      try {\n        // execute tests here\n        // example code below\n\n        // login user\n        const { token } = await userLogin(app, routeVersion, request, user1);\n\n        // request params\n        const params = {\n          id: 1\n        };\n\n        // execute request\n        const res = await request(app)\n          .post(routeUrl)\n          .set('authorization', \`\${jwt} \${token}\`)\n          .send(params);\n\n        // check response\n        expect(res.statusCode).to.equal(200); // 201\n        expect(res.body).to.have.property('success', true);\n      } catch (error) {\n        console.error(error);\n        throw error;\n      }\n    }); // END should test something\n  }); // END Role: User\n}); // END ${pascalName}.${method}\n`; }
+function tasksTestFileText({ upperName, lowerName, pascalName, camelName, method }) { return `/**\n * TEST ${upperName} ${method} METHOD\n */\n\n'use strict';\n\n// build-in node modules\nconst path = require('path');\n\n// load test env\nrequire('dotenv').config({ path: path.join(__dirname, '../../../../config/.env.test') });\n\n// ENV variables\nconst { NODE_ENV, REDIS_URL } = process.env;\n\n// third party\nconst i18n = require('i18n'); // https://github.com/mashpie/i18n-node\nconst Queue = require('bull'); // add background tasks to Queue: https://github.com/OptimalBits/bull/blob/develop/REFERENCE.md#queueclean\nconst moment = require('moment-timezone'); // manage timezone and dates: https://momentjs.com/timezone/docs/\nconst currency = require('currency.js'); // handling currency operations (add, subtract, multiply) without JS precision issues: https://github.com/scurker/currency.js/\n\n// server & models\nconst app = require('../../../../server');\nconst models = require('../../../../models');\n\n// assertion library\nconst { expect } = require('chai');\nconst request = require('supertest');\n\n// tasks\nconst { ${method} } = require('../../../../app/${pascalName}/tasks');\n\n// services\nconst { errorResponse, ERROR_CODES } = require('../../../../services/error');\n\n// helpers\nconst { adminLogin, userLogin, reset, populate } = require('../../../../helpers/tests');\n\n// queues\nconst ${pascalName}Queue = new Queue('${pascalName}Queue', REDIS_URL);\n\ndescribe.skip('${pascalName}.${method}', async () => {\n  // grab fixtures here\n  const adminFix = require('../../../../test/fixtures/fix1/admin');\n  const userFix = require('../../../../test/fixtures/fix1/user');\n\n  // clear database, populate database with fixtures and empty queues\n  beforeEach(async () => {\n    try {\n      await reset();\n      await populate('fix1');\n      await ${pascalName}Queue.empty();\n    } catch (error) {\n      console.error(error);\n      throw err;\n    }\n  });\n\n  it('should test something', async () => {\n    try {\n      // execute tests here\n    } catch (error) {\n      console.error(error);\n      throw error;\n    }\n  }); // END should test something\n}); // END ${pascalName}.${method}\n`; }
 function sequenceFileText(featureNames) { return `/**\n * This is the table order in which test fixture and seed data is added into the database.\n * Make sure to do MODEL NAME (Lower-case & Singular)!!! DO NOT DO TABLE NAME (Pascal-case & Plural)\n */\n\n'use strict';\n\nmodule.exports = [${featureNames ? '\n  ' : ''}${featureNames}${featureNames ? '\n' : ''}];\n`; }
 // function testFeatureIndexFileText({ upperName, lowerName, pascalName, camelName, method }) { return `/**\n * This file runs all test files in the app/${pascalName} feature folder.\n * !Important: DO NOT EDIT THIS FILE.\n */\n\n'use strict';\n\n// require built-in node modules\nconst path = require('path');\n\n// require third-party node modules\nconst glob = require('glob');\n\n// variables\nconst JS_FILES = glob.sync('app/${pascalName}/tests/**/*.js');\n\n// require / run all the tests\nJS_FILES.forEach(f => require(path.join('../../../', f)));\n` }
 
 /**
- * 1. Generate Feature Folder with actions, languages, tasks, tests, controller, error, helper, model, routes, and worker
- * 2. Update database/sequence.js
- */
+* 1. Generate Feature Folder with actions, languages, tasks, tests, controller, mailers, error, helper, model, routes, and worker
+* 2. Update database/sequence.js
+*/
 function generate() {
   const newDir = process.argv[3]; // NEW_FEATURE
   const newDirPath = path.join(__dirname, newDir);
   const newLangDirPath = path.join(newDirPath, 'languages');
   const newActionsDirPath = path.join(newDirPath, 'actions');
   const newTasksDirPath = path.join(newDirPath, 'tasks');
+  const newMailersDirPath = path.join(newDirPath, 'mailers');
   const newTestsDirPath = path.join(newDirPath, 'tests');
   // const newTestAppDirPath = path.join(__dirname, '../test/app', newDir);
 
@@ -201,6 +215,19 @@ function generate() {
   fs.writeSync(fd, taskFileText({ ...NAMES, method: 'V1ExampleTask' }), 0, 'utf-8');
   fs.closeSync(fd);
 
+  /******************************/
+  /***** Create Mailers Files *****/
+  /******************************/
+
+  // make mailers directory
+  fs.mkdirSync(newMailersDirPath);
+
+  // create mailers folder and index file
+  fs.mkdirSync(path.join(newMailersDirPath, `${pascalName}ExampleMail`));
+  fd = fs.openSync(path.join(newMailersDirPath, `${pascalName}ExampleMail/index.ejs`), 'w');
+  fs.writeSync(fd, mailFileText({ ...NAMES, method: `${pascalName}ExampleMail` }), 0, 'utf-8');
+  fs.closeSync(fd);
+
   console.log(`✅ Created ${newDirPath}`);
 
   /*****************************/
@@ -212,18 +239,18 @@ function generate() {
 
   // create integration test files
   fs.mkdirSync(path.join(newTestsDirPath, 'integration'));
-  fd = fs.openSync(path.join(newTestsDirPath, 'integration/V1Example.js'), 'w');
+  fd = fs.openSync(path.join(newTestsDirPath, 'integration/V1Example.test.js'), 'w');
   fs.writeSync(fd, integrationTestFileText({ ...NAMES, method: 'V1Example' }), 0, 'utf-8');
   fs.closeSync(fd);
 
   // create background tasks test files
   fs.mkdirSync(path.join(newTestsDirPath, 'tasks'));
-  fd = fs.openSync(path.join(newTestsDirPath, 'tasks/V1ExampleTask.js'), 'w');
+  fd = fs.openSync(path.join(newTestsDirPath, 'tasks/V1ExampleTask.test.js'), 'w');
   fs.writeSync(fd, tasksTestFileText({ ...NAMES, method: 'V1ExampleTask' }), 0, 'utf-8');
   fs.closeSync(fd);
 
-  fs.closeSync(fs.openSync(path.join(newTestsDirPath, 'helper.js'), 'w'));
-  // fs.closeSync(fs.openSync(path.join(newTestsDirPath, 'action.js'), 'w'));
+  fs.closeSync(fs.openSync(path.join(newTestsDirPath, 'helper.test.js'), 'w'));
+  // fs.closeSync(fs.openSync(path.join(newTestsDirPath, 'action.test.js'), 'w'));
 
   // make test/app directory
   // fs.mkdirSync(newTestAppDirPath);
@@ -254,12 +281,12 @@ function generate() {
 } // END generate
 
 /**
- * 1. Generate Action File
- * 2. Generate Integration Test File
- * 3. Update Action Index File
- */
+* 1. Generate Action File
+* 2. Generate Integration Test File
+* 3. Update Action Index File
+*/
 function generateAction() {
-  const newFileName = process.argv[5]; // FILE
+  let newFileName = process.argv[5]; // FILE
   const featDir = process.argv[3]; // FEATURE
   const featDirPath = path.join(__dirname, featDir);
   const featActionsDirPath = path.join(featDirPath, 'actions');
@@ -280,8 +307,12 @@ function generateAction() {
     process.exit(1);
   }
 
+  // remove .js
+  newFileName = newFileName.indexOf('.js') < 0 ? newFileName : newFileName.split('.js')[0];
+
   // add .js
   const newFileNameJS = newFileName.indexOf('.js') < 0 ? `${newFileName}.js` : newFileName;
+  const newFileNameTestJS = newFileName.indexOf('.js') < 0 ? `${newFileName}.test.js` : newFileName.split('.js')[0] + '.test.js';
 
   // names
   const upperName = featDir.toUpperCase();
@@ -299,11 +330,11 @@ function generateAction() {
   console.log(`✅ Created ${path.join(featActionsDirPath, newFileNameJS)}`);
 
   // action test file
-  fd = fs.openSync(path.join(featTestsDirPath, `integration/${newFileNameJS}`), 'w');
+  fd = fs.openSync(path.join(featTestsDirPath, `integration/${newFileNameTestJS}`), 'w');
   fs.writeSync(fd, integrationTestFileText({ ...NAMES, method: newFileName }), 0, 'utf-8');
   fs.closeSync(fd);
 
-  console.log(`✅ Created ${path.join(featTestsDirPath, `integration/${newFileNameJS}`)}`);
+  console.log(`✅ Created ${path.join(featTestsDirPath, `integration/${newFileNameTestJS}`)}`);
 
   // update action index file
   let featActionIndexFileText = fs.readFileSync(featActionsIndexPath, 'utf8').replace(/ /g, '').replace(/\n/g, '').replace(/\t/g, ''); // grab file text and remove all spaces
@@ -320,17 +351,69 @@ function generateAction() {
   fs.writeSync(fd, actionIndexFileText({ ...NAMES, actions: requireActionFilesStr }), 0, 'utf-8');
   fs.closeSync(fd);
 
-  console.log(`✅ Added "${requireText}" to ${path.join(featTestsDirPath, `actions/index.js`)}\n`);
+  console.log(`✅ Added "${requireText}" to ${path.join(featDirPath, `actions/index.js`)}\n`);
   console.log(`👉 Remember to update the following in ${featDir} feature:\n1. routes.js\n2. controller.js\n`);
 } // END generateAction
 
 /**
- * 1. Generate Task File
- * 2. Generate Task Test File
- * 3. Update Task Index File
+ * 1. Generate Mailers Folder
+ * 2. Generate Mailer Mail Folder
+ * 3. Generate Mailer Mail index.ejs
  */
+ function generateMail() {
+  let newFileName = process.argv[5]; // FILE
+  const featDir = process.argv[3]; // FEATURE
+  const featDirPath = path.join(__dirname, featDir);
+  const featMailersDirPath = path.join(featDirPath, 'mailers');
+  let featMailersMailDirPath = path.join(featMailersDirPath, newFileName);
+
+  // The feature folder must be pre-prepended to the Mailer Directory Name
+  if (newFileName.indexOf(featDir) !== 0)
+    featMailersMailDirPath = path.join(featMailersDirPath, `${featDir}${newFileName}`);
+
+  const featMailersMailIndexPath = path.join(featMailersMailDirPath, 'index.ejs');
+
+  console.log(`Generating ${newFileName} directory in mailers folder of ${featDir} feature...\n`);
+
+  // if directory exists
+  if (!fs.existsSync(featDirPath)) {
+    console.error(`Error: ${featDir} feature does not exists.`);
+    process.exit(1);
+  }
+
+  // must provide a file name
+  if (!newFileName) {
+    console.error(`Error: Please pass in file name.`);
+    process.exit(1);
+  }
+
+  // names
+  const upperName = featDir.toUpperCase();
+  const lowerName = featDir.toLowerCase();
+  const pascalName = featDir[0].toUpperCase() + '' + featDir.substring(1);
+  const camelName = featDir[0].toLowerCase() + '' + featDir.substring(1);
+
+  const NAMES = { upperName, lowerName, pascalName, camelName };
+
+  // create mailer mail directory
+  fs.mkdirSync(featMailersMailDirPath);
+  console.log(`✅ Created ${featMailersMailDirPath}`);
+
+  // mail index.ejs file
+  let fd = fs.openSync(featMailersMailIndexPath, 'w');
+  fs.writeSync(fd, mailFileText({ ...NAMES, method: newFileName }), 0, 'utf-8');
+  fs.closeSync(fd);
+
+  console.log(`✅ Created ${featMailersMailIndexPath}`);
+} // generateMail
+
+/**
+* 1. Generate Task File
+* 2. Generate Task Test File
+* 3. Update Task Index File
+*/
 function generateTask() {
-  const newFileName = process.argv[5]; // FILE
+  let newFileName = process.argv[5]; // FILE
   const featDir = process.argv[3]; // FEATURE
   const featDirPath = path.join(__dirname, featDir);
   const featTasksDirPath = path.join(featDirPath, 'tasks');
@@ -351,8 +434,12 @@ function generateTask() {
     process.exit(1);
   }
 
+  // remove .js
+  newFileName = newFileName.indexOf('.js') < 0 ? newFileName : newFileName.split('.js')[0];
+
   // add .js
   const newFileNameJS = newFileName.indexOf('.js') < 0 ? `${newFileName}.js` : newFileName;
+  const newFileNameTestJS = newFileName.indexOf('.js') < 0 ? `${newFileName}.test.js` : newFileName.split('.js')[0] + '.test.js';
 
   // names
   const upperName = featDir.toUpperCase();
@@ -370,11 +457,11 @@ function generateTask() {
   console.log(`✅ Created ${path.join(featTasksDirPath, newFileNameJS)}`);
 
   // task test file
-  fd = fs.openSync(path.join(featTestsDirPath, `tasks/${newFileNameJS}`), 'w');
+  fd = fs.openSync(path.join(featTestsDirPath, `tasks/${newFileNameTestJS}`), 'w');
   fs.writeSync(fd, tasksTestFileText({ ...NAMES, method: newFileName }), 0, 'utf-8');
   fs.closeSync(fd);
 
-  console.log(`✅ Created ${path.join(featTestsDirPath, `tasks/${newFileNameJS}`)}`);
+  console.log(`✅ Created ${path.join(featTestsDirPath, `tasks/${newFileNameTestJS}`)}`);
 
   // update tasks index file
   let featTaskIndexFileText = fs.readFileSync(featTasksIndexPath, 'utf8').replace(/ /g, '').replace(/\n/g, '').replace(/\t/g, ''); // grab file text and remove all spaces
@@ -391,14 +478,14 @@ function generateTask() {
   fs.writeSync(fd, taskIndexFileText({ ...NAMES, tasks: requireTaskFilesStr }), 0, 'utf-8');
   fs.closeSync(fd);
 
-  console.log(`✅ Added "${requireText}" to ${path.join(featTestsDirPath, `tasks/index.js`)}\n`);
+  console.log(`✅ Added "${requireText}" to ${path.join(featDirPath, `tasks/index.js`)}\n`);
   console.log(`👉 Remember to update the following in ${featDir} feature:\n1. worker.js\n`);
 } // END generateTask
 
 /**
- * 1. Deletes Feature Folder and everything in it
- * 2. Updates database/sequence.js
- */
+* 1. Deletes Feature Folder and everything in it
+* 2. Updates database/sequence.js
+*/
 function destroy() {
   const rmDir = process.argv[3]; // NEW_FEATURE
   const rmDirPath = path.join(__dirname, rmDir);
@@ -438,12 +525,12 @@ function destroy() {
 } // END destroy
 
 /**
- * 1. Deletes Action File
- * 2. Deletes Integration Test File
- * 3. Update Action Index File
- */
+* 1. Deletes Action File
+* 2. Deletes Integration Test File
+* 3. Update Action Index File
+*/
 function destroyAction() {
-  const rmFileName = process.argv[5] // file name
+  let rmFileName = process.argv[5] // file name
   const rmDir = process.argv[3]; // NEW_FEATURE
   const rmDirPath = path.join(__dirname, rmDir);
   const rmActionsDirPath = path.join(rmDirPath, 'actions');
@@ -464,8 +551,12 @@ function destroyAction() {
     process.exit(1);
   }
 
+  // remove .js
+  rmFileName = rmFileName.indexOf('.js') < 0 ? rmFileName : rmFileName.split('.js')[0];
+
   // add .js
   const rmFileNameJS = rmFileName.indexOf('.js') < 0 ? `${rmFileName}.js` : rmFileName;
+  const rmFileNameTestJS = rmFileName.indexOf('.js') < 0 ? `${rmFileName}.test.js` : rmFileName.split('.js')[0] + '.test.js';
 
   // names
   const upperName = rmDir.toUpperCase();
@@ -477,7 +568,7 @@ function destroyAction() {
 
   // files to remove
   const rmActionsDirPathFile = path.join(rmActionsDirPath, rmFileNameJS);
-  const rmTestsDirPathIntegrationFile = path.join(rmTestsDirPath, 'integration', rmFileNameJS);
+  const rmTestsDirPathIntegrationFile = path.join(rmTestsDirPath, 'integration', rmFileNameTestJS);
 
   // if file exists
   if (!fs.existsSync(rmActionsDirPathFile)) {
@@ -509,12 +600,42 @@ function destroyAction() {
 } // END destroyAction
 
 /**
- * 1. Deletes Task File
- * 2. Deletes Task Test File
- * 3. Update Task Index File
+ * 1. Delete Mailer Mail index.ejs
+ * 2. Delete Mailer Mail Directory
  */
+ function destroyMail() {
+  let rmFileName = process.argv[5]; // FILE
+  const rmDir = process.argv[3]; // FEATURE
+  const rmDirPath = path.join(__dirname, rmDir);
+  const rmMailersDirPath = path.join(rmDirPath, 'mailers');
+  const rmMailersMailDirPath = path.join(rmMailersDirPath, rmFileName);
+
+  console.log(`Deleting ${rmFileName} mailer files...\n`);
+
+  // if directory exists
+  if (!fs.existsSync(rmDirPath)) {
+    console.error(`Error: ${featDir} feature does not exists.`);
+    process.exit(1);
+  }
+
+  // must provide a file name
+  if (!rmFileName) {
+    console.error(`Error: Please pass in file name.`);
+    process.exit(1);
+  }
+
+  // delete mailer mail file
+  fs.rmSync(rmMailersMailDirPath, { recursive: true });
+  console.log(`✅ Deleted ${rmMailersMailDirPath}`);
+} // END destroyMail
+
+/**
+* 1. Deletes Task File
+* 2. Deletes Task Test File
+* 3. Update Task Index File
+*/
 function destroyTask() {
-  const rmFileName = process.argv[5] // file name
+  let rmFileName = process.argv[5] // file name
   const rmDir = process.argv[3]; // NEW_FEATURE
   const rmDirPath = path.join(__dirname, rmDir);
   const rmTasksDirPath = path.join(rmDirPath, 'tasks');
@@ -535,8 +656,12 @@ function destroyTask() {
     process.exit(1);
   }
 
+  // remove .js
+  rmFileName = rmFileName.indexOf('.js') < 0 ? rmFileName : rmFileName.split('.js')[0];
+
   // add .js
   const rmFileNameJS = rmFileName.indexOf('.js') < 0 ? `${rmFileName}.js` : rmFileName;
+  const rmFileNameTestJS = rmFileName.indexOf('.js') < 0 ? `${rmFileName}.test.js` : rmFileName.split('.js')[0] + '.test.js';
 
   // names
   const upperName = rmDir.toUpperCase();
@@ -548,7 +673,7 @@ function destroyTask() {
 
   // files to remove
   const rmTasksDirPathFile = path.join(rmTasksDirPath, rmFileNameJS);
-  const rmTestsDirPathTasksFile = path.join(rmTestsDirPath, 'tasks', rmFileNameJS);
+  const rmTestsDirPathTasksFile = path.join(rmTestsDirPath, 'tasks', rmFileNameTestJS);
 
   // if file exists
   if (!fs.existsSync(rmTasksDirPathFile)) {
@@ -580,9 +705,9 @@ function destroyTask() {
 } // END destroyTask
 
 /**
- * Takes in a file path and stringifies it to help with writing the generate and delete functions above
- * You should put in arguments in the format ${variable} so we can just copy and paste it into this file
- */
+* Takes in a file path and stringifies it to help with writing the generate and delete functions above
+* You should put in arguments in the format ${variable} so we can just copy and paste it into this file
+*/
 function stringify() {
   const filePath = process.argv[3]; // the file path of the file to stringify
   let fileText = fs.readFileSync(filePath, 'utf8');

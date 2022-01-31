@@ -28,7 +28,7 @@ describe('services/email', async () => {
         from: `from@${MAILER_HOST}`,
         name: 'John Doe',
         subject: 'TEST EMAIL',
-        template: 'test',
+        template: 'Test',
         tos: [`to@${MAILER_HOST}`],
         ccs: null,
         bccs: null,
@@ -49,7 +49,7 @@ describe('services/email', async () => {
         from: `from@${MAILER_HOST}`,
         name: 'John Doe',
         subject: 'TEST EMAIL',
-        template: 'test', // test 2
+        template: 'Test', // test 2
         tos: [`to@${MAILER_HOST}`],
         ccs: [`cc@${MAILER_HOST}`, `cc1@${MAILER_HOST}`],
         bccs: [`bcc@${MAILER_HOST}`, `bcc1@${MAILER_HOST}`],
@@ -69,7 +69,7 @@ describe('services/email', async () => {
         from: `from@${MAILER_HOST}`,
         name: 'John Doe',
         subject: 'TEST EMAIL',
-        template: 'test', // test 2
+        template: 'Test', // test 2
         tos: [`to@${MAILER_HOST}`],
         ccs: [`to@${MAILER_HOST}`, `cc@${MAILER_HOST}`],
         bccs: [`bcc@${MAILER_HOST}`, `bcc1@${MAILER_HOST}`],
@@ -89,7 +89,7 @@ describe('services/email', async () => {
         from: `from@${MAILER_HOST}`,
         name: 'John Doe',
         subject: 'TEST EMAIL',
-        template: 'test', // test 2
+        template: 'Test', // test 2
         tos: [`to@${MAILER_HOST}`],
         ccs: [`to@${MAILER_HOST}`, `cc@${MAILER_HOST}`],
         bccs: [`cc@${MAILER_HOST}`, `bcc@${MAILER_HOST}`],
@@ -109,7 +109,7 @@ describe('services/email', async () => {
         from: `from@${MAILER_HOST}`,
         name: 'John Doe',
         subject: 'TEST EMAIL',
-        template: 'test',
+        template: 'Test',
         tos: [`to@${MAILER_HOST}`],
         ccs: null,
         bccs: null,
@@ -142,7 +142,7 @@ describe('services/email', async () => {
         from: null,
         name: 'John Doe',
         subject: 'TEST EMAIL',
-        template: 'test', // test 1
+        template: 'Test', // test 1
         tos: [`to@${MAILER_HOST}`],
         ccs: null,
         bccs: null,
@@ -162,7 +162,7 @@ describe('services/email', async () => {
         from: `from@${MAILER_HOST}`,
         name: null,
         subject: 'TEST EMAIL',
-        template: 'test', // test 1
+        template: 'Test', // test 1
         tos: [`to@${MAILER_HOST}`],
         ccs: null,
         bccs: null,
@@ -184,7 +184,7 @@ describe('services/email', async () => {
         from: `from@${MAILER_HOST}`,
         name: 'John Doe',
         subject: null,
-        template: 'test',
+        template: 'Test',
         tos: [`to@${MAILER_HOST}`],
         ccs: null,
         bccs: null,
@@ -228,7 +228,7 @@ describe('services/email', async () => {
         from: `from@${MAILER_HOST}`,
         name: 'John Doe',
         subject: 'TEST EMAIL',
-        template: 'test',
+        template: 'Test',
         tos: [],
         ccs: null,
         bccs: null,

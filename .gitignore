@@ -31,6 +31,7 @@ yarn-error.log
 database/backups/backup.sql
 
 # mailer previews
+app/*/mailers/*/preview.html
 ./mailers/*/preview.html
 mailers/*/preview.html
 */preview.html

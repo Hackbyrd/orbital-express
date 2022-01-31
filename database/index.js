@@ -13,15 +13,15 @@ const { NODE_ENV, DATABASE_URL } = process.env;
 // require third-party node modules
 const Sequelize = require('sequelize');
 const pg = require('pg');
-pg.defaults.ssl = NODE_ENV === 'production' ? true : false;
+pg.defaults.ssl = (NODE_ENV === 'production' || DB_SSL === 'true') ? true : false;
 
 // connect to psql DB
 const conn = new Sequelize(DATABASE_URL, {
   // only use this if trying to connect remotely
-  ssl: NODE_ENV === 'production' ? true : false,
+  ssl: (NODE_ENV === 'production' || DB_SSL === 'true') ? true : false,
   dialectOptions: {
     decimalNumbers: true, // postgres returns string decimals, this will convert it to a decimal
-    ssl: NODE_ENV === 'production' ? true : false
+    ssl: (NODE_ENV === 'production' || DB_SSL === 'true') ? { required: true, rejectUnauthorized: false } : false,
   },
 
   dialect: 'postgres',
