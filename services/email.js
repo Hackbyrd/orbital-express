@@ -227,19 +227,6 @@ async function send({ from, name, subject, template, tos, ccs, bccs, attachments
 } // END send
 
 /**
- * Worker function to process jobs in the EmailQueue
- */
-async function worker() {
-  const EmailQueue = await queue.get('EmailQueue');
-
-   // Process Admin Feature Background Tasks
-   EmailQueue.process('V1SendEmailTask', V1SendEmailTask); // task below
-   EmailQueue.on('failed', async (job, error) => queueError(error, EmailQueue, job));
-   EmailQueue.on('stalled', async job => queueError(new Error('Queue Stalled.'), EmailQueue, job));
-   EmailQueue.on('error', async error => queueError(error, EmailQueue));
-} // END worker
-
-/**
  * Add a new send email job to the EmailQueue to be sent
  * 
  * @data {
@@ -272,6 +259,19 @@ async function enqueue(data) {
     throw error;
   }
 }
+
+/**
+ * Worker function to process jobs in the EmailQueue
+ */
+async function worker() {
+  const EmailQueue = await queue.get('EmailQueue');
+
+   // Process Admin Feature Background Tasks
+   EmailQueue.process('V1SendEmailTask', V1SendEmailTask); // task below
+   EmailQueue.on('failed', async (job, error) => queueError(error, EmailQueue, job));
+   EmailQueue.on('stalled', async job => queueError(new Error('Queue Stalled.'), EmailQueue, job));
+   EmailQueue.on('error', async error => queueError(error, EmailQueue));
+} // END worker
 
 /**
  * Background job to send an email
@@ -327,6 +327,6 @@ module.exports = {
 
   // methods
   send,
-  worker,
-  enqueue
+  enqueue,
+  worker
 };

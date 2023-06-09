@@ -38,7 +38,9 @@
     "ngrok": "./node_modules/ngrok/bin/ngrok http 8000",
     "ngrok:auth": "./node_modules/ngrok/bin/ngrok authtoken",
     "redis": "./redis/src/redis-server",
-    "test": "./node_modules/mocha/bin/mocha \"test/**/*.js\" --timeout 100000 --exit",
+    "redis:stop": "./redis/src/redis-cli shutdown",
+    "sql": "node test/fixtures/sql.js",
+    "test": "yarn sql fix1 && ./node_modules/mocha/bin/mocha \"test/**/*.js\" --timeout 100000 --exit",
     "t": "yarn test"
   },
   "dependencies": {

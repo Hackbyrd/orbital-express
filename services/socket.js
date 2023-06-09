@@ -24,11 +24,11 @@ let subClient = null;
 
 // the rooms for sockets
 const SOCKET_ROOMS = {
-  GLOBAL: 'GLOBAL',
-  ADMIN: 'ADMIN-',
+  GLOBAL: 'GLOBAL', // a global room
+  ADMIN: 'ADMIN-', // admin room where only admin users can join
 
   // add more rooms here
-  // COMPANY: 'COMPANY-',
+  ROOM: 'ROOM-', // add dash here so you can append a unique number for the room
 }
 
 // the events the socket can emit or listen to

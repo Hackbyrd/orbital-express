@@ -1,14 +1,12 @@
 /**
- * Converts a fixture folder into one sql statement to insert into database on test load
+ * Converts a fixture folder into one sql statement to insert into database so tests load significantly faster.
  *
- * node test/fixtures/convert.js [FIXTURE_FOLDER_NAME]
+ * node test/fixtures/sql.js [FIXTURE_FOLDER_NAME]
  *
- * yarn convert [FIXTURE_FOLDER_NAME]
+ * yarn sql [FIXTURE_FOLDER_NAME]
  */
 
 'use strict';
-
-// const {} = process.env;
 
 // built-in
 const fs = require('fs');
