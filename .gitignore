@@ -48,3 +48,6 @@ kafka/*
 # redis
 redis/*
 dump.rdb
+
+# test fixtures sql files
+test/fixtures/*.sql

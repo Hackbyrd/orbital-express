@@ -29,10 +29,12 @@
 
  // Mailers
  gulp.task('mailers', async () => {
-   await compile().catch(err => {
-     console.error(err);
-     process.exit(1);
-   });
+  try {
+    await compile();
+  } catch (error) {
+    console.error(err);
+    process.exit(1);
+  }
 
    console.log('Email previews generated.');
    return Promise.resolve();

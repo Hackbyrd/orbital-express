@@ -34,7 +34,7 @@ const { API_VERSION } = process.env;
 
  module.exports = passport => {
    // Welcome
-   router.all('/', (req, res) => res.status(200).send(`API ${API_VERSION}} - ${req.__('GLOBAL[Language]')}`));
+   router.all('/', (req, res) => res.status(200).send(`API ${API_VERSION} - ${req.__('GLOBAL[Language]')}`));
 
    // All app routes are automatically inserted here
    appRoutes.forEach(r => (router = r(passport, router)));

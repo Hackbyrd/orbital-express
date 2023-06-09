@@ -20,10 +20,6 @@ process.env.NODE_ENV = process.argv[3] || 'development';
 if (process.env.NODE_ENV === 'development')
   require('dotenv').config({ path: path.join(__dirname, '../../config/.env.development') });
 
-// third-party
-const async = require('async');
-const _ = require('lodash');
-
 // require models
 const models = require('../../models'); // grab db connection
 

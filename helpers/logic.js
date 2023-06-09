@@ -16,6 +16,7 @@ module.exports = {
   removeAllWhiteSpace,
   convertJSONStringsToJSObjects,
   getUnixTimeFromDatabaseTimestamp,
+  getDirectories,
   heapsort
 };
 
@@ -131,6 +132,24 @@ function getUnixTimeFromDatabaseTimestamp(dateObjFromDatabase) {
     };
 
   return new Date(dateObjFromDatabase).getUnixTime();
+}
+
+/**
+ * Get all directories in a path
+ * @path (STRING - REQUIRED): the path to get all directories from
+ * 
+ * return array of directories 
+ * 
+ * TODO: TEST
+ */
+function getDirectories(path) {
+  // check if path is a directory
+  const isDirectory = source => fs.lstatSync(source).isDirectory();
+  // get all directories in a path
+  const getDirectoriesFn = source => fs.readdirSync(source).map(name => path.join(source, name)).filter(isDirectory);
+
+  // return an array of directories
+  return getDirectoriesFn(path);
 }
 
 /**

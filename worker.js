@@ -16,66 +16,81 @@ const path = require('path');
 
 // third-party node modules
 const throng = require('throng'); // concurrency
-const Queue = require('bull'); // process background tasks from Queue
+
+// services
+const email = require('./services/email');
+const queue = require('./services/queue'); // the queue service for background jobs
+const socket = require('./services/socket'); // require socket service to initiate socket.io
 
 // ENV variables
-const { NODE_ENV, WEB_CONCURRENCY, REDIS_URL } = process.env;
+const { NODE_ENV, WEB_CONCURRENCY } = process.env;
 const PROCESSES = NODE_ENV === 'production' ? WEB_CONCURRENCY || os.cpus().length : 1; // number of cores
 
 // variables
 const APP_DIR = './app'; // app directory
-const PROCESSOR_FILE = 'processor.js'; // the processor file name
+const WORKER_FILE = 'worker.js'; // the worker file name
 
-// Store all processor routes here
-const processorRoutes = [];
+// Store all worker routes here
+const workerRoutes = [];
 
 // check if is directory and get directories
 const isDirectory = source => fs.lstatSync(source).isDirectory();
 const getDirectories = source => fs.readdirSync(source).map(name => path.join(source, name)).filter(isDirectory);
 const directories = getDirectories(path.join(__dirname, APP_DIR));
 
-// require app processor routes
-directories.forEach(dir => processorRoutes.push(require(`${dir}/${PROCESSOR_FILE}`)));
+// require app worker routes
+directories.forEach(dir => workerRoutes.push(require(`${dir}/${WORKER_FILE}`)));
 
 // function to start app
 async function startWorker(processId) {
+  const models = require('./models'); // get models
+
   // Print Process Info
   console.log(`WORKER processId: ${processId}`);
   console.log(`WORKER process.pid: ${process.pid}`);
   console.log(`WORKER process.env.NODE_ENV: ${NODE_ENV}`);
 
-  // GlobalQueue
-  const GlobalQueue = new Queue('GlobalQueue', REDIS_URL);
-  let QueuesArray = [GlobalQueue]; // store queues so we can gracefully shut it down
-
-  // run all feature processors and add feature specific queues to QueuesArray
-  processorRoutes.forEach(processor => {
-    QueuesArray = QueuesArray.concat(processor());
+  // to check if database connection is established
+  await models.db.authenticate().catch(err => {
+    console.error(err);
+    process.exit(1);
   });
+
+  // create server and initiate socket.io
+  await socket.get();
+
+  // initial GlobalQueue
+  // const GlobalQueue = queue.get('GlobalQueue');
+
+  // run all feature workers and add feature specific queues to QueuesArray
+  workerRoutes.forEach(worker => worker());
+  email.worker(); // run email worker
 
   // Graceful exit
   process.on('SIGTERM', async () => {
-    console.log(`Closing ${QueuesArray.length} queue connection${QueuesArray.length === 1 ? '' : 's'}...`);
+    try {
+      // close connection to queue
+      await queue.closeAll();
 
-    // go through all queues and close them down
-    for (let i = 0; i < QueuesArray.length; i++) {
-      console.log(`Closing ${QueuesArray[i].name}...`);
+      // close socket connections
+      await socket.close();
 
-      // close queue
-      await QueuesArray[i].close().catch(err => {
-        console.error(err);
-        process.exit(1);
-      });
+      // close connection to database
+      await models.db.close();
+      console.log('Database connection closed.');
+
+      process.exit(0);
+    } catch (error) {
+      console.error(error);
+      process.exit(1);
     }
-
-    console.log('All queue connections closed.');
-    process.exit(0);
   });
 }
 
 // run concurrent workers
 throng({
+  worker: startWorker,
   workers: PROCESSES, // Number of workers (cpu count)
   lifetime: Infinity, // ms to keep cluster alive (Infinity)
   grace: 5000 // ms grace period after worker SIGTERM (5000)
-}, startWorker);
+});

@@ -7,6 +7,9 @@
 // third-party
 const joi = require('@hapi/joi'); // argument validations: https://github.com/hapijs/joi/blob/master/API.md
 
+// services
+const socket = require('../../../services/socket');
+
 // methods
 module.exports = {
   V1ExportTask
@@ -40,6 +43,11 @@ async function V1ExportTask(job) {
     const jobId = job.id;
     const adminId = job.data.adminId;
     const result = `${jobId} - ${adminId}`;
+
+    const io = await socket.get(); // to emit real-time events to client-side applications: https://socket.io/docs/emit-cheatsheet/
+    const data = { message: 'updated' };
+    io.to(`${socket.SOCKET_ROOMS.GLOBAL}`).emit(socket.SOCKET_EVENTS.ADMIN_UPDATED, data);
+    io.to(`${socket.SOCKET_ROOMS.ADMIN}1`).emit(socket.SOCKET_EVENTS.ADMIN_UPDATED, data);
 
     // return
     return Promise.resolve(result);

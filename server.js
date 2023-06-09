@@ -25,6 +25,7 @@ const i18n = require('i18n'); // set up language
 const {
   NODE_ENV,
   REDIS_URL,
+  REDISCLOUD_URL,
   RATE_LIMIT_WINDOW_MS,
   RATE_LIMIT_MAX_PER_WINDOW
 } = process.env;
@@ -32,8 +33,11 @@ const {
 // helpers
 const { LOCALES } = require('./helpers/constants');
 
+// services
+const socket = require('./services/socket'); // require socket service to initiate socket.io
+
 // server
-function server() {
+async function server() {
   // require custom
   const cfgPassport = require('./services/passport'); // configuration for passport
 
@@ -45,32 +49,32 @@ function server() {
 
   // set up express app
   const app = express();
-  const newServer = http.createServer(app);
-  const io = require('socket.io')(newServer); // socket.io
+  // Disable the "Powered-By" header to prevent showing hackers what infra we use
+  app.disable('x-powered-by');
 
-  // set up redis with socket
-  const redis = require('socket.io-redis');
-  const socket = require('./services/socket'); // require socket service to initiate socket.io
-  io.adapter(redis(REDIS_URL));
+  // create server and initiate socket.io
+  const newServer = http.createServer(app);
+  const io = await socket.get(newServer); // socket.io
 
   // enable ssl redirect in production
-  app.use(sslRedirect.default()); // !! dont know why we need a default here
+  app.use(sslRedirect.default()); // must be .default()
 
   // need to enable this in production because Heroku uses a reverse proxy
-  if (NODE_ENV === 'production')
+  if (NODE_ENV === 'production') {
     app.set('trust proxy', 1); // get ip address using req.ip
 
-  // set a rate limit for incoming requests
-  const limiter = RateLimit({
-    windowMs: RATE_LIMIT_WINDOW_MS, // 5 minutes
-    max: RATE_LIMIT_MAX_PER_WINDOW, // limit each IP to 300 requests per windowMs
-    store: new RedisStore({
-      redisURL: REDIS_URL
-    })
-  });
+    // set a rate limit for incoming requests
+    const limiter = RateLimit({
+      windowMs: RATE_LIMIT_WINDOW_MS, // 5 minutes
+      max: RATE_LIMIT_MAX_PER_WINDOW, // limit each IP to 300 requests per windowMs
+      store: new RedisStore({
+        redisURL: REDIS_URL || REDISCLOUD_URL
+      })
+    });
 
-  // set rate limiter
-  app.use(limiter);
+    // set rate limiter
+    app.use(limiter);
+  }
 
   // log requests using morgan, don't log in test env
   if (NODE_ENV !== 'test')

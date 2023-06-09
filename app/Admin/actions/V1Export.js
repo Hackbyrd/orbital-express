@@ -13,6 +13,7 @@ const Queue = require('bull'); // add background tasks to Queue: https://github.
 
 // services
 const { ERROR_CODES, errorResponse, joiErrorsMessage } = require('../../../services/error');
+const socket = require('../../../services/socket');
 
 // queues
 const AdminQueue = new Queue('AdminQueue', REDIS_URL);
@@ -57,6 +58,11 @@ async function V1Export(req) {
   const job = await AdminQueue.add('V1ExportTask', {
     adminId: req.args.id
   }).catch(err => Promise.reject(err));
+
+  const io = await socket.get(); // to emit real-time events to client-side applications: https://socket.io/docs/emit-cheatsheet/
+  const data = { message: 'created' };
+  io.to(`${socket.SOCKET_ROOMS.GLOBAL}`).emit(socket.SOCKET_EVENTS.ADMIN_CREATED, data);
+  io.to(`${socket.SOCKET_ROOMS.ADMIN}1`).emit(socket.SOCKET_EVENTS.ADMIN_UPDATED, data);
 
   // return
   return Promise.resolve({

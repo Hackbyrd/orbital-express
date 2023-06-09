@@ -1,6 +1,6 @@
 /**
  * All global constant variables in this file
- * !IMPORTANT: All variables must be in UPPER CASE with underscores
+ * !IMPORTANT: All variables must be in UPPER CASE with underscores. This allows us to know when we are dealing with a global constant variable.
  *
  * !IMPORTANT: For Arrays and Objects
  * - Use Plural word to represent an Array. e.g. LANGUAGES

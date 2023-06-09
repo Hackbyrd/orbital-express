@@ -1,4 +1,4 @@
--- DATABASE TABLES --
+-- DATABASE TABLES CONVENTIONS --
 
 -- Table names are plural and PascalCase
 -- Table column names are camelCase
@@ -8,28 +8,28 @@
 -- ALL TIMES ARE IN UTC OFFSET 0
 
 ------------------------------------- TABLE TEMPLATE -------------------------------------------
--- EXAMPLES TABLE --
--- Description of what table is for --
-CREATE TYPE EXAMPLETYPE AS ENUM ('ONE', 'TWO', 'THREE');
+-- Examples TABLE --
+-- Description: The description of what table is for, tablename must be plural --
+CREATE TYPE EXAMPLETYPE AS ENUM ('ONE', 'TWO', 'THREE'); -- ENUM SHOULD BE ALL CAPS
 CREATE TABLE IF NOT EXISTS Examples (
   -- 1. Primary Key --
   id BIGSERIAL PRIMARY KEY NOT NULL,
 
   -- 2. Foreign Keys --
-  otherTableId BIGINT NOT NULL REFERENCES OtherTable(id),
-  otherTable2Id BIGINT NOT NULL REFERENCES OtherTable2(id),
+  otherTableId BIGINT NOT NULL REFERENCES OtherTables(id), -- plural, can't be null
+  otherTable2Id BIGINT DEFAULT NULL REFERENCES OtherTables2(id), -- plural, can be null
 
-  -- 3. Third-Party Vendor IDs --
+  -- 3. Third-Party Vendor IDs, should have vendor name prepended --
   auth0Id STRING DEFAULT NULL,
   stripeId STRING DEFAULT NULL,
   twilioId INT DEFAULT NULL,
 
   -- 4. Customized Columns --
   col1 INT NOT NULL DEFAULT 1,
-  col2 STRING NOT NULL UNIQUE,
+  col2 STRING NOT NULL UNIQUE, -- 256 characters
   col3 TEXT DEFAULT NULL,
   col4 BOOLEAN NOT NULL DEFAULT TRUE,
-  col5 EXAMPLETYPE DEFAULT 'ONE',
+  col5 EXAMPLETYPE DEFAULT 'ONE', -- ENUM, should be declared above this table
   col6 TIMESTAMP WITHOUT TIME ZONE DEFAULT NULL,
   col7 JSON NOT NULL DEFAULT '{"key":"value"}',
 
@@ -37,7 +37,8 @@ CREATE TABLE IF NOT EXISTS Examples (
   deletedAt TIMESTAMP WITHOUT TIME ZONE DEFAULT NULL,
   createdAt TIMESTAMP WITHOUT TIME ZONE NOT NULL DEFAULT (now() AT TIME ZONE 'utc'),
   updatedAt TIMESTAMP WITHOUT TIME ZONE NOT NULL DEFAULT (now() AT TIME ZONE 'utc')
-);
+); -- END Examples TABLE
+
 ------------------------------------------------------------------------------------------------
 
 -- ADMINS TABLE --

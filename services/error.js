@@ -17,7 +17,7 @@ const path = require('path');
 const moment = require('moment-timezone');
 
 // services
-const email = require('./email');
+// const email = require('./email'); // removed cuz of circular dependency, email requires error, error requires email
 
 // variables
 const APP_DIR = '../app'; // app directory
@@ -133,26 +133,26 @@ async function queueError(error, queue, job) {
   console.error(error);
 
   // send email in production
-  if (NODE_ENV === 'production') {
+  // if (NODE_ENV === 'production') {
     // send error email
-    await email.send({
-      from: email.emails.error.address,
-      name: email.emails.error.name,
-      subject: 'URGENT! 500 Worker Process Error!',
-      template: 'ErrorQueue',
-      tos: [email.emails.error.address],
-      ccs: null,
-      bccs: null,
-      args: {
-        time: moment.tz('US/Pacific').format('LLLL'),
-        error,
-        queue,
-        job
-      }
-    }).catch(err => {
-      console.error(err);
-    });
-  }
+  //   await email.send({
+  //     from: email.emails.error.address,
+  //     name: email.emails.error.name,
+  //     subject: 'URGENT! 500 Worker Process Error!',
+  //     template: 'ErrorQueue',
+  //     tos: [email.emails.error.address],
+  //     ccs: null,
+  //     bccs: null,
+  //     args: {
+  //       time: moment.tz('US/Pacific').format('LLLL'),
+  //       error,
+  //       queue,
+  //       job
+  //     }
+  //   }).catch(err => {
+  //     console.error(err);
+  //   });
+  // }
 
   return Promise.resolve();
 }

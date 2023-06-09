@@ -4,16 +4,14 @@
 
 'use strict';
 
-// ENV variables
-const { REDIS_URL } = process.env;
-
 // third-party
-const io = require('socket.io-emitter')(REDIS_URL); // to emit real-time events to client-side applications: https://socket.io/docs/emit-cheatsheet/
+
 const joi = require('@hapi/joi'); // argument validations: https://github.com/hapijs/joi/blob/master/API.md
 
 // services
-const { SOCKET_ROOMS, SOCKET_EVENTS } = require('../../../services/socket');
 const { ERROR_CODES, errorResponse, joiErrorsMessage } = require('../../../services/error');
+const socket = require('../../../services/socket');
+const { SOCKET_ROOMS, SOCKET_EVENTS } = socket;
 
 // models
 const models = require('../../../models');
@@ -125,6 +123,7 @@ async function V1Create(req) {
     }); // END grab partner without sensitive data
 
     // SOCKET EMIT EVENT
+    const io = await socket.get(); // to emit real-time events to client-side applications: https://socket.io/docs/emit-cheatsheet/
     const data = { admin: returnAdmin };
     io.to(`${SOCKET_ROOMS.GLOBAL}`).emit(SOCKET_EVENTS.ADMIN_CREATED, data);
     io.to(`${SOCKET_ROOMS.ADMIN}${returnAdmin.id}`).emit(SOCKET_EVENTS.ADMIN_CREATED, data);

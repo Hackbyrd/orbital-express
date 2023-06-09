@@ -41,7 +41,7 @@ module.exports = {
       decimalNumbers: true, // postgres returns string decimals, this will convert it to a decimal
       ssl: {
         required: true,
-        rejectUnauthorized: false
+        rejectUnauthorized: false // need to put this here because: https://stackoverflow.com/questions/58965011/sequelizeconnectionerror-self-signed-certificate
       }
     }
   }

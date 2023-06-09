@@ -3,60 +3,66 @@
  * This file runs the app server in a cluster.
  */
 
- 'use strict';
+'use strict';
 
- // built-in node modules
- const os = require('os');
+// built-in node modules
+const os = require('os');
 
- // third-party node modules
- const throng = require('throng'); // concurrency
+// third-party node modules
+const throng = require('throng'); // concurrency
 
- // env variables
- const NODE_ENV = process.env.NODE_ENV || 'development';
- const PORT = process.env.PORT ? Number(process.env.PORT) : 8000;
- const PROCESSES = NODE_ENV === 'production' ? process.env.WEB_CONCURRENCY || os.cpus().length : 1; // number of cores
+// services
+const queue = require('./services/queue'); // Queue Service for Background Jobs
 
- // function to start app
- async function startApp(processId) {
-   const models = require('./models'); // get models
-   const { gracefulExit } = require('./middleware/exit'); // exit
+// env variables
+const NODE_ENV = process.env.NODE_ENV || 'development';
+const PORT = process.env.PORT ? Number(process.env.PORT) : 8000;
+const PROCESSES = NODE_ENV === 'production' ? process.env.WEB_CONCURRENCY || os.cpus().length : 2; // number of cores
 
-   // create server
-   const server = require('./server'); // get app
+// function to start app
+async function startApp(processId) {
+  const models = require('./models'); // get models
+  const { gracefulExit } = require('./middleware/exit'); // exit
 
-   // Print Process Info
-   console.log(`WEB process.pid: ${process.pid}`);
-   console.log(`WEB process.env.NODE_ENV: ${NODE_ENV}`);
+  // create server
+  const server = await require('./server'); // get app
 
-   // to check if database connection is established
-   await models.db.authenticate().catch(err => {
-     console.error(err);
-     process.exit(1);
-   });
+  // Print Process Info
+  console.log(`WEB process.pid: ${process.pid}`);
+  console.log(`WEB process.env.NODE_ENV: ${NODE_ENV}`);
 
-   // listen server
-   server.listen(PORT, () => {
-     console.log(`Process ID: ${processId} - Server started on port ${PORT}`);
+  // to check if database connection is established
+  await models.db.authenticate().catch(err => {
+    console.error(err);
+    process.exit(1);
+  });
 
-     // On terminate command: killall node or process.kill(process.pid)
-     process.on('SIGTERM', () => {
-       console.log(`Process ${processId} exiting...`);
+  // start GlobalQueue
+  // queue.get('GlobalQueue');
 
-       // gracefully exit server
-       gracefulExit(server);
-     });
-   });
- }
+  // listen server
+  server.listen(PORT, async () => {
+    console.log(`Process ID: ${processId} - Server started on port ${PORT}`);
 
- // run concurrent workers
- // throng({
- //   workers: PROCESSES, // Number of workers (cpu count)
- //   lifetime: Infinity, // ms to keep cluster alive (Infinity)
- //   grace: 5000 // ms grace period after worker SIGTERM (5000)
- // }, startApp);
- throng({
-   worker: startApp,
-   count: PROCESSES, // Number of workers (cpu count)
-   lifetime: Infinity, // ms to keep cluster alive (Infinity)
-   grace: 5000 // ms grace period after worker SIGTERM (5000)
- });
+    // On terminate command: killall node or process.kill(process.pid)
+    process.on('SIGTERM', async () => {
+      console.log(`Process ${processId} exiting...`);
+
+      // gracefully exit server
+      await gracefulExit(server);
+    });
+  });
+}
+
+// run concurrent workers
+// throng({
+//   workers: PROCESSES, // Number of workers (cpu count)
+//   lifetime: Infinity, // ms to keep cluster alive (Infinity)
+//   grace: 5000 // ms grace period after worker SIGTERM (5000)
+// }, startApp);
+throng({
+  worker: startApp,
+  count: PROCESSES, // Number of workers (cpu count)
+  lifetime: Infinity, // ms to keep cluster alive (Infinity)
+  grace: 5000 // ms grace period after worker SIGTERM (5000)
+});
