@@ -1,5 +1,7 @@
 /**
  * TEST ADMIN V1Login METHOD
+ * 
+ * JEST CHEATSHEET: https://devhints.io/jest
  */
 
 'use strict';
@@ -11,26 +13,36 @@ const path = require('path');
 require('dotenv').config({ path: path.join(__dirname, '../../../../config/.env.test') });
 
 // third party
+const _ = require('lodash'); // general helper methods: https://lodash.com/docs
 const i18n = require('i18n'); // https://github.com/mashpie/i18n-node
 const moment = require('moment-timezone'); // manage timezone and dates: https://momentjs.com/timezone/docs/
 
-// server & models
-const app = require('../../../../server');
+// models
 const models = require('../../../../models');
 
 // assertion library
-const { expect } = require('chai');
 const request = require('supertest');
 
 // services
+const queue = require('../../../../services/queue'); // process background tasks from Queue
+const socket = require('../../../../services/socket'); // require socket service to initiate socket.io
 const { errorResponse, ERROR_CODES } = require('../../../../services/error');
 
 // helpers
 const { reset, populate } = require('../../../../helpers/tests');
 
-describe('Admin.V1Login', async () => {
-  // grab fixtures here
-  const adminFix = require('../../../../test/fixtures/fix1/admin');
+// server: initialize server in the beforeAll function because it is an async function
+let app = null;
+
+// queues: add queues you will use in testing here
+let AdminQueue = null; // initial value, will be set in beforeEach because it is async
+
+describe('Admin.V1Login', () => {
+  // grab fixtures and convert to function so every test has fresh deep copy of fixtures otherwise if we don't do this, then fixtures will be modified by previous tests and affect other tests
+  const adminFixFn = () => _.cloneDeep(require('../../../../test/fixtures/fix1/admin'));
+
+  // fixtures
+  let adminFix = null;
 
   // url of the api method we are testing
   const routeVersion = '/v1';
@@ -38,16 +50,57 @@ describe('Admin.V1Login', async () => {
   const routeMethod = '/login';
   const routeUrl = `${routeVersion}${routePrefix}${routeMethod}`;
 
-  // clear database
+  // beforeAll: initialize server
+  beforeAll(async () => {
+    try {
+      app = await require('../../../../server');
+    } catch (error) {
+      console.error(error);
+      throw error;
+    }
+  });
+
+  // beforeEach: reset fixtures, establish & empty queue connections, establish socket connections and clear database
   beforeEach(async () => {
-    await reset();
+    // reset fixtures with fresh deep copy, must call these functions to get deep copy because we don't want modified fixtures from previous tests to affect other tests
+    adminFix = adminFixFn();
+
+    try {
+      // create queue connections here
+      AdminQueue = queue.get('AdminQueue');
+      await AdminQueue.empty(); // make sure queue is empty before each test runs
+
+      await socket.get(); // create socket connection
+      await reset(); // reset database
+    } catch (error) {
+      console.error(error);
+      throw error;
+    }
+  });
+
+  // afterAll: close all queue & socket connections, close database & app server connections
+  afterAll(async () => {
+    try {
+      await queue.closeAll(); // close all queue connections
+      await socket.close(); // close socket connection
+      await models.db.close(); // close database connection
+      app.close(); // close server connection
+    } catch (error) {
+      console.error(error);
+      throw error;
+    }
   });
 
   // Logged Out
-  describe('Role: Logged Out', async () => {
+  describe('Role: Logged Out', () => {
     // populate database with fixtures
     beforeEach(async () => {
-      await populate('fix1');
+      try {
+        await populate('fix1'); // populate test database with fix1 dataset
+      } catch (error) {
+        console.error(error);
+        throw error;
+      }
     });
 
     it('[logged-out] should login admin successfully', async () => {
@@ -65,14 +118,16 @@ describe('Admin.V1Login', async () => {
           .post(routeUrl)
           .send(params);
 
-        expect(res.body).to.have.property('success', true);
-        expect(res.body).to.have.property('token').and.to.a('string');
-        expect(res.body).to.have.property('admin').and.to.not.be.null;
+        expect(res.statusCode).toBe(201);
+        expect(res.body.success).toBe(true);
+        expect(res.body.status).toBe(201);
+        expect(typeof res.body.token).toBe('string');
+        expect(res.body.admin).not.toBeNull();
 
         // check if admin is updated in database
         const checkAdmin = await models.admin.findByPk(admin1.id);
-        expect(checkAdmin.loginCount).to.equal(1);
-        expect(checkAdmin.lastLogin).to.not.be.null;
+        expect(checkAdmin.loginCount).toBe(1);
+        expect(checkAdmin.lastLogin).not.toBeNull();
       } catch (error) {
         throw error;
       }
@@ -90,8 +145,8 @@ describe('Admin.V1Login', async () => {
           .post(routeUrl)
           .send(params);
 
-        expect(res.statusCode).to.equal(400);
-        expect(res.body).to.deep.equal(errorResponse(i18n, ERROR_CODES.ADMIN_BAD_REQUEST_INVALID_LOGIN_CREDENTIALS));
+        expect(res.statusCode).toBe(400);
+        expect(res.body).toEqual(errorResponse(i18n, ERROR_CODES.ADMIN_BAD_REQUEST_INVALID_LOGIN_CREDENTIALS));
       } catch (error) {
         throw error;
       }
@@ -120,8 +175,8 @@ describe('Admin.V1Login', async () => {
           .post(routeUrl)
           .send(params);
 
-        expect(res.statusCode).to.equal(400);
-        expect(res.body).to.deep.equal(errorResponse(i18n, ERROR_CODES.ADMIN_BAD_REQUEST_ACCOUNT_INACTIVE));
+        expect(res.statusCode).toBe(400);
+        expect(res.body).toEqual(errorResponse(i18n, ERROR_CODES.ADMIN_BAD_REQUEST_ACCOUNT_INACTIVE));
       } catch (error) {
         throw error;
       }
@@ -150,8 +205,8 @@ describe('Admin.V1Login', async () => {
           .post(routeUrl)
           .send(params);
 
-        expect(res.statusCode).to.equal(400);
-        expect(res.body).to.deep.equal(errorResponse(i18n, ERROR_CODES.ADMIN_BAD_REQUEST_ACCOUNT_DELETED));
+        expect(res.statusCode).toBe(400);
+        expect(res.body).toEqual(errorResponse(i18n, ERROR_CODES.ADMIN_BAD_REQUEST_ACCOUNT_DELETED));
       } catch (error) {
         throw error;
       }

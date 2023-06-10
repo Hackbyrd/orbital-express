@@ -39,12 +39,17 @@ module.exports = (sequelize, DataTypes) => {
       defaultValue: true
     },
 
-    name: {
+    firstName: {
       type: DataTypes.STRING,
       allowNull: false
     },
 
-    // The unique email of the user
+    lastName: {
+      type: DataTypes.STRING,
+      allowNull: false
+    },
+
+    // The unique email of the admin user
     email: {
       type: DataTypes.STRING,
       unique: true,
@@ -54,11 +59,11 @@ module.exports = (sequelize, DataTypes) => {
       }
     },
 
-    // The unique phone of the user
+    // The unique phone of the admin user
     phone: {
       type: DataTypes.STRING,
-      allowNull: true,
-      defaultValue: null
+      unique: true,
+      allowNull: false
     },
 
     // salt should be randomly generate
@@ -90,6 +95,74 @@ module.exports = (sequelize, DataTypes) => {
       validate: {
         isDate: true
       }
+    },
+
+    // emails 
+    emailConfirmed: {
+      type: DataTypes.BOOLEAN,
+      allowNull: false,
+      defaultValue: false,
+    },
+
+    emailConfirmationCode: {
+      type: DataTypes.STRING,
+      allowNull: true,
+      defaultValue: null,
+    },
+
+    emailConfirmationCodeExpire: {
+      type: DataTypes.DATE,
+      allowNull: false,
+      defaultValue: DataTypes.NOW,
+      validate: {
+        isDate: true
+      }
+    },
+
+    emailConfirmationCodeAttempts: {
+      type: DataTypes.INTEGER,
+      allowNull: false,
+      defaultValue: 0
+    },
+
+    resetEmail: {
+      type: DataTypes.STRING,
+      allowNull: true,
+      defaultValue: null,
+    },
+
+    // phone
+    phoneConfirmed: {
+      type: DataTypes.BOOLEAN,
+      allowNull: false,
+      defaultValue: false,
+    },
+
+    phoneConfirmationCode: {
+      type: DataTypes.STRING,
+      allowNull: true,
+      defaultValue: null,
+    },
+
+    phoneConfirmationCodeExpire: {
+      type: DataTypes.DATE,
+      allowNull: false,
+      defaultValue: DataTypes.NOW,
+      validate: {
+        isDate: true
+      }
+    },
+
+    phoneConfirmationCodeAttempts: {
+      type: DataTypes.INTEGER,
+      allowNull: false,
+      defaultValue: 0
+    },
+
+    resetPhone: {
+      type: DataTypes.STRING,
+      allowNull: true,
+      defaultValue: null,
     },
 
     // Whether user has accepted terms or not

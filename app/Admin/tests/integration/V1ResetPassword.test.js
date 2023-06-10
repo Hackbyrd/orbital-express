@@ -11,7 +11,7 @@ const path = require('path');
 require('dotenv').config({ path: path.join(__dirname, '../../../../config/.env.test') });
 
 // ENV variables
-const { ADMIN_WEB_HOST } = process.env;
+const { ADMIN_WEB_HOSTNAME } = process.env;
 
 // third party
 const i18n = require('i18n'); // https://github.com/mashpie/i18n-node

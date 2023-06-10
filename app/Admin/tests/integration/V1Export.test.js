@@ -11,31 +11,38 @@ const path = require('path');
 require('dotenv').config({ path: path.join(__dirname, '../../../../config/.env.test') });
 
 // ENV variables
-const { REDIS_URL } = process.env;
+const { NODE_ENV, HOSTNAME } = process.env;
 
 // third party
+const _ = require('lodash'); // general helper methods: https://lodash.com/docs
 const i18n = require('i18n'); // https://github.com/mashpie/i18n-node
-const Queue = require('bull'); // add background tasks to Queue: https://github.com/OptimalBits/bull/blob/develop/REFERENCE.md#queueclean
+const moment = require('moment-timezone'); // manage timezone and dates: https://momentjs.com/timezone/docs/
+const currency = require('currency.js'); // handling currency operations (add, subtract, multiply) without JS precision issues: https://github.com/scurker/currency.js/
 
 // server & models
 const app = require('../../../../server');
+const models = require('../../../../models');
 
 // assertion library
-const { expect } = require('chai');
 const request = require('supertest');
 
 // services
+const queue = require('../../../../services/queue'); // process background tasks from Queue
+const socket = require('../../../../services/socket'); // require socket service to initiate socket.io
 const { errorResponse, ERROR_CODES } = require('../../../../services/error');
 
 // helpers
-const { adminLogin, reset, populate } = require('../../../../helpers/tests');
+const { adminLogin, partnerLogin, userLogin, reset, populate } = require('../../../../helpers/tests');
 
 // queues
 const AdminQueue = new Queue('AdminQueue', REDIS_URL);
 
 describe('Admin.V1Export', async () => {
-  // grab fixtures here
-  const adminFix = require('../../../../test/fixtures/fix1/admin');
+  // grab fixtures and convert to function so every test has fresh deep copy of fixtures otherwise if we don't do this, then fixtures will be modified by previous tests and affect other tests
+  const adminFixFn = () => _.cloneDeep(require('../../../../test/fixtures/fix1/admin'));
+
+  // fixtures
+  let adminFix = null;
 
   // url of the api method we are testing
   const routeVersion = '/v1';
@@ -45,7 +52,20 @@ describe('Admin.V1Export', async () => {
 
   // clear database
   beforeEach(async () => {
-    await reset();
+    // reset fixtures with fresh deep copy, must call these functions to get deep copy because we don't want modified fixtures from previous tests to affect other tests
+    adminFix = adminFixFn();
+
+    try {
+      // create queue connections here
+      AdminQueue = queue.get('AdminQueue');
+      await AdminQueue.empty(); // make sure queue is empty before each test runs
+
+      await socket.get(); // create socket connection
+      await reset(); // reset database
+    } catch (error) {
+      console.error(error);
+      throw error;
+    }
   });
 
   // Logged Out
@@ -73,7 +93,6 @@ describe('Admin.V1Export', async () => {
     // populate database with fixtures and empty queues
     beforeEach(async () => {
       await populate('fix1');
-      await AdminQueue.empty();
     });
 
     it('[admin] should export successfully', async () => {

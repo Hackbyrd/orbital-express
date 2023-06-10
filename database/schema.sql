@@ -47,13 +47,36 @@ CREATE TABLE IF NOT EXISTS Admins (
   timezone STRING NOT NULL DEFAULT 'UTC',
   locale STRING NOT NULL DEFAULT 'en',
   active BOOLEAN NOT NULL DEFAULT TRUE,
-  name STRING NOT NULL,
-  email STRING NOT NULL UNIQUE,
-  phone STRING DEFAULT NULL,
+  firstName STRING NOT NULL,
+  lastName STRING NOT NULL,
+  email STRING NOT NULL UNIQUE, -- unique email
+  phone STRING NOT NULL UNIQUE, -- unique phone
+  
+  -- password related
   salt TEXT NOT NULL, -- random salt value
   password TEXT NOT NULL, -- hashed password
   passwordResetToken TEXT DEFAULT NULL UNIQUE,
   passwordResetExpire TIMESTAMP WITHOUT TIME ZONE NOT NULL DEFAULT (now() AT TIME ZONE 'utc'),
+
+  -- email related
+  emailConfirmed BOOLEAN NOT NULL DEFAULT FALSE,
+  emailConfirmationCode STRING DEFAULT NULL, -- 6 digit code they can input to confirm email (user can do either this or emailConfirmationToken). Doesn't have to be unique because we check the email address of the account that is about to change
+  emailConfirmationCodeExpire TIMESTAMP WITHOUT TIME ZONE NOT NULL DEFAULT (now() AT TIME ZONE 'utc'), -- when the code expires
+  emailConfirmationCodeAttempts INT DEFAULT NULL 0, -- how many tries they have to input the code before we have to generate a new one. max is set as a constant in the code
+  -- emailConfirmationToken TEXT DEFAULT NULL UNIQUE, -- token they can click to confirm email (user can do either this or emailConfirmationCode)
+  -- emailConfirmationTokenExpire TIMESTAMP WITHOUT TIME ZONE NOT NULL DEFAULT (now() AT TIME ZONE 'utc'), -- when the token expires
+  -- emailResetToken TEXT DEFAULT NULL UNIQUE, -- token they can click to reset email to new email
+  -- emailResetTokenExpire TIMESTAMP WITHOUT TIME ZONE NOT NULL DEFAULT (now() AT TIME ZONE 'utc'), -- when the token expires
+  resetEmail STRING DEFAULT NULL, -- must check email if this email already exists both when this is created and when this is about to change email
+
+  -- phone related
+  phoneConfirmed BOOLEAN NOT NULL DEFAULT FALSE,
+  phoneConfirmationCode STRING DEFAULT NULL, -- 6 digit code they can input to confirm phone. Doesn't have to be unique because we check the email address of the account that is about to change
+  phoneConfirmationCodeExpire TIMESTAMP WITHOUT TIME ZONE NOT NULL DEFAULT (now() AT TIME ZONE 'utc'), -- when the code expires
+  phoneConfirmationCodeAttempts INT DEFAULT NULL 0, -- how many tries they have to input the code before we have to generate a new one. max is set as a constant in the code
+  -- phoneResetCode TEXT DEFAULT NULL UNIQUE, -- 6 digit code to reset phone to resetPhone
+  resetPhone STRING DEFAULT NULL, -- must check phone if this phone already exists both when this is created and when this is about to change phone
+
   acceptedTerms BOOLEAN NOT NULL DEFAULT TRUE, -- whether this admin accepted our terms / services
   loginCount INT NOT NULL DEFAULT 0,
   lastLogin TIMESTAMP WITHOUT TIME ZONE DEFAULT NULL,

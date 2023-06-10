@@ -5,20 +5,21 @@
 'use strict';
 
 // ENV variables
-const { ADMIN_WEB_HOST } = process.env;
+const { ADMIN_WEB_HOSTNAME } = process.env;
 
 // third-party
+const joi = require('joi'); // argument validator: https://hapi.dev/family/joi/
 const moment = require('moment-timezone'); // manage timezone and dates: https://momentjs.com/timezone/docs/
 const passport = require('passport'); // handle authentication: http://www.passportjs.org/docs/
 
 // services
 const { ERROR_CODES, errorResponse } = require('../../../services/error');
 
-// models
-const models = require('../../../models');
-
 // helpers
 const { createJwtToken } = require('../../../helpers/logic');
+
+// models
+const models = require('../../../models');
 
 // methods
 module.exports = {
@@ -42,12 +43,25 @@ module.exports = {
  *
  * Success: Return an admin and JWT token.
  * Errors:
+ *   400: BAD_REQUEST_INVALID_ARGUMENTS
  *   400: ADMIN_BAD_REQUEST_INVALID_LOGIN_CREDENTIALS
  *   400: ADMIN_BAD_REQUEST_ACCOUNT_INACTIVE
  *   400: ADMIN_BAD_REQUEST_ACCOUNT_DELETED
  *   500: INTERNAL_SERVER_ERROR
  */
 async function V1Login(req, res) {
+  const schema = joi.object({
+    email: joi.string().email().required(),
+    password: joi.string().required()
+  });
+
+  // validate
+  const { error, value } = schema.validate(req.args);
+  if (error)  {
+    return errorResponse(req, ERROR_CODES.BAD_REQUEST_INVALID_ARGUMENTS, joiErrorsMessage(error));
+  }
+  req.args = value; // arguments are updated and variable types are converted to correct type. ex. '5' -> 5, 'true' -> true
+
   // need to wrap in promise because of the passport.authenticate callback
   return new Promise((resolve, reject) => {
 
@@ -86,11 +100,17 @@ async function V1Login(req, res) {
           }
         });
 
+        // create token
+        const token = createJwtToken(updatedAdmin, ADMIN_WEB_HOSTNAME);
+
+        // set cookie for frontend
+        res.cookie('jwt-admin', token);
+
         // return success
         return resolve({
           status: 201,
           success: true,
-          token: createJwtToken(updatedAdmin, ADMIN_WEB_HOST),
+          token: token,
           admin: updatedAdmin.dataValues
         });
       } catch (error) {

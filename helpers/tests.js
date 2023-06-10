@@ -14,11 +14,15 @@ const models = require('../models'); // grab db connection
 // the order in which to create tables and add fixture data
 const seq = require('../database/sequence');
 
+// Fixtures
+const fixturesSqlObj = {}; // this is for allow us to read from the fixture sql file only ONCE and then storing the string instead of reading the file every time a test is run. Basically save the sql statement sql in memory only ONCE ever time we run the suite of tests
+
 module.exports = {
   login,
   adminLogin,
   userLogin,
   reset,
+  populateFix,
   populate
 };
 
@@ -34,18 +38,24 @@ module.exports = {
  * return the JSON web token
  */
 async function login(app, version, request, model, user) {
-  // login request
-  const response = await request(app)
-    .post(`${version}/${model}/login`)
-    .send({
-      email: user.email,
-      password: user.password
-    }).catch(err => Promise.reject(err));
+  try {
+    // login request
+    const response = await request(app)
+      .post(`${version}/${model}/login`)
+      .send({
+        email: user.email,
+        password: user.password
+      });
 
-  return Promise.resolve({
-    token: response.body.token,
-    response
-  });
+    // return the token and response
+    return {
+      token: response.body.token,
+      response
+    };
+  } catch (error) {
+    console.error(error);
+    throw error;
+  }
 } // END login
 
 /**
@@ -89,13 +99,14 @@ async function reset() {
 }
 
 /**
- * Populates database according to the fixture set passed in
+ * Populates database according to the fixture set passed in. Uses js fixtures instead of .sql fixtures
+ * Uses the sequence file to determine the order in which to populate the database.
  *
  * @fixtureFolderName - (STRING - REQUIRED): The fixtures folder name so we know which fixture to populate, ex. fix1, fix2, etc...
  *
  * return the JSON web token
  */
-async function populate(fixtureFolderName) {
+async function populateFix(fixtureFolderName) {
   let fixtures = []; // store array of fixture arrays
   let files = []; // file names that coorespond to the fixtures
 
@@ -156,12 +167,41 @@ async function populate(fixtureFolderName) {
       idx++;
     }
 
-    return Promise.resolve(true);
+    return true;
   } catch (error) {
     // turn back on foreign key restrictions
     await models.db.query('SET CONSTRAINTS ALL IMMEDIATE')
-      .catch(err => Promise.reject(err));
+      .catch(err => { throw err; });
 
-    return Promise.reject(error);
+    throw error;
   }
 }
+
+/**
+ * Populates database according to the fixture set passed in. This uses the .sql fixtures instead of the .js fixtures
+ *
+ * @fixtureName - (STRING - REQUIRED): The fixtures name so we know which fixture to populate, ex. "fix1" or "fix1.sql", "fix2" or "fix2.sql", etc...
+ *
+ * return true
+ */
+async function populate(fixtureName) {
+  // add .sql if not already there
+  if (fixtureName.indexOf('.sql') < 0) fixtureName = fixtureName + '.sql';
+
+  try {
+    // if we have not already stored the sql statement in memory, read the .sql file the first time and then store in memory so we don't have to read file again
+    if (!fixturesSqlObj[fixtureName]) {
+      // grab sql statement and then execute it
+      const fixturesSqlFilePath = path.join(__dirname, '../test', 'fixtures', fixtureName);
+      const sqlStatement = fs.readFileSync(fixturesSqlFilePath, { encoding: 'utf8', flag: 'r' });
+      fixturesSqlObj[fixtureName] = sqlStatement; // store sql statement
+    }
+
+    // execute query
+    await models.db.query(fixturesSqlObj[fixtureName]);
+    return true;
+  } catch (error) {
+    console.log(error);
+    throw error;
+  }
+} // END populate

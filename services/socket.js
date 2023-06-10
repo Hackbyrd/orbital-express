@@ -49,6 +49,7 @@ const SOCKET_EVENTS = {
  */
 async function get(newServer) {
   // if io exists already, return it
+  // if NODE_ENV is test, return null because we dont need to do this in test environment
   if (io) {
     return io;
   }
@@ -95,7 +96,11 @@ async function get(newServer) {
     // establish connections on pub and sub clients
     await Promise.all([pubClient.connect(), subClient.connect()]);
     io.adapter(createAdapter(pubClient, subClient));
-    console.log(`${process.pid}: Socket.io connection established`);
+
+    // only print this if not in test environment
+    if (NODE_ENV !== 'test') {
+      console.log(`${process.pid}: Socket.io connection established`);
+    }
 
     // return to handle io.on('connection') event
     return io;
@@ -111,7 +116,10 @@ async function get(newServer) {
  * @socket - (OBJECT): the socket object
  */
 function connect(socket) {
-  console.log(`${process.pid}: Client socketId: ${socket.id} Connected`);
+  // only print this if not in test environment
+  if (NODE_ENV !== 'test') {
+    console.log(`${process.pid}: Client socketId: ${socket.id} Connected`);
+  }
 
   // join the global room for application
   if (socket.handshake.query.global)
@@ -130,7 +138,10 @@ function connect(socket) {
   // add more rooms here
 
   socket.on('disconnect', () => {
-    console.log(`${process.pid}: Client socketId: ${socket.id} Disconnected`);
+    // only print this if not in test environment
+    if (NODE_ENV !== 'test') {
+      console.log(`${process.pid}: Client socketId: ${socket.id} Disconnected`);
+    }
   });
 } // END connect
 
@@ -151,7 +162,10 @@ async function close() {
     }
 
     // connection successfully closed
-    console.log('Socket connection closed.');
+    // only print this if not in test environment
+    if (NODE_ENV !== 'test') {
+      console.log('Socket connection closed.');
+    }
     return true;
   } catch (error) {
     console.error(error);

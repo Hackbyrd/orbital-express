@@ -12,7 +12,7 @@
 'use strict';
 
 // ENV variables
-const { REDIS_URL, REDISCLOUD_URL } = process.env;
+const { NODE_ENV, REDIS_URL, REDISCLOUD_URL } = process.env;
 
 // third-party
 const Queue = require('bull'); // add background tasks to Queue: https://github.com/OptimalBits/bull/blob/develop/REFERENCE.md#queueclean
@@ -54,20 +54,35 @@ async function closeAll() {
     try {
       // grab list of queue names
       const queueNames = Object.keys(QUEUES);
-      console.log(`Closing ${queueNames.length} queue connection${queueNames.length === 1 ? '' : 's'}...`);
+
+      // only print this if not in test environment
+      if (NODE_ENV !== 'test') {
+        console.log(`Closing ${queueNames.length} queue connection${queueNames.length === 1 ? '' : 's'}...`);
+      }
 
       // close all queues
       for (let i = 0; i < queueNames.length; i++) {
         const q = QUEUES[queueNames[i]]; // grab a queue
 
+        // only print this if not in test environment
+        if (NODE_ENV !== 'test') {
+          console.log(`Closing ${q.name}...`);
+        }
+
         // gracefully disconnect
-        console.log(`Closing ${q.name}...`);
         await q.client.disconnect();
         await q.close();
-        console.log(`${q.name} closed!`);
+        
+        // only print this if not in test environment
+        if (NODE_ENV !== 'test') {
+          console.log(`${q.name} closed!`);
+        }
       }
 
-      console.log('All queues connections closed!');
+      // only print this if not in test environment
+      if (NODE_ENV !== 'test') {
+        console.log('All queues connections closed!');
+      }
       return resolve(true);
     } catch (error) {
       return reject(error);

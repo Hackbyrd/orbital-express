@@ -5,7 +5,7 @@
 'use strict';
 
 // ENV variables
-const { NODE_ENV, ADMIN_WEB_HOST } = process.env;
+const { NODE_ENV, ADMIN_WEB_HOSTNAME } = process.env;
 
 // third-party
 const joi = require('@hapi/joi'); // argument validations: https://github.com/hapijs/joi/blob/master/API.md

@@ -5,18 +5,16 @@
 'use strict';
 
 // ENV variables
-const { REDIS_URL } = process.env;
+const {} = process.env;
 
 // third-party
 const joi = require('@hapi/joi'); // argument validations: https://github.com/hapijs/joi/blob/master/API.md
-const Queue = require('bull'); // add background tasks to Queue: https://github.com/OptimalBits/bull/blob/develop/REFERENCE.md#queueclean
 
 // services
 const { ERROR_CODES, errorResponse, joiErrorsMessage } = require('../../../services/error');
+const queue = require('../../../services/queue'); // process background tasks from Queue
 const socket = require('../../../services/socket');
-
-// queues
-const AdminQueue = new Queue('AdminQueue', REDIS_URL);
+const { SOCKET_ROOMS, SOCKET_EVENTS } = require('../../../services/socket');
 
 // methods
 module.exports = {
@@ -55,14 +53,16 @@ async function V1Export(req) {
     return Promise.resolve(errorResponse(req, ERROR_CODES.BAD_REQUEST_INVALID_ARGUMENTS, joiErrorsMessage(error)));
   req.args = value; // updated arguments with type conversion
 
+  // ADD BACKGROUND JOB TO QUEUE
+  const AdminQueue = queue.get('AdminQueue'); // grab relevent queue
   const job = await AdminQueue.add('V1ExportTask', {
     adminId: req.args.id
   }).catch(err => Promise.reject(err));
 
   const io = await socket.get(); // to emit real-time events to client-side applications: https://socket.io/docs/emit-cheatsheet/
   const data = { message: 'created' };
-  io.to(`${socket.SOCKET_ROOMS.GLOBAL}`).emit(socket.SOCKET_EVENTS.ADMIN_CREATED, data);
-  io.to(`${socket.SOCKET_ROOMS.ADMIN}1`).emit(socket.SOCKET_EVENTS.ADMIN_UPDATED, data);
+  io.to(`${SOCKET_ROOMS.GLOBAL}`).emit(SOCKET_EVENTS.ADMIN_CREATED, data);
+  io.to(`${SOCKET_ROOMS.ADMIN}1`).emit(SOCKET_EVENTS.ADMIN_UPDATED, data);
 
   // return
   return Promise.resolve({

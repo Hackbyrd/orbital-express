@@ -40,7 +40,8 @@
     "redis": "./redis/src/redis-server",
     "redis:stop": "./redis/src/redis-cli shutdown",
     "sql": "node test/fixtures/sql.js",
-    "test": "yarn sql fix1 && ./node_modules/mocha/bin/mocha \"test/**/*.js\" --timeout 100000 --exit",
+    "test": "yarn sql fix1 && node --max-old-space-size=8192 --expose-gc ./node_modules/.bin/jest --runInBand --logHeapUsage",
+    "test-old": "yarn sql fix1 && ./node_modules/mocha/bin/mocha \"test/**/*.js\" --timeout 100000 --exit",
     "t": "yarn test"
   },
   "dependencies": {
@@ -67,6 +68,7 @@
     "heroku-ssl-redirect": "0.1.1",
     "html-to-text": "9.0.5",
     "i18n": "0.15.1",
+    "joi": "17.9.2",
     "jwt-simple": "0.5.6",
     "lodash": "4.17.21",
     "moment": "2.29.4",
@@ -92,6 +94,7 @@
     "dotenv": "16.1.4",
     "gulp": "4.0.2",
     "gulp-cli": "2.3.0",
+    "jest": "29.5.0",
     "ngrok": "4.3.0",
     "nodemon": "2.0.2",
     "prettier": "2.8.8",
