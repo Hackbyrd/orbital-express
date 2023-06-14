@@ -15,7 +15,7 @@ const { NODE_ENV, HOSTNAME } = process.env;
 
 // third party
 const _ = require('lodash'); // general helper methods: https://lodash.com/docs
-const i18n = require('i18n'); // https://github.com/mashpie/i18n-node
+const i18n = require('i18n'); // defaults to en locale and defaults to './locales' relative to node_modules directory to grab language json files: https://github.com/mashpie/i18n-node
 const moment = require('moment-timezone'); // manage timezone and dates: https://momentjs.com/timezone/docs/
 const currency = require('currency.js'); // handling currency operations (add, subtract, multiply) without JS precision issues: https://github.com/scurker/currency.js/
 

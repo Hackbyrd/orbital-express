@@ -60,7 +60,7 @@ async function V1Read(req, res, next) {
     return res.status(401).json(errorResponse(req, ERROR_CODES.UNAUTHORIZED));
 
   // call correct method
-  const result = await actions[method](req).catch(err => next(err));
+  const result = await actions[method](req, res).catch(err => next(err));
   return res.status(result.status).json(result);
 }
 
@@ -82,7 +82,7 @@ async function V1Create(req, res, next) {
     return res.status(401).json(errorResponse(req, ERROR_CODES.UNAUTHORIZED));
 
   // call correct method
-  const result = await actions[method](req).catch(err => next(err));
+  const result = await actions[method](req, res).catch(err => next(err));
   return res.status(result.status).json(result);
 }
 
@@ -104,7 +104,7 @@ async function V1Update(req, res, next) {
     return res.status(401).json(errorResponse(req, ERROR_CODES.UNAUTHORIZED));
 
   // call correct method
-  const result = await actions[method](req).catch(err => next(err));
+  const result = await actions[method](req, res).catch(err => next(err));
   return res.status(result.status).json(result);
 }
 
@@ -126,7 +126,7 @@ async function V1Query(req, res, next) {
     return res.status(401).json(errorResponse(req, ERROR_CODES.UNAUTHORIZED));
 
   // call correct method
-  const result = await actions[method](req).catch(err => next(err));
+  const result = await actions[method](req, res).catch(err => next(err));
   return res.status(result.status).json(result);
 }
 
@@ -148,7 +148,7 @@ async function V1UpdatePassword(req, res, next) {
     return res.status(401).json(errorResponse(req, ERROR_CODES.UNAUTHORIZED));
 
   // call correct method
-  const result = await actions[method](req).catch(err => next(err));
+  const result = await actions[method](req, res).catch(err => next(err));
   return res.status(result.status).json(result);
 }
 
@@ -164,7 +164,7 @@ async function V1ResetPassword(req, res, next) {
   let method = 'V1ResetPassword';
 
   // call correct method
-  const result = await actions[method](req).catch(err => next(err));
+  const result = await actions[method](req, res).catch(err => next(err));
   return res.status(result.status).json(result);
 }
 
@@ -180,7 +180,7 @@ async function V1ConfirmPassword(req, res, next) {
   let method = 'V1ConfirmPassword';
 
   // call correct method
-  const result = await actions[method](req).catch(err => next(err));
+  const result = await actions[method](req, res).catch(err => next(err));
   return res.status(result.status).json(result);
 }
 
@@ -202,7 +202,7 @@ async function V1UpdateEmail(req, res, next) {
     return res.status(401).json(errorResponse(req, ERROR_CODES.UNAUTHORIZED));
 
   // call correct method
-  const result = await actions[method](req).catch(err => next(err));
+  const result = await actions[method](req, res).catch(err => next(err));
   return res.status(result.status).json(result);
 }
 
@@ -225,6 +225,6 @@ async function V1Export(req, res, next) {
     return res.status(401).json(errorResponse(req, ERROR_CODES.UNAUTHORIZED));
 
   // call correct method
-  const result = await actions[method](req).catch(err => next(err));
+  const result = await actions[method](req, res).catch(err => next(err));
   return res.status(result.status).json(result);
 }

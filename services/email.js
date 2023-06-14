@@ -26,6 +26,7 @@ const path = require('path');
 // third-party
 const joi = require('joi'); // argument validations: https://github.com/hapijs/joi/blob/master/API.md
 const ejs = require('ejs'); // email html template
+const i18n = require('i18n'); // defaults to en locale and defaults to './locales' relative to node_modules directory to grab language json files: https://github.com/mashpie/i18n-node
 const nodemailer = require('nodemailer'); // https://nodemailer.com/about/
 const htmlToText = require('html-to-text'); // https://www.npmjs.com/package/html-to-text
 
@@ -168,6 +169,12 @@ async function send({ from, name, subject, template, tos, ccs, bccs, attachments
 
     // if node environment is not production, then add TEST EMAIL disclaimer to top of email to help you distinguish between production and development emails.
     args.isTestEmail = NODE_ENV === 'production' ? '' : 'THIS IS A TEST EMAIL';
+    
+    // add i18n to args
+    // if in action files, we should pass in the req.__() or res.__() function
+    if (!args.i18n) {
+      args.i18n = i18n;
+    }
 
     // get the path to the mailer file template to render
     let renderFilePath = path.join(__dirname, `../mailers/${template}/index.ejs`);

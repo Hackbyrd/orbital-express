@@ -17,7 +17,7 @@ const { ADMIN_WEB_HOSTNAME } = process.env;
 
 // third party
 const _ = require('lodash'); // general helper methods: https://lodash.com/docs
-const i18n = require('i18n'); // https://github.com/mashpie/i18n-node
+const i18n = require('i18n'); // defaults to en locale and defaults to './locales' relative to node_modules directory to grab language json files: https://github.com/mashpie/i18n-node
 
 // models
 const models = require('../../../../models');
@@ -137,6 +137,7 @@ describe('Admin.V1ResetPassword', () => {
         expect(res.body).toHaveProperty('resetLink', `${ADMIN_WEB_HOSTNAME}/confirm-password?passwordResetToken=${foundAdmin.passwordResetToken}`);
 
         // check EmailQueue to see if email job was created
+        // https://github.com/OptimalBits/bull/blob/develop/REFERENCE.md
         const jobs = await EmailQueue.getJobs();
         expect(jobs).toHaveLength(1); // only one job should be created
         expect(jobs[0].name).toBe('V1SendEmailTask'); // the job name should be V1SendEmailTask

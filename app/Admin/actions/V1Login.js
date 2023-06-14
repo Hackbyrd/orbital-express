@@ -32,6 +32,8 @@ module.exports = {
  * GET  /v1/admins/login
  * POST /v1/admins/login
  *
+ * Use req.__('') or res.__('') for i18n language translations (DON'T require('i18n') since it is already attached to the req & res objects): https://github.com/mashpie/i18n-node 
+ *
  * Must be logged out
  * Roles: []
  *

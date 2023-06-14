@@ -11,7 +11,7 @@ const path = require('path');
 require('dotenv').config({ path: path.join(__dirname, '../../../../config/.env.test') });
 
 // third party
-const i18n = require('i18n'); // https://github.com/mashpie/i18n-node
+const i18n = require('i18n'); // defaults to en locale and defaults to './locales' relative to node_modules directory to grab language json files: https://github.com/mashpie/i18n-node
 
 // server & models
 const app = require('../../../../server');

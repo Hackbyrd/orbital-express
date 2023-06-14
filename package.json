@@ -40,7 +40,7 @@
     "redis": "./redis/src/redis-server",
     "redis:stop": "./redis/src/redis-cli shutdown",
     "sql": "node test/fixtures/sql.js",
-    "test": "yarn sql fix1 && node --max-old-space-size=8192 --expose-gc ./node_modules/.bin/jest --runInBand --logHeapUsage --detectOpenHandles",
+    "test": "yarn lang && yarn sql fix1 && node --max-old-space-size=8192 --expose-gc ./node_modules/.bin/jest --runInBand --logHeapUsage --detectOpenHandles",
     "t": "yarn test"
   },
   "dependencies": {

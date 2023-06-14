@@ -9,6 +9,7 @@ const { NODE_ENV, ADMIN_WEB_HOSTNAME } = process.env;
 
 // third-party node modules
 const joi = require('joi'); // argument validations: https://github.com/hapijs/joi/blob/master/API.md
+const i18n = require('i18n'); // https://github.com/mashpie/i18n-node
 const moment = require('moment-timezone'); // manage timezone and dates: https://momentjs.com/timezone/docs/
 
 // services
@@ -32,6 +33,8 @@ module.exports = {
  * GET  /v1/admins/resetpassword
  * POST /v1/admins/resetpassword
  *
+ * Use req.__('') or res.__('') for i18n language translations (DON'T require('i18n') since it is already attached to the req & res objects): https://github.com/mashpie/i18n-node
+ *
  * Must be logged out
  * Roles: []
  *
@@ -46,7 +49,7 @@ module.exports = {
  *   400: ADMIN_BAD_REQUEST_ACCOUNT_DOES_NOT_EXIST
  *   500: INTERNAL_SERVER_ERROR
  */
-async function V1ResetPassword(req) {
+async function V1ResetPassword(req, res) {
   const schema = joi.object({
     email: joi.string().trim().lowercase().min(3).email().required(),
   });
@@ -91,12 +94,13 @@ async function V1ResetPassword(req) {
     await email.enqueue({
       from: email.EMAILS.SUPPORT.address,
       name: email.EMAILS.SUPPORT.name,
-      subject: 'Your password has been changed. Please confirm.',
+      subject: req.__('ADMIN[Reset Email Subject]'), // reset email subject
       template: 'AdminResetPassword',
       tos: [req.args.email],
       ccs: null,
       bccs: null,
       args: {
+        i18n: req.__, // this is i18n function for templates to use for language translations
         resetPasswordConfirmationLink: resetLink,
         expires: '6 hours'
       }
@@ -106,7 +110,7 @@ async function V1ResetPassword(req) {
     return {
       status: 200,
       success: true,
-      message: 'An email has been sent to ' + req.args.email + '. Please check your email to confirm your new password change.',
+      message: req.__('ADMIN[Reset Email Success Message]', { email: req.args.email }),
       resetLink: NODE_ENV === 'production' ? null : resetLink // In production, DO NOT return reset link. Only return reset link in dev and test env for testing purposes.
     };
   } catch (error) {

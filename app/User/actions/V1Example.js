@@ -1,5 +1,5 @@
 /**
- * ADMIN V1Example ACTION
+ * USER V1Example ACTION
  */
 
 'use strict';
@@ -35,7 +35,7 @@ const { ERROR_CODES, errorResponse, joiErrorsMessage } = require('../../../servi
 const { getOffset, getOrdering, convertStringListToWhereStmt } = require('../../../helpers/cruqd');
 const { randomString } = require('../../../helpers/logic');
 const { LIST_INT_REGEX, DATE_TIME_FORMAT_Z } = require('../../../helpers/constants');
-// const { localHelperMethod } = require('../helpers'); // local helpers related to Admin feature folder
+// const { localHelperMethod } = require('../helpers'); // local helpers related to User feature folder
 
 // models
 const models = require('../../../models');
@@ -48,8 +48,10 @@ module.exports = {
 /**
  * Method Description
  *
- * GET  /v1/admins/<method>
- * POST /v1/admins/<method>
+ * GET  /v1/users/<method>
+ * POST /v1/users/<method>
+ *
+ * Use req.__('') or res.__('') for i18n language translations (DON'T require('i18n') since it is already attached to the req & res objects): https://github.com/mashpie/i18n-node
  *
  * Must be logged out | Must be logged in | Can be both logged in or logged out
  * Roles: ['admin', 'member', 'member.ADMIN']
@@ -74,18 +76,18 @@ module.exports = {
  * !NOTE: This is a note
  * TODO: This is a todo
  */
-async function V1Example(req) {
+async function V1Example(req, res) {
   const schema = joi.object({
-    alpha: joi.string().trim().min(1).lowercase().required().error(new Error(req.__('ADMIN_V1Example_Invalid_Argument[alpha]'))),
-    beta: joi.boolean().default(true).optional().error(new Error(req.__('ADMIN_V1Example_Invalid_Argument[beta]'))),
-    charlie: joi.number().integer().min(1).max(10).error(new Error(req.__('ADMIN_V1Example_Invalid_Argument[charlie]'))),
-    delta: joi.string().trim().lowercase().min(3).email().required().error(new Error(req.__('ADMIN_V1Example_Invalid_Argument[delta]'))),
+    alpha: joi.string().trim().min(1).lowercase().required().error(new Error(req.__('USER_V1Example_Invalid_Argument[alpha]'))),
+    beta: joi.boolean().default(true).optional().error(new Error(req.__('USER_V1Example_Invalid_Argument[beta]'))),
+    charlie: joi.number().integer().min(1).max(10).error(new Error(req.__('USER_V1Example_Invalid_Argument[charlie]'))),
+    delta: joi.string().trim().lowercase().min(3).email().required().error(new Error(req.__('USER_V1Example_Invalid_Argument[delta]'))),
     gamma: joi.string().when(joi.ref('$admin'), { // if admin exists on req.admin, then gamma is optional, otherwise it is required
       is: joi.exist(),
       then: joi.optional(),
       otherwise: joi.required(),
-    }).error(new Error(req.__('ADMIN_V1Example_Invalid_Argument[gamma]'))),
-    zeta: joi.string().trim().valid('a', 'b').required().error(new Error(req.__('ADMIN_V1Example_Invalid_Argument[zeta]')))
+    }).error(new Error(req.__('USER_V1Example_Invalid_Argument[gamma]'))),
+    zeta: joi.string().trim().valid('a', 'b').required().error(new Error(req.__('USER_V1Example_Invalid_Argument[zeta]')))
   }).with('alpha', 'beta') // must come together
     .xor('beta', 'gamma') // one and not the other must exists
     .or('gamma', 'delta'); // at least one must exists
@@ -102,8 +104,11 @@ async function V1Example(req) {
     const data = { key: 'value' };
 
     // ADD BACKGROUND JOB TO QUEUE
-    const AdminQueue = queue.get('AdminQueue'); // grab relevent queue
-    const job = await AdminQueue.add('V1ExampleTask', data); // add new job to queue
+    const UserQueue = queue.get('UserQueue'); // grab relevent queue
+    const job = await UserQueue.add('V1ExampleTask', data); // add new job to queue
+
+    // language translation
+    // const message = req.__('YOUR_EMAIL_IS_MESSAGE {{email}}', { email: 'bob@example.com' });
 
     // SOCKET EMIT EVENT
     // const io = socket.get(); // get socket.io instance

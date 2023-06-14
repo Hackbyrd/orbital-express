@@ -6,5 +6,5 @@
 'use strict';
 
 module.exports = [
-  'admin'
+  'user'
 ];

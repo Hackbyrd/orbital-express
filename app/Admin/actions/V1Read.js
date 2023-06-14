@@ -24,6 +24,8 @@ module.exports = {
  * GET  /v1/admins/read
  * POST /v1/admins/read
  *
+ * Use req.__('') or res.__('') for i18n language translations (DON'T require('i18n') since it is already attached to the req & res objects): https://github.com/mashpie/i18n-node
+ * 
  * Must be logged in
  * Roles: ['admin']
  *
@@ -39,7 +41,7 @@ module.exports = {
  *   401: UNAUTHORIZED
  *   500: INTERNAL_SERVER_ERROR
  */
-async function V1Read(req) {
+async function V1Read(req, res) {
   const schema = joi.object({
     id: joi.number().min(1).default(req.admin.id).optional()
   });

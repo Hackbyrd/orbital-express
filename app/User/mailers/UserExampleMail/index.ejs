@@ -1,0 +1,36 @@
+<!--
+ADD DESCRIPTION HERE
+
+Arguments: These are passed in from the mailer function
+  @i18n = (OBJECT - OPTIONAL): i18n object so you can use different languages in your email
+  @isTestEmail - (BOOLEAN - OPTIONAL) [DEFAULT - false in production env]: Whether to show a message that this is a test email in dev / test environments
+  @functionOne - (FUNCTION - OPTIONAL): Description of @functionOne. You can pass in a function if you need to use it in this template. ex. moment.js for date formatting
+  @argumentOne - (NUMBER - REQUIRED): Description of @argumentOne
+  @argumentTwo - (STRING - REQUIRED): Description of @argumentOne
+-->
+
+<!-- Shared Doctype -->
+<%- include('../../../../mailers/layouts/doctype.ejs'); %>
+
+<!-- Outer HTML Tag -->
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:o="urn:schemas-microsoft-com:office:office">
+  
+  <!-- Shared <head></head> tag -->
+  <%- include('../../../../mailers/layouts/head.ejs', { isTestEmail: locals.isTestEmail }); %>
+
+  <body>
+    <!-- Shared Body Header -->
+    <%- include('../../../../mailers/layouts/header.ejs', { isTestEmail: locals.isTestEmail }); %>
+
+    <!---------- ADD MAIN BODY CONTENT BELOW ---------->
+    <%= locals.i18n ? i18n('Hi') : 'Hi' %> <%= locals.argumentOne ? argumentOne : 'none' %><br/>
+
+    <% for (let i = 0; i < 10; i++) { %>
+      <strong><%= locals.argumentTwo ? argumentTwo : 'none' %></strong>
+    <% } %>
+    <!---------- END ADD MAIN BODY CONTENT BELOW ---------->
+
+    <!-- Shared Body Footer -->
+    <%- include('../../../../mailers/layouts/footer.ejs', { isTestEmail: locals.isTestEmail }); %>
+  </body>
+</html>

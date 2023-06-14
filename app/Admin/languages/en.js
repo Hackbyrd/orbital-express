@@ -25,6 +25,10 @@ module.exports = {
   'ADMIN[Admin Already Exists]': 'Admin user already exists.',
   'ADMIN[Invalid Time Zone]': 'Time Zone is invalid.',
 
+  // V1ResetPassword
+  'ADMIN[Reset Email Subject]': 'Your password has been changed. Please confirm.',
+  'ADMIN[Reset Email Success Message]': 'An email has been sent to {{email}}. Please check your email to confirm your new password change.',
+
   // V1ConfirmPassword
   'ADMIN[Invalid Password Reset Token]': 'Invalid password reset token or reset token has expired.',
   'ADMIN[Invalid Password Format]': 'Password must contain at least 1 lowercase letter, at least 1 uppercase letter, at least 1 number, at least one symbol (!@#$%^&*), and must be at least eight characters in length.',

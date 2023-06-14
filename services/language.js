@@ -1,5 +1,8 @@
 /**
  * Aggregate all language files app directory to create global language locale files
+ * 
+ * In the actions files, you can access i18n via req.__() or res.__(). The i18n configuration is set in the server.js file
+ * In non action files (tasks, services, helpers, scripts, etc...), you must require('i18n') module to use. By default, it will access the ./locales folder for the JSON language files
  *
  * !IMPORTANT: The LOCALES constant variable must have the same number of languages as each feature language folder and the global language folder
  */

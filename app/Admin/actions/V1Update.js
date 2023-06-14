@@ -29,6 +29,8 @@ module.exports = {
  * GET  /v1/admins/update
  * POST /v1/admins/update
  *
+ * Use req.__('') or res.__('') for i18n language translations (DON'T require('i18n') since it is already attached to the req & res objects): https://github.com/mashpie/i18n-node
+ * 
  * Must be logged in
  * Roles: ['admin']
  *
@@ -48,7 +50,7 @@ module.exports = {
  *   401: UNAUTHORIZED
  *   500: INTERNAL_SERVER_ERROR
  */
-async function V1Update(req) {
+async function V1Update(req, res) {
   const schema = joi.object({
     timezone: joi.string().trim().optional(),
     locale: joi.string().trim().optional(),

@@ -1,5 +1,5 @@
 /**
- * TEST ADMIN V1Example METHOD
+ * TEST USER V1Example METHOD
  *
  * JEST CHEATSHEET: https://devhints.io/jest
  */
@@ -17,9 +17,10 @@ const { NODE_ENV, HOSTNAME } = process.env;
 
 // third party
 const _ = require('lodash'); // general helper methods: https://lodash.com/docs
-const i18n = require('i18n'); // https://github.com/mashpie/i18n-node
+const i18n = require('i18n'); // defaults to en locale and defaults to './locales' relative to node_modules directory to grab language json files: https://github.com/mashpie/i18n-node
 const moment = require('moment-timezone'); // manage timezone and dates: https://momentjs.com/timezone/docs/
 const currency = require('currency.js'); // handling currency operations (add, subtract, multiply) without JS precision issues: https://github.com/scurker/currency.js/
+const { faker } = require('@faker-js/faker'); // https://fakerjs.dev/api
 
 // models
 const models = require('../../../../models');
@@ -39,9 +40,9 @@ const { adminLogin, partnerLogin, userLogin, reset, populate } = require('../../
 let app = null;
 
 // queues: add queues you will use in testing here
-let AdminQueue = null; // initial value, will be set in beforeEach because it is async
+let UserQueue = null; // initial value, will be set in beforeEach because it is async
 
-describe('Admin.V1Example', () => {
+describe('User.V1Example', () => {
   // grab fixtures and convert to function so every test has fresh deep copy of fixtures otherwise if we don't do this, then fixtures will be modified by previous tests and affect other tests
   const adminFixFn = () => _.cloneDeep(require('../../../../test/fixtures/fix1/admin'));
   const partnerFixFn = () => _.cloneDeep(require('../../../../test/fixtures/fix1/partner'));
@@ -54,7 +55,7 @@ describe('Admin.V1Example', () => {
 
   // url of the api method we are testing
   const routeVersion = '/v1';
-  const routePrefix = '/admins';
+  const routePrefix = '/users';
   const routeMethod = '/<INSERT_METHOD>';
   const routeUrl = `${routeVersion}${routePrefix}${routeMethod}`;
 
@@ -77,8 +78,8 @@ describe('Admin.V1Example', () => {
 
     try {
       // create queue connections here
-      AdminQueue = queue.get('AdminQueue');
-      await AdminQueue.empty(); // make sure queue is empty before each test runs
+      UserQueue = queue.get('UserQueue');
+      await UserQueue.empty(); // make sure queue is empty before each test runs
 
       await socket.get(); // create socket connection
       await reset(); // reset database
@@ -167,6 +168,12 @@ describe('Admin.V1Example', () => {
         // check response
         expect(res.statusCode).toBe(200);
         expect(res.body).toHaveProperty('success', true);
+
+        // check UserQueue to see if job was created
+        // https://github.com/OptimalBits/bull/blob/develop/REFERENCE.md
+        const jobs = await UserQueue.getJobs();
+        expect(jobs).toHaveLength(1); // only one job should be created
+        expect(jobs[0].name).toBe('V1ExampleTask'); // the job name should be V1ExampleTask
       } catch (error) {
         console.error(error);
         throw error;
@@ -211,7 +218,13 @@ describe('Admin.V1Example', () => {
 
         // check response
         expect(res.statusCode).toBe(200);
+
         expect(res.body).toHaveProperty('success', true);
+        // check UserQueue to see if job was created
+        // https://github.com/OptimalBits/bull/blob/develop/REFERENCE.md
+        const jobs = await UserQueue.getJobs();
+        expect(jobs).toHaveLength(1); // only one job should be created
+        expect(jobs[0].name).toBe('V1ExampleTask'); // the job name should be V1ExampleTask
       } catch (error) {
         console.error(error);
         throw error;
@@ -257,10 +270,16 @@ describe('Admin.V1Example', () => {
         // check response
         expect(res.statusCode).toBe(200);
         expect(res.body).toHaveProperty('success', true);
+
+        // check UserQueue to see if job was created
+        // https://github.com/OptimalBits/bull/blob/develop/REFERENCE.md
+        const jobs = await UserQueue.getJobs();
+        expect(jobs).toHaveLength(1); // only one job should be created
+        expect(jobs[0].name).toBe('V1ExampleTask'); // the job name should be V1ExampleTask
       } catch (error) {
         console.error(error);
         throw error;
       }
     }); // END should test something
   }); // END Role: User
-}); // END Admin.V1Example
+}); // END User.V1Example
