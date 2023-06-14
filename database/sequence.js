@@ -5,6 +5,4 @@
 
 'use strict';
 
-module.exports = [
-  'user'
-];
+module.exports = [];
