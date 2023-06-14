@@ -5,7 +5,7 @@
 'use strict';
 
 // third-party
-const joi = require('@hapi/joi'); // argument validations: https://github.com/hapijs/joi/blob/master/API.md
+const joi = require('joi'); // argument validations: https://github.com/hapijs/joi/blob/master/API.md
 
 // services
 const socket = require('../../../services/socket');

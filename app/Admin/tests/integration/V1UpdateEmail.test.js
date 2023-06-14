@@ -53,8 +53,8 @@ describe('Admin.V1UpdateEmail', async () => {
       // update request
       try {
         const res = await request(app).get(routeUrl);
-        expect(res.statusCode).to.equal(401);
-        expect(res.body).to.deep.equal(errorResponse(i18n, ERROR_CODES.UNAUTHORIZED));
+        expect(res.statusCode).toBe(401);
+        expect(res.body).toEqual(errorResponse(i18n, ERROR_CODES.UNAUTHORIZED));
       } catch (error) {
         throw error;
       }
@@ -88,12 +88,12 @@ describe('Admin.V1UpdateEmail', async () => {
           .set('authorization', `${jwt} ${token}`)
           .send(params)
 
-        expect(res.statusCode).to.equal(200);
-        expect(res.body).to.have.property('success', true);
+        expect(res.statusCode).toBe(200);
+        expect(res.body).toHaveProperty('success', true);
 
         // find admin to see if the email is updated
         const foundAdmin = await models.admin.findByPk(admin1.id);
-        expect(foundAdmin.email).to.equal(params.email);
+        expect(foundAdmin.email).toBe(params.email);
       } catch (error) {
         throw error;
       }
@@ -116,8 +116,8 @@ describe('Admin.V1UpdateEmail', async () => {
           .set('authorization', `${jwt} ${token}`)
           .send(params);
 
-        expect(res.statusCode).to.equal(400);
-        expect(res.body).to.deep.equal(errorResponse(i18n, ERROR_CODES.ADMIN_BAD_REQUEST_SAME_EMAIL));
+        expect(res.statusCode).toBe(400);
+        expect(res.body).toEqual(errorResponse(i18n, ERROR_CODES.ADMIN_BAD_REQUEST_SAME_EMAIL));
       } catch (error) {
         throw error;
       }
@@ -147,7 +147,7 @@ describe('Admin.V1UpdateEmail', async () => {
           .post(`${routeVersion}${routePrefix}/create`)
           .set('authorization', `${jwt} ${token}`)
           .send(params);
-        expect(res.statusCode).to.equal(201);
+        expect(res.statusCode).toBe(201);
 
         const params2 = {
           email: 'admin-3@example.com'
@@ -159,8 +159,8 @@ describe('Admin.V1UpdateEmail', async () => {
           .set('authorization', `${jwt} ${token}`)
           .send(params2);
 
-        expect(res2.statusCode).to.equal(400);
-        expect(res2.body).to.deep.equal(errorResponse(i18n, ERROR_CODES.ADMIN_BAD_REQUEST_EMAIL_ALREADY_TAKEN));
+        expect(res2.statusCode).toBe(400);
+        expect(res2.body).toEqual(errorResponse(i18n, ERROR_CODES.ADMIN_BAD_REQUEST_EMAIL_ALREADY_TAKEN));
       } catch (error) {
         throw error;
       }

@@ -40,13 +40,10 @@
     "redis": "./redis/src/redis-server",
     "redis:stop": "./redis/src/redis-cli shutdown",
     "sql": "node test/fixtures/sql.js",
-    "test": "yarn sql fix1 && node --max-old-space-size=8192 --expose-gc ./node_modules/.bin/jest --runInBand --logHeapUsage",
-    "test-old": "yarn sql fix1 && ./node_modules/mocha/bin/mocha \"test/**/*.js\" --timeout 100000 --exit",
+    "test": "yarn sql fix1 && node --max-old-space-size=8192 --expose-gc ./node_modules/.bin/jest --runInBand --logHeapUsage --detectOpenHandles",
     "t": "yarn test"
   },
   "dependencies": {
-    "@hapi/joi": "17.1.1",
-    "@hapi/joi-date": "2.0.1",
     "@socket.io/redis-adapter": "8.2.1",
     "accounting": "0.4.1",
     "bcrypt": "5.1.0",
@@ -91,6 +88,7 @@
     "throng": "5.0.0"
   },
   "devDependencies": {
+    "@faker-js/faker": "^8.0.2",
     "dotenv": "16.1.4",
     "gulp": "4.0.2",
     "gulp-cli": "2.3.0",

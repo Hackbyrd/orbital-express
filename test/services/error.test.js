@@ -24,27 +24,27 @@ describe('services/error.js', () => {
     it('should create the error response JSON correctly', done => {
       const resultJSON = errorResponse(i18n, ERROR_CODES.UNAUTHORIZED);
       expect(resultJSON.success).to.be.false;
-      expect(resultJSON.status).to.equal(401);
-      expect(resultJSON.error).to.equal(ERROR_CODES.UNAUTHORIZED.error);
-      expect(resultJSON.message).to.equal(i18n.__(ERROR_CODES.UNAUTHORIZED.messages[0]));
+      expect(resultJSON.status).toBe(401);
+      expect(resultJSON.error).toBe(ERROR_CODES.UNAUTHORIZED.error);
+      expect(resultJSON.message).toBe(i18n.__(ERROR_CODES.UNAUTHORIZED.messages[0]));
       done();
     }); // END should create the error response JSON correctly
 
     it('should create the error response JSON with custom message correctly', done => {
       const resultJSON = errorResponse(i18n, ERROR_CODES.UNAUTHORIZED, 'TEST MESSAGE');
       expect(resultJSON.success).to.be.false;
-      expect(resultJSON.status).to.equal(401);
-      expect(resultJSON.error).to.equal(ERROR_CODES.UNAUTHORIZED.error);
-      expect(resultJSON.message).to.equal('TEST MESSAGE');
+      expect(resultJSON.status).toBe(401);
+      expect(resultJSON.error).toBe(ERROR_CODES.UNAUTHORIZED.error);
+      expect(resultJSON.message).toBe('TEST MESSAGE');
       done();
     }); // END should create the error response JSON with custom message correctly
 
     it('should create the error response JSON with custom message and custom status code correctly', done => {
       const resultJSON = errorResponse(i18n, ERROR_CODES.UNAUTHORIZED, 'TEST MESSAGE', 408);
       expect(resultJSON.success).to.be.false;
-      expect(resultJSON.status).to.equal(408);
-      expect(resultJSON.error).to.equal(ERROR_CODES.UNAUTHORIZED.error);
-      expect(resultJSON.message).to.equal('TEST MESSAGE');
+      expect(resultJSON.status).toBe(408);
+      expect(resultJSON.error).toBe(ERROR_CODES.UNAUTHORIZED.error);
+      expect(resultJSON.message).toBe('TEST MESSAGE');
       done();
     }); // END should create the error response JSON with custom message and custom status code correctly
   }); // END errorResponse

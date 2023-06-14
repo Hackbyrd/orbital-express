@@ -7,19 +7,19 @@
 // ENV variables
 const { NODE_ENV, ADMIN_WEB_HOSTNAME } = process.env;
 
-// third-party
-const joi = require('@hapi/joi'); // argument validations: https://github.com/hapijs/joi/blob/master/API.md
+// third-party node modules
+const joi = require('joi'); // argument validations: https://github.com/hapijs/joi/blob/master/API.md
 const moment = require('moment-timezone'); // manage timezone and dates: https://momentjs.com/timezone/docs/
 
 // services
 const email = require('../../../services/email');
 const { ERROR_CODES, errorResponse, joiErrorsMessage } = require('../../../services/error');
 
-// models
-const models = require('../../../models');
-
 // helpers
 const { randomString } = require('../../../helpers/logic');
+
+// models
+const models = require('../../../models');
 
 // methods
 module.exports = {
@@ -54,7 +54,8 @@ async function V1ResetPassword(req) {
   // validate
   const { error, value } = schema.validate(req.args);
   if (error)
-    return Promise.resolve(errorResponse(req, ERROR_CODES.BAD_REQUEST_INVALID_ARGUMENTS, joiErrorsMessage(error)));
+    return errorResponse(req, ERROR_CODES.BAD_REQUEST_INVALID_ARGUMENTS, joiErrorsMessage(error));
+  req.args = value; // arguments are updated and variable types are converted to correct type. ex. '5' -> 5, 'true' -> true
 
   // grab admin with this email
   try {
@@ -66,7 +67,7 @@ async function V1ResetPassword(req) {
 
     // if admin cannot be found
     if (!findAdmin)
-      return Promise.resolve(errorResponse(req, ERROR_CODES.ADMIN_BAD_REQUEST_ACCOUNT_DOES_NOT_EXIST));
+      return errorResponse(req, ERROR_CODES.ADMIN_BAD_REQUEST_ACCOUNT_DOES_NOT_EXIST);
 
     // preparing for reset
     const passwordResetToken = randomString();
@@ -83,12 +84,13 @@ async function V1ResetPassword(req) {
       }
     });
 
-    const resetLink = `${ADMIN_WEB_HOST}/confirm-password?passwordResetToken=${passwordResetToken}`; // create URL using front end url
+    // create reset URL using front end url
+    const resetLink = `${ADMIN_WEB_HOSTNAME}/confirm-password?passwordResetToken=${passwordResetToken}`;
 
-    // send confirmation email
-    const result = await email.send({
-      from: email.emails.support.address,
-      name: email.emails.support.name,
+    // add email notification to email queue to send email
+    await email.enqueue({
+      from: email.EMAILS.SUPPORT.address,
+      name: email.EMAILS.SUPPORT.name,
       subject: 'Your password has been changed. Please confirm.',
       template: 'AdminResetPassword',
       tos: [req.args.email],
@@ -101,13 +103,13 @@ async function V1ResetPassword(req) {
     });
 
     // return success
-    return Promise.resolve({
+    return {
       status: 200,
       success: true,
       message: 'An email has been sent to ' + req.args.email + '. Please check your email to confirm your new password change.',
-      resetLink: NODE_ENV === 'test' ? resetLink : null // only return reset link in dev and test env for testing purposes
-    });
+      resetLink: NODE_ENV === 'production' ? null : resetLink // In production, DO NOT return reset link. Only return reset link in dev and test env for testing purposes.
+    };
   } catch (error) {
-    return Promise.reject(error);
+    throw error;
   }
 } // END V1ResetPassword

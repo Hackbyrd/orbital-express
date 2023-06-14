@@ -10,6 +10,7 @@
 module.exports = {
   ...require('./V1ConfirmPassword'),
   ...require('./V1Create'),
+  ...require('./V1Example'),
   ...require('./V1Export'),
   ...require('./V1Login'),
   ...require('./V1Query'),

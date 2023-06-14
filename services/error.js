@@ -98,6 +98,29 @@ function errorResponse(i18n, errorCode, errorMessage = 0, statusCode) {
 }
 
 /**
+ * Takes in an ERROR_CODE and databaseTransaction and returns an object to return in the response json
+ *
+ * @databaseTransaction - (OBJECT - REQUIRED): the database transaction object
+ * @i18n - (OBJECT - REQUIRED): the language library
+ * @errorCode - (ERROR_CODE OBJECT - REQUIRED): the error code to use
+ * @errorMessage - (STRING/NUMBER - OPTIONAL) [DEFAULT - 0]: A custom message to override default message. SHOULD NOT have i18n language wrapper because it should be called outside of this function. If int, then use the messages array to get the correct error message
+ * @statusCode - (NUMBER - OPTIONAL): the http status code, 400, to override the default
+ *
+ * return { success, status, error, message }
+ */
+async function errorResponseRollback(databaseTransaction, i18n, errorCode, errorMessage = 0, statusCode) {
+  try {
+    // rollback database transaction passed in
+    await databaseTransaction.rollback();
+
+    // return error response
+    return errorResponse(i18n, errorCode, errorMessage, statusCode);
+  } catch (error) {
+    throw error;
+  }
+}
+
+/**
  * Combine error messages into one string from joi errors object
  *
  * @errors (ARRAY OBJECTS - REQUIRED): The error message ex. { details: [{ message: '' }, { message: '' }] }
@@ -161,6 +184,7 @@ async function queueError(error, queue, job) {
 module.exports = {
   ERROR_CODES,
   errorResponse,
+  errorResponseRollback,
   joiErrorsMessage,
   queueError
 };

@@ -1,6 +1,7 @@
 'use strict';
 
 // require helpers
+const constants = require('../helpers/constants');
 const { randomString } = require('../helpers/logic');
 
 module.exports = {
@@ -29,6 +30,12 @@ module.exports = {
         type: DataTypes.BOOLEAN,
         allowNull: false,
         defaultValue: true
+      },
+
+      role: {
+        type: DataTypes.STRING,
+        allowNull: false,
+        defaultValue: constants.ADMIN_ROLE.ADMIN
       },
   
       firstName: {

@@ -1,5 +1,7 @@
 /**
  * TEST ADMIN V1ConfirmPassword METHOD
+ *
+ * JEST CHEATSHEET: https://devhints.io/jest
  */
 
 'use strict';
@@ -11,27 +13,37 @@ const path = require('path');
 require('dotenv').config({ path: path.join(__dirname, '../../../../config/.env.test') });
 
 // third party
+const _ = require('lodash'); // general helper methods: https://lodash.com/docs
 const moment = require('moment-timezone');
 const i18n = require('i18n');
 const bcrypt = require('bcrypt');
 
-// server & models
-const app = require('../../../../server');
+// models
 const models = require('../../../../models');
 
 // assertion library
-const { expect } = require('chai');
 const request = require('supertest');
 
 // services
+const queue = require('../../../../services/queue'); // process background tasks from Queue
+const socket = require('../../../../services/socket'); // require socket service to initiate socket.io
 const { errorResponse, ERROR_CODES } = require('../../../../services/error');
 
 // helpers
 const { reset, populate } = require('../../../../helpers/tests');
 
-describe('Admin.V1ConfirmPassword', async () => {
-  // grab fixtures here
-  const adminFix = require('../../../../test/fixtures/fix1/admin');
+// server: initialize server in the beforeAll function because it is an async function
+let app = null;
+
+// queues: add queues you will use in testing here
+let AdminQueue = null; // initial value, will be set in beforeEach because it is async
+
+describe('Admin.V1ConfirmPassword', () => {
+  // grab fixtures and convert to function so every test has fresh deep copy of fixtures otherwise if we don't do this, then fixtures will be modified by previous tests and affect other tests
+  const adminFixFn = () => _.cloneDeep(require('../../../../test/fixtures/fix1/admin'));
+
+  // fixtures
+  let adminFix = null;
 
   // url of the api method we are testing
   const routeVersion = '/v1';
@@ -39,16 +51,57 @@ describe('Admin.V1ConfirmPassword', async () => {
   const routeMethod = '/confirmpassword';
   const routeUrl = `${routeVersion}${routePrefix}${routeMethod}`;
 
-  // clear database
+  // beforeAll: initialize app server
+  beforeAll(async () => {
+    try {
+      app = await require('../../../../server');
+    } catch (error) {
+      console.error(error);
+      throw error;
+    }
+  });
+
+  // beforeEach: reset fixtures, establish & empty queue connections, establish socket connections and clear database
   beforeEach(async () => {
-    await reset();
+    // reset fixtures with fresh deep copy, must call these functions to get deep copy because we don't want modified fixtures from previous tests to affect other tests
+    adminFix = adminFixFn();
+
+    try {
+      // create queue connections here
+      AdminQueue = queue.get('AdminQueue');
+      await AdminQueue.empty(); // make sure queue is empty before each test runs
+
+      await socket.get(); // create socket connection
+      await reset(); // reset database
+    } catch (error) {
+      console.error(error);
+      throw error;
+    }
+  });
+
+  // afterAll: close all queue & socket connections, close database & app server connections
+  afterAll(async () => {
+    try {
+      await queue.closeAll(); // close all queue connections
+      await socket.close(); // close socket connection
+      await models.db.close(); // close database connection
+      app.close(); // close server connection
+    } catch (error) {
+      console.error(error);
+      throw error;
+    }
   });
 
   // Logged Out
-  describe('Role: Logged Out', async () => {
-    // populate database with fixtures
+  describe('Role: Logged Out', () => {
+    // populate database with fixtures and empty queues
     beforeEach(async () => {
-      await populate('fix1');
+      try {
+        await populate('fix1'); // populate test database with fix1 dataset
+      } catch (error) {
+        console.error(error);
+        throw error;
+      }
     });
 
     it('[logged-out] should confirm password successfully', async () => {
@@ -64,7 +117,7 @@ describe('Admin.V1ConfirmPassword', async () => {
           .post(`${routeVersion}${routePrefix}/resetpassword`)
           .send(params);
 
-        expect(res.statusCode).to.equal(200);
+        expect(res.statusCode).toBe(200);
 
         // grab token
         const foundAdmin = await models.admin.findByPk(admin1.id);
@@ -79,15 +132,15 @@ describe('Admin.V1ConfirmPassword', async () => {
           .post(routeUrl)
           .send(params2);
 
-        expect(res2.statusCode).to.equal(200);
-        expect(res2.body).to.have.property('success', true);
+        expect(res2.statusCode).toBe(200);
+        expect(res2.body).toHaveProperty('success', true);
 
         // get updated admin
         const updatedAdmin = await models.admin.findByPk(admin1.id);
         const resetPassword = bcrypt.hashSync(params2.password1, updatedAdmin.salt);
 
-        expect(updatedAdmin.password).to.equal(resetPassword);
-        expect(updatedAdmin.passwordResetToken).to.be.null;
+        expect(updatedAdmin.password).toBe(resetPassword);
+        expect(updatedAdmin.passwordResetToken).toBeNull();
       } catch (error) {
         throw error;
       }
@@ -106,7 +159,7 @@ describe('Admin.V1ConfirmPassword', async () => {
           .post(`${routeVersion}${routePrefix}/resetpassword`)
           .send(params);
 
-        expect(res.statusCode).to.equal(200);
+        expect(res.statusCode).toBe(200);
 
         // grab token
         const params2 = {
@@ -120,8 +173,8 @@ describe('Admin.V1ConfirmPassword', async () => {
           .post(routeUrl)
           .send(params2);
 
-        expect(res2.statusCode).to.equal(400);
-        expect(res2.body).to.deep.equal(errorResponse(i18n, ERROR_CODES.ADMIN_BAD_REQUEST_INVALID_PASSWORD_RESET_TOKEN));
+        expect(res2.statusCode).toBe(400);
+        expect(res2.body).toEqual(errorResponse(i18n, ERROR_CODES.ADMIN_BAD_REQUEST_INVALID_PASSWORD_RESET_TOKEN));
       } catch (error) {
         throw error;
       }
@@ -140,7 +193,7 @@ describe('Admin.V1ConfirmPassword', async () => {
           .post(`${routeVersion}${routePrefix}/resetpassword`)
           .send(params);
 
-        expect(res.statusCode).to.equal(200);
+        expect(res.statusCode).toBe(200);
 
         // grab token
         const foundAdmin = await models.admin.findByPk(admin1.id);
@@ -164,8 +217,8 @@ describe('Admin.V1ConfirmPassword', async () => {
           .post(routeUrl)
           .send(params2);
 
-        expect(res2.statusCode).to.equal(400);
-        expect(res2.body).to.deep.equal(errorResponse(i18n, ERROR_CODES.ADMIN_BAD_REQUEST_INVALID_PASSWORD_RESET_TOKEN));
+        expect(res2.statusCode).toBe(400);
+        expect(res2.body).toEqual(errorResponse(i18n, ERROR_CODES.ADMIN_BAD_REQUEST_INVALID_PASSWORD_RESET_TOKEN));
       } catch (error) {
         throw error;
       }
@@ -184,7 +237,7 @@ describe('Admin.V1ConfirmPassword', async () => {
           .post(`${routeVersion}${routePrefix}/resetpassword`)
           .send(params);
 
-        expect(res.statusCode).to.equal(200);
+        expect(res.statusCode).toBe(200);
 
         // grab token
         const foundAdmin = await models.admin.findByPk(admin1.id);
@@ -199,8 +252,8 @@ describe('Admin.V1ConfirmPassword', async () => {
           .post(routeUrl)
           .send(params2);
 
-        expect(res2.statusCode).to.equal(400);
-        expect(res2.body).to.deep.equal(errorResponse(i18n, ERROR_CODES.ADMIN_BAD_REQUEST_PASSWORDS_NOT_EQUAL));
+        expect(res2.statusCode).toBe(400);
+        expect(res2.body).toEqual(errorResponse(i18n, ERROR_CODES.ADMIN_BAD_REQUEST_PASSWORDS_NOT_EQUAL));
       } catch (error) {
         throw error;
       }
@@ -219,7 +272,7 @@ describe('Admin.V1ConfirmPassword', async () => {
           .post(`${routeVersion}${routePrefix}/resetpassword`)
           .send(params);
 
-        expect(res.statusCode).to.equal(200);
+        expect(res.statusCode).toBe(200);
 
         // grab token
         const foundAdmin = await models.admin.findByPk(admin1.id);
@@ -234,8 +287,8 @@ describe('Admin.V1ConfirmPassword', async () => {
           .post(routeUrl)
           .send(params2);
 
-        expect(res2.statusCode).to.equal(400);
-        expect(res2.body).to.deep.equal(errorResponse(i18n, ERROR_CODES.BAD_REQUEST_INVALID_ARGUMENTS, i18n.__('ADMIN[Invalid Password Format]')));
+        expect(res2.statusCode).toBe(400);
+        expect(res2.body).toEqual(errorResponse(i18n, ERROR_CODES.BAD_REQUEST_INVALID_ARGUMENTS, i18n.__('ADMIN[Invalid Password Format]')));
       } catch (error) {
         throw error;
       }

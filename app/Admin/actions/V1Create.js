@@ -4,21 +4,20 @@
 
 'use strict';
 
-// third-party
-
-const joi = require('@hapi/joi'); // argument validations: https://github.com/hapijs/joi/blob/master/API.md
+// third-party node modules
+const joi = require('joi'); // argument validations: https://github.com/hapijs/joi/blob/master/API.md
 
 // services
 const { ERROR_CODES, errorResponse, joiErrorsMessage } = require('../../../services/error');
 const socket = require('../../../services/socket');
 const { SOCKET_ROOMS, SOCKET_EVENTS } = socket;
 
-// models
-const models = require('../../../models');
-
 // helpers
 const { isValidTimezone } = require('../../../helpers/validate');
-const { PASSWORD_LENGTH_MIN, PASSWORD_REGEX } = require('../../../helpers/constants');
+const { PASSWORD_LENGTH_MIN, PASSWORD_REGEX, ADMIN_ROLES, ADMIN_ROLE } = require('../../../helpers/constants');
+
+// models
+const models = require('../../../models');
 
 // methods
 module.exports = {
@@ -36,8 +35,10 @@ module.exports = {
  *
  * req.params = {}
  * req.args = {
- *   @name - (STRING - REQUIRED): The name of the new admin
+ *   @firstName - (STRING - REQUIRED): The first name of the new admin
+ *   @lastName - (STRING - REQUIRED): The first name of the new admin
  *   @active - (BOOLEAN - REQUIRED): Whether admin is active or not
+ *   @role - (STRING - REQUIRED) [Default - ADMIN]: The role of the admin (ADMIN, MANAGER, EMPLOYEE) constants.ADMIN_ROLE
  *   @email - (STRING - REQUIRED): The email of the admin,
  *   @phone - (STRING - REQUIRED): The phone of the admin,
  *   @timezone - (STRING - REQUIRED): The timezone of the admin,
@@ -58,8 +59,10 @@ module.exports = {
  */
 async function V1Create(req) {
   const schema = joi.object({
-    name: joi.string().trim().min(1).required(),
+    firstName: joi.string().trim().min(1).required(),
+    lastName: joi.string().trim().min(1).required(),
     active: joi.boolean().required(),
+    role: joi.string().uppercase().valid(...ADMIN_ROLES).default(ADMIN_ROLE.ADMIN).optional(),
     email: joi.string().trim().lowercase().min(3).email().required(),
     phone: joi.string().trim().required(),
     timezone: joi.string().min(1).required(),
@@ -72,69 +75,85 @@ async function V1Create(req) {
   // validate
   const { error, value } = schema.validate(req.args);
   if (error)
-    return Promise.resolve(errorResponse(req, ERROR_CODES.BAD_REQUEST_INVALID_ARGUMENTS, joiErrorsMessage(error)));
-  req.args = value; // updated arguments with type conversion
+    return errorResponse(req, ERROR_CODES.BAD_REQUEST_INVALID_ARGUMENTS, joiErrorsMessage(error));
+  req.args = value; // arguments are updated and variable types are converted to correct type. ex. '5' -> 5, 'true' -> true
 
   // check passwords
   if (req.args.password1 !== req.args.password2)
-    return Promise.resolve(errorResponse(req, ERROR_CODES.ADMIN_BAD_REQUEST_PASSWORDS_NOT_EQUAL));
-  req.args.password = req.args.password1; // set password
+    return errorResponse(req, ERROR_CODES.ADMIN_BAD_REQUEST_PASSWORDS_NOT_EQUAL);
+
+  // set password
+  req.args.password = req.args.password1;
 
   // check terms of service
   if (!req.args.acceptedTerms)
-    return Promise.resolve(errorResponse(req, ERROR_CODES.ADMIN_BAD_REQUEST_TERMS_OF_SERVICE_NOT_ACCEPTED));
+    return errorResponse(req, ERROR_CODES.ADMIN_BAD_REQUEST_TERMS_OF_SERVICE_NOT_ACCEPTED);
+
+  // TODO: verify phone number
+
+  // create database transactions
+  const t = await models.db.transaction(); // https://sequelize.org/master/manual/transactions.html
 
   try {
+
     // check if admin email already exists
     const duplicateAdmin = await models.admin.findOne({
       where: {
         email: req.args.email
       }
-    });
+    }, { transaction: t });
 
-    // check of duplicate admin user
-    if (duplicateAdmin)
-      return Promise.resolve(errorResponse(req, ERROR_CODES.ADMIN_BAD_REQUEST_ADMIN_ALREADY_EXISTS));
+    // check duplicate admin user
+    if (duplicateAdmin) {
+      await t.rollback(); // must rollback since we are returning
+      return errorResponse(req, ERROR_CODES.ADMIN_BAD_REQUEST_ADMIN_ALREADY_EXISTS);
+    }
 
     // check timezone
-    if (!isValidTimezone(req.args.timezone))
-      return Promise.resolve(errorResponse(req, ERROR_CODES.ADMIN_BAD_REQUEST_INVALID_TIMEZONE));
+    if (!isValidTimezone(req.args.timezone)) {
+      await t.rollback(); // must rollback since we are returning
+      return errorResponse(req, ERROR_CODES.ADMIN_BAD_REQUEST_INVALID_TIMEZONE);
+    }
 
     // create admin
     const newAdmin = await models.admin.create({
       timezone: req.args.timezone,
       locale: req.args.locale,
-      name: req.args.name,
+      firstName: req.args.firstName,
+      lastName: req.args.lastName,
       active: req.args.active,
       email: req.args.email,
       phone: req.args.phone,
       password: req.args.password,
       acceptedTerms: req.args.acceptedTerms
-    });
+    }, { transaction: t });
 
     // grab admin without sensitive data
-    const returnAdmin = await models.admin.findByPk(newAdmin.id, {
+    const findAdmin = await models.admin.findByPk(newAdmin.id, {
       attributes: {
         exclude: models.admin.getSensitiveData() // remove sensitive data
-      }
-    }).catch(err => {
-      newAdmin.destroy(); // destroy if error
-      return Promise.reject(err);
+      },
+      transaction: t
     }); // END grab partner without sensitive data
 
     // SOCKET EMIT EVENT
     const io = await socket.get(); // to emit real-time events to client-side applications: https://socket.io/docs/emit-cheatsheet/
-    const data = { admin: returnAdmin };
+    const data = { admin: findAdmin };
     io.to(`${SOCKET_ROOMS.GLOBAL}`).emit(SOCKET_EVENTS.ADMIN_CREATED, data);
-    io.to(`${SOCKET_ROOMS.ADMIN}${returnAdmin.id}`).emit(SOCKET_EVENTS.ADMIN_CREATED, data);
+    io.to(`${SOCKET_ROOMS.ADMIN}${findAdmin.id}`).emit(SOCKET_EVENTS.ADMIN_CREATED, data);
+
+    // commit transaction
+    await t.commit();
 
     // return
-    return Promise.resolve({
+    return {
       status: 201,
       success: true,
-      admin: returnAdmin
-    });
+      admin: findAdmin
+    };
   } catch (error) {
-    return Promise.reject(error);
+    // rollback anything that was created if error
+    await t.rollback();
+    throw error;
   }
 } // END V1Create

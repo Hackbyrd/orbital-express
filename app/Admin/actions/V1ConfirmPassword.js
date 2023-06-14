@@ -6,17 +6,17 @@
 
 // third-party
 const Op = require('sequelize').Op; // for model operator aliases like $gte, $eq
-const joi = require('@hapi/joi'); // argument validations: https://github.com/hapijs/joi/blob/master/API.md
+const joi = require('joi'); // argument validations: https://github.com/hapijs/joi/blob/master/API.md
 const bcrypt = require('bcrypt');
 
 // services
 const { ERROR_CODES, errorResponse, joiErrorsMessage } = require('../../../services/error');
 
-// models
-const models = require('../../../models');
-
 // helpers
 const { PASSWORD_REGEX, PASSWORD_LENGTH_MIN } = require('../../../helpers/constants');
+
+// models
+const models = require('../../../models');
 
 // methods
 module.exports = {
@@ -57,8 +57,8 @@ async function V1ConfirmPassword(req) {
   // validate
   const { error, value } = schema.validate(req.args);
   if (error)
-    return Promise.resolve(errorResponse(req, ERROR_CODES.BAD_REQUEST_INVALID_ARGUMENTS, joiErrorsMessage(error)));
-  req.args = value; // updated arguments with type conversion
+    return errorResponse(req, ERROR_CODES.BAD_REQUEST_INVALID_ARGUMENTS, joiErrorsMessage(error));
+  req.args = value; // arguments are updated and variable types are converted to correct type. ex. '5' -> 5, 'true' -> true
 
   try {
     // grab admin
@@ -73,11 +73,11 @@ async function V1ConfirmPassword(req) {
 
     // if admin does not exists
     if (!getAdmin)
-      return Promise.resolve(errorResponse(req, ERROR_CODES.ADMIN_BAD_REQUEST_INVALID_PASSWORD_RESET_TOKEN));
+      return errorResponse(req, ERROR_CODES.ADMIN_BAD_REQUEST_INVALID_PASSWORD_RESET_TOKEN);
 
     // check password1 and password2 equality
     if (req.args.password1 !== req.args.password2)
-      return Promise.resolve(errorResponse(req, ERROR_CODES.ADMIN_BAD_REQUEST_PASSWORDS_NOT_EQUAL));
+      return errorResponse(req, ERROR_CODES.ADMIN_BAD_REQUEST_PASSWORDS_NOT_EQUAL);
 
     // generate new password
     const newPassword = bcrypt.hashSync(req.args.password1, getAdmin.salt);
@@ -94,11 +94,11 @@ async function V1ConfirmPassword(req) {
     });
 
     // return success
-    return Promise.resolve({
+    return {
       status: 200,
       success: true
-    });
+    };
   } catch (error) {
-    return Promise.reject(error);
+    throw error;
   }
 } // END V1ConfirmPassword

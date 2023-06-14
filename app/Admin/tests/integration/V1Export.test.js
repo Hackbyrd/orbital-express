@@ -78,8 +78,8 @@ describe('Admin.V1Export', async () => {
     it('[logged-out] should fail to export admin', async () => {
       try {
         const res = await request(app).get(routeUrl);
-        expect(res.statusCode).to.equal(401);
-        expect(res.body).to.deep.equal(errorResponse(i18n, ERROR_CODES.UNAUTHORIZED));
+        expect(res.statusCode).toBe(401);
+        expect(res.body).toEqual(errorResponse(i18n, ERROR_CODES.UNAUTHORIZED));
       } catch (error) {
         throw error;
       }
@@ -112,13 +112,13 @@ describe('Admin.V1Export', async () => {
           .set('authorization', `${jwt} ${token}`)
           .send(params)
 
-        expect(res.statusCode).to.equal(203);
-        expect(res.body).to.have.property('success', true);
-        expect(res.body).to.have.property('jobId');
+        expect(res.statusCode).toBe(203);
+        expect(res.body).toHaveProperty('success', true);
+        expect(res.body).toHaveProperty('jobId');
 
         // get number of jobs
         const jobCountResult = await AdminQueue.getJobCounts();
-        expect(jobCountResult.waiting).to.equal(1);
+        expect(jobCountResult.waiting).toBe(1);
 
         // check if job is there
         const job = await AdminQueue.getJob(res.body.jobId);

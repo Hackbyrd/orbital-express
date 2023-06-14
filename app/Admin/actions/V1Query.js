@@ -4,17 +4,18 @@
 
 'use strict';
 
-// third-party
-const joi = require('@hapi/joi'); // argument validations: https://github.com/hapijs/joi/blob/master/API.md
+// third-party node modules
+const joi = require('joi'); // argument validations: https://github.com/hapijs/joi/blob/master/API.md
 
 // services
 const { ERROR_CODES, errorResponse, joiErrorsMessage } = require('../../../services/error');
 
+// helpers
+const { LIST_STRING_REGEX } = require('../../../helpers/constants');
+const { getOffset, getOrdering, convertStringListToWhereStmt } = require('../../../helpers/cruqd');
+
 // models
 const models = require('../../../models');
-
-// helpers
-const { getOffset, getOrdering } = require('../../../helpers/cruqd');
 
 // methods
 module.exports = {
@@ -33,6 +34,8 @@ module.exports = {
  * req.params = {}
  * req.args = {
  *   @active - (BOOLEAN - OPTIONAL): Whether active or not
+ *   @roles - (STRING LIST - OPTIONAL): The roles of the admin (ADMIN, MANAGER, EMPLOYEE) constants.ADMIN_ROLE
+ *   @email - (STRING - OPTIONAL): search for exact email
  *
  *   @sort - (STRING - OPTIONAL) DEFAULT id, A comma separated list of columns of a table, could have a '-' in front which means descending, ex. id,-name,date
  *   @page - (NUMBER - OPTIONAL) The page number which must be greater than 0 DEFAULT 1
@@ -48,6 +51,8 @@ module.exports = {
 async function V1Query(req) {
   const schema = joi.object({
     active: joi.boolean().optional(),
+    roles: joi.string().regex(LIST_STRING_REGEX).optional(),
+    email: joi.string().email().lowercase().optional(),
 
     // query params
     sort: joi.string().min(1).default('id').optional(),
@@ -58,8 +63,8 @@ async function V1Query(req) {
   // validate
   const { error, value } = schema.validate(req.args);
   if (error)
-    return Promise.resolve(errorResponse(req, ERROR_CODES.BAD_REQUEST_INVALID_ARGUMENTS, joiErrorsMessage(error)));
-  req.args = value; // updated arguments with type conversion
+    return errorResponse(req, ERROR_CODES.BAD_REQUEST_INVALID_ARGUMENTS, joiErrorsMessage(error));
+  req.args = value; // arguments are updated and variable types are converted to correct type. ex. '5' -> 5, 'true' -> true
 
   // grab
   const sort = req.args.sort;
@@ -73,26 +78,39 @@ async function V1Query(req) {
 
   // add to where statement
   const whereStmt = {};
+
+  // convert roles string list to a format that can be used in where statement for sequelize query
+  convertStringListToWhereStmt(whereStmt, req.args, [{
+    name: 'roles',
+    col: 'role',
+    isInt: false,
+  }]);
+
+  // add the rest of the args to where statement
   Object.keys(req.args).forEach(key => {
     whereStmt[key] = req.args[key];
   });
 
-  // get admins
-  const result = await models.admin.findAndCountAll({
-    where: whereStmt,
-    limit: limit,
-    offset: getOffset(page, limit),
-    order: getOrdering(sort)
-  }).catch(err => Promise.reject(err));
-
-  // return success
-  return Promise.resolve({
-    status: 200,
-    success: true,
-    admins: result.rows, // all admins
-    page: page,
-    limit: limit,
-    total: result.count, // the total count
-    totalPages: Math.ceil(result.count / limit)
-  });
+  try {
+    // get admins
+    const result = await models.admin.findAndCountAll({
+      where: whereStmt,
+      limit: limit,
+      offset: getOffset(page, limit),
+      order: getOrdering(sort)
+    });
+  
+    // return success
+    return {
+      status: 200,
+      success: true,
+      admins: result.rows, // all admins
+      page: page,
+      limit: limit,
+      total: result.count, // the total count
+      totalPages: Math.ceil(result.count / limit)
+    };
+  } catch (error) {
+    throw error;
+  }
 } // END V1Query

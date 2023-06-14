@@ -4,8 +4,8 @@
 
 'use strict';
 
-// third-party
-const joi = require('@hapi/joi'); // argument validations: https://github.com/hapijs/joi/blob/master/API.md
+// third-party node modules
+const joi = require('joi'); // argument validations: https://github.com/hapijs/joi/blob/master/API.md
 
 // services
 const { ERROR_CODES, errorResponse, joiErrorsMessage } = require('../../../services/error');
@@ -47,23 +47,27 @@ async function V1Read(req) {
   // validate
   const { error, value } = schema.validate(req.args);
   if (error)
-    return Promise.resolve(errorResponse(req, ERROR_CODES.BAD_REQUEST_INVALID_ARGUMENTS, joiErrorsMessage(error)));
-  req.args = value; // updated arguments with type conversion
+    return errorResponse(req, ERROR_CODES.BAD_REQUEST_INVALID_ARGUMENTS, joiErrorsMessage(error));
+  req.args = value; // arguments are updated and variable types are converted to correct type. ex. '5' -> 5, 'true' -> true
 
-  // find admin
-  const findAdmin = await models.admin.findByPk(req.args.id, {
-    attributes: {
-      exclude: models.admin.getSensitiveData() // remove sensitive data
-    }
-  }).catch(err => Promise.reject(error));
+  try {
+    // find admin
+    const findAdmin = await models.admin.findByPk(req.args.id, {
+      attributes: {
+        exclude: models.admin.getSensitiveData() // remove sensitive data
+      }
+    });
 
-  // check if admin exists
-  if (!findAdmin)
-    return Promise.resolve(errorResponse(req, ERROR_CODES.ADMIN_BAD_REQUEST_ACCOUNT_DOES_NOT_EXIST));
+    // check if admin exists
+    if (!findAdmin)
+      return errorResponse(req, ERROR_CODES.ADMIN_BAD_REQUEST_ACCOUNT_DOES_NOT_EXIST);
 
-  return Promise.resolve({
-    status: 200,
-    success: true,
-    admin: findAdmin.dataValues
-  });
+    return {
+      status: 200,
+      success: true,
+      admin: findAdmin.dataValues
+    };
+  } catch (error) {
+    throw error;
+  }
 } // END V1Read

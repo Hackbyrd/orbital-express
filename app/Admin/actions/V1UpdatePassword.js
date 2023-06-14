@@ -4,18 +4,18 @@
 
 'use strict';
 
-// third-party
-const joi = require('@hapi/joi'); // argument validations: https://github.com/hapijs/joi/blob/master/API.md
+// third-party node modules
+const joi = require('joi'); // argument validations: https://github.com/hapijs/joi/blob/master/API.md
 const bcrypt = require('bcrypt');
 
 // services
 const { ERROR_CODES, errorResponse, joiErrorsMessage } = require('../../../services/error');
 
-// models
-const models = require('../../../models');
-
 // helpers
 const { PASSWORD_LENGTH_MIN, PASSWORD_REGEX } = require('../../../helpers/constants');
+
+// models
+const models = require('../../../models');
 
 // methods
 module.exports = {
@@ -56,11 +56,12 @@ async function V1UpdatePassword(req) {
   // validate
   const { error, value } = schema.validate(req.args);
   if (error)
-    return Promise.resolve(errorResponse(req, ERROR_CODES.BAD_REQUEST_INVALID_ARGUMENTS, joiErrorsMessage(error)));
+    return errorResponse(req, ERROR_CODES.BAD_REQUEST_INVALID_ARGUMENTS, joiErrorsMessage(error));
+  req.args = value; // arguments are updated and variable types are converted to correct type. ex. '5' -> 5, 'true' -> true
 
   // check password1 and password2 equality
   if (req.args.password1 !== req.args.password2)
-    return Promise.resolve(errorResponse(req, ERROR_CODES.ADMIN_BAD_REQUEST_PASSWORDS_NOT_EQUAL));
+    return errorResponse(req, ERROR_CODES.ADMIN_BAD_REQUEST_PASSWORDS_NOT_EQUAL);
 
   try {
     // validate password
@@ -68,7 +69,7 @@ async function V1UpdatePassword(req) {
 
     // if password is incorrect
     if (!result)
-      return Promise.resolve(errorResponse(req, ERROR_CODES.ADMIN_BAD_REQUEST_PASSWORD_AUTHENTICATION_FAILED));
+      return errorResponse(req, ERROR_CODES.ADMIN_BAD_REQUEST_PASSWORD_AUTHENTICATION_FAILED);
 
     // hash new password
     const newPassword = bcrypt.hashSync(req.args.password1, req.admin.salt);
@@ -84,11 +85,11 @@ async function V1UpdatePassword(req) {
     });
 
     // return success
-    return Promise.resolve({
+    return {
       status: 200,
       success: true
-    });
+    };
   } catch (error) {
-    return Promise.reject(error);
+    throw error;
   }
 } // END V1UpdatePassword

@@ -24,7 +24,8 @@ const {
 const path = require('path');
 
 // third-party
-const ejs = require('ejs');
+const joi = require('joi'); // argument validations: https://github.com/hapijs/joi/blob/master/API.md
+const ejs = require('ejs'); // email html template
 const nodemailer = require('nodemailer'); // https://nodemailer.com/about/
 const htmlToText = require('html-to-text'); // https://www.npmjs.com/package/html-to-text
 
@@ -228,6 +229,7 @@ async function send({ from, name, subject, template, tos, ccs, bccs, attachments
 
 /**
  * Add a new send email job to the EmailQueue to be sent
+ * Arguments are the same as the email.send method above because we are just passing it through
  * 
  * @data {
  *   @from - (STRING - REQUIRED): Where this email is from (email)
@@ -243,6 +245,9 @@ async function send({ from, name, subject, template, tos, ccs, bccs, attachments
  */
 async function enqueue(data) {
   try {
+    // grab email queue
+    const EmailQueue = await queue.get('EmailQueue');
+
     // create sending email job
     await EmailQueue.add('V1SendEmailTask', data, {
       priority: 1, // Highest priority so the worker will process this first
@@ -264,6 +269,7 @@ async function enqueue(data) {
  * Worker function to process jobs in the EmailQueue
  */
 async function worker() {
+  // grab email queue
   const EmailQueue = await queue.get('EmailQueue');
 
    // Process Admin Feature Background Tasks

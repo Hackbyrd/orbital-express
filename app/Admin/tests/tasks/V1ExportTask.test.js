@@ -89,7 +89,7 @@ describe('Admin.V1ExportTask', async () => {
         }
       });
 
-      expect(result).to.equal(`1 - ${admin1.id}`);
+      expect(result).toBe(`1 - ${admin1.id}`);
     }catch (error) {
       throw error;
     }

@@ -40,7 +40,7 @@ describe('services/email', async () => {
         const result = await email.send(params);
         expect(result).to.be.an('object');
       } catch (error) {
-        expect(error).to.be.null;
+        expect(error).toBeNull();
       }
     }); // END should send mail successfully with only required arguments passed in.
 
@@ -60,7 +60,7 @@ describe('services/email', async () => {
         const result = await email.send(params);
         expect(result).to.be.an('object');
       } catch (error) {
-        expect(error).to.be.null;
+        expect(error).toBeNull();
       }
     }); // END should send mail successfully with all arguments passed in.
 
@@ -80,7 +80,7 @@ describe('services/email', async () => {
         const result = await email.send(params);
         expect(result).to.be.an('object');
       } catch (error) {
-        expect(error).to.be.null;
+        expect(error).toBeNull();
       }
     }); // END should send mail if ccs are duplicated with tos
 
@@ -100,7 +100,7 @@ describe('services/email', async () => {
         const result = await email.send(params);
         expect(result).to.be.an('object');
       } catch (error) {
-        expect(error).to.be.null;
+        expect(error).toBeNull();
       }
     }); // END should send mail if bccs are duplicated with ccs which are duplicated with tos
 
@@ -132,7 +132,7 @@ describe('services/email', async () => {
         const result = await email.send(params);
         expect(result).to.be.an('object');
       } catch (error) {
-        expect(error).to.be.null;
+        expect(error).toBeNull();
       }
     }); // END should send mail successfully with attachments passed in.
 
@@ -151,10 +151,10 @@ describe('services/email', async () => {
 
       try {
         const result1 = await email.send(params1);
-        expect(result1).to.be.null;
+        expect(result1).toBeNull();
       } catch (error) {
         expect(error).to.be.an('error');
-        expect(error.message).to.equal('Email must have a from, name, subject, and template in order to send.');
+        expect(error.message).toBe('Email must have a from, name, subject, and template in order to send.');
       }
 
       // name is invalid
@@ -171,10 +171,10 @@ describe('services/email', async () => {
 
       try {
         const result2 = await email.send(params2);
-        expect(result2).to.be.null;
+        expect(result2).toBeNull();
       } catch (error) {
         expect(error).to.be.an('error');
-        expect(error.message).to.equal('Email must have a from, name, subject, and template in order to send.');
+        expect(error.message).toBe('Email must have a from, name, subject, and template in order to send.');
       }
     }); // END should fail to send mail if "from" or "name" is not specified.
 
@@ -193,10 +193,10 @@ describe('services/email', async () => {
 
       try {
         const result = await email.send(params);
-        expect(result).to.be.null;
+        expect(result).toBeNull();
       } catch (error) {
         expect(error).to.be.an('error');
-        expect(error.message).to.equal('Email must have a from, name, subject, and template in order to send.');
+        expect(error.message).toBe('Email must have a from, name, subject, and template in order to send.');
       }
     }); // END should fail to send mail if "subject" is not specified.
 
@@ -215,10 +215,10 @@ describe('services/email', async () => {
 
       try {
         const result = await email.send(params);
-        expect(result).to.be.null;
+        expect(result).toBeNull();
       } catch (error) {
         expect(error).to.be.an('error');
-        expect(error.message).to.equal('Email must have a from, name, subject, and template in order to send.');
+        expect(error.message).toBe('Email must have a from, name, subject, and template in order to send.');
       }
     }); // END should fail to send mail if "template" is not specified.
 
@@ -237,10 +237,10 @@ describe('services/email', async () => {
 
       try {
         const result = await email.send(params);
-        expect(result).to.be.null;
+        expect(result).toBeNull();
       } catch (error) {
         expect(error).to.be.an('error');
-        expect(error.message).to.equal('Email must be sent to at least one recipient.');
+        expect(error.message).toBe('Email must be sent to at least one recipient.');
       }
     }); // END should fail to send mail if "tos" is not specified.
   }); // END send
