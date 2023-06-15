@@ -23,6 +23,7 @@ module.exports = () => {
 
   // Process Admin Feature Background Tasks
   AdminQueue.process('V1ExportTask', tasks.V1ExportTask);
+  AdminQueue.process('V1TestSocketTask', tasks.V1TestSocketTask);
   AdminQueue.on('failed', async (job, error) => queueError(error, AdminQueue, job));
   AdminQueue.on('stalled', async job => queueError(new Error('Queue Stalled.'), AdminQueue, job));
   AdminQueue.on('error', async error => queueError(error, AdminQueue));

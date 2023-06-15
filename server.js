@@ -129,8 +129,16 @@ async function server() {
   app.use(auth.JWTAuth);
   app.use(auth.verifyJWTAuth);
 
-  // host public files
-  // app.use(express.static(__dirname + '/public'));
+  // set templates engine and views directory
+  // we are doing this only to test that socket.io works
+  app.set('views', './views') // specify the views directory
+  app.set('view engine', 'ejs'); // set ejs as the view engine
+  
+  // host public files such as js, css, images, etc..
+  // How to use in HTML/.ejs file:
+  // <script src="/js/example.js" />
+  // <link rel="stylesheet" href="/css/example.css">
+  app.use(express.static(__dirname + '/public'));
 
   // set up routes
   const router = require('./routes')(passport); // grab routes

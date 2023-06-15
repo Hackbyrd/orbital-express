@@ -22,7 +22,10 @@ module.exports = {
   V1ResetPassword,
   V1ConfirmPassword,
   V1UpdateEmail,
-  V1Export
+  V1Export,
+
+  // for testing if socket is working. This is for testing purposes only via API_URL/socket
+  V1TestSocket
 };
 
  /**
@@ -38,8 +41,13 @@ async function V1Login(req, res, next) {
 
   // call correct method
   // login has to include the "res" object for passport.authenticate
-  const result = await actions[method](req, res).catch(err => next(err));
-  return res.status(result.status).json(result);
+  try {
+    const result = await actions[method](req, res);
+
+    return res.status(result.status).json(result);
+  } catch (error) {
+    return next(error);
+  }
 }
 
  /**
@@ -60,8 +68,13 @@ async function V1Read(req, res, next) {
     return res.status(401).json(errorResponse(req, ERROR_CODES.UNAUTHORIZED));
 
   // call correct method
-  const result = await actions[method](req, res).catch(err => next(err));
-  return res.status(result.status).json(result);
+  try {
+    const result = await actions[method](req, res);
+
+    return res.status(result.status).json(result);
+  } catch (error) {
+    return next(error);
+  }
 }
 
  /**
@@ -82,8 +95,13 @@ async function V1Create(req, res, next) {
     return res.status(401).json(errorResponse(req, ERROR_CODES.UNAUTHORIZED));
 
   // call correct method
-  const result = await actions[method](req, res).catch(err => next(err));
-  return res.status(result.status).json(result);
+  try {
+    const result = await actions[method](req, res);
+
+    return res.status(result.status).json(result);
+  } catch (error) {
+    return next(error);
+  }
 }
 
  /**
@@ -104,8 +122,13 @@ async function V1Update(req, res, next) {
     return res.status(401).json(errorResponse(req, ERROR_CODES.UNAUTHORIZED));
 
   // call correct method
-  const result = await actions[method](req, res).catch(err => next(err));
-  return res.status(result.status).json(result);
+  try {
+    const result = await actions[method](req, res);
+
+    return res.status(result.status).json(result);
+  } catch (error) {
+    return next(error);
+  }
 }
 
  /**
@@ -126,8 +149,13 @@ async function V1Query(req, res, next) {
     return res.status(401).json(errorResponse(req, ERROR_CODES.UNAUTHORIZED));
 
   // call correct method
-  const result = await actions[method](req, res).catch(err => next(err));
-  return res.status(result.status).json(result);
+  try {
+    const result = await actions[method](req, res);
+
+    return res.status(result.status).json(result);
+  } catch (error) {
+    return next(error);
+  }
 }
 
  /**
@@ -148,8 +176,13 @@ async function V1UpdatePassword(req, res, next) {
     return res.status(401).json(errorResponse(req, ERROR_CODES.UNAUTHORIZED));
 
   // call correct method
-  const result = await actions[method](req, res).catch(err => next(err));
-  return res.status(result.status).json(result);
+  try {
+    const result = await actions[method](req, res);
+
+    return res.status(result.status).json(result);
+  } catch (error) {
+    return next(error);
+  }
 }
 
  /**
@@ -164,8 +197,13 @@ async function V1ResetPassword(req, res, next) {
   let method = 'V1ResetPassword';
 
   // call correct method
-  const result = await actions[method](req, res).catch(err => next(err));
-  return res.status(result.status).json(result);
+  try {
+    const result = await actions[method](req, res);
+
+    return res.status(result.status).json(result);
+  } catch (error) {
+    return next(error);
+  }
 }
 
  /**
@@ -180,8 +218,13 @@ async function V1ConfirmPassword(req, res, next) {
   let method = 'V1ConfirmPassword';
 
   // call correct method
-  const result = await actions[method](req, res).catch(err => next(err));
-  return res.status(result.status).json(result);
+  try {
+    const result = await actions[method](req, res);
+
+    return res.status(result.status).json(result);
+  } catch (error) {
+    return next(error);
+  }
 }
 
  /**
@@ -202,8 +245,13 @@ async function V1UpdateEmail(req, res, next) {
     return res.status(401).json(errorResponse(req, ERROR_CODES.UNAUTHORIZED));
 
   // call correct method
-  const result = await actions[method](req, res).catch(err => next(err));
-  return res.status(result.status).json(result);
+  try {
+    const result = await actions[method](req, res);
+
+    return res.status(result.status).json(result);
+  } catch (error) {
+    return next(error);
+  }
 }
 
  /**
@@ -225,6 +273,32 @@ async function V1Export(req, res, next) {
     return res.status(401).json(errorResponse(req, ERROR_CODES.UNAUTHORIZED));
 
   // call correct method
-  const result = await actions[method](req, res).catch(err => next(err));
-  return res.status(result.status).json(result);
+  try {
+    const result = await actions[method](req, res);
+
+    return res.status(result.status).json(result);
+  } catch (error) {
+    return next(error);
+  }
+}
+
+ /**
+  * Test websocket. This is for testing purposes only via API_URL/socket
+  *
+  * /v1/admins/testsocket
+  *
+  * Can be logged in or logged out
+  * Roles: []
+  */
+async function V1TestSocket(req, res, next) {
+  let method = 'V1TestSocket';
+
+  // call correct method
+  try {
+    const result = await actions[method](req, res);
+
+    return res.status(result.status).json(result);
+  } catch (error) {
+    return next(error);
+  }
 }

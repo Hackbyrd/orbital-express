@@ -24,7 +24,7 @@ const socket = require('./services/socket'); // require socket service to initia
 
 // ENV variables
 const { NODE_ENV, WEB_CONCURRENCY } = process.env;
-const PROCESSES = NODE_ENV === 'production' ? WEB_CONCURRENCY || os.cpus().length : 1; // number of cores
+const PROCESSES = NODE_ENV === 'production' ? WEB_CONCURRENCY || os.cpus().length : os.cpus().length; // number of cores
 
 // variables
 const APP_DIR = './app'; // app directory

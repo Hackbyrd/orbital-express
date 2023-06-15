@@ -25,6 +25,9 @@ module.exports = (passport, router) => {
   router.all('/v1/admins/updateemail', controller.V1UpdateEmail);
   router.all('/v1/admins/export', controller.V1Export);
 
+  // for testing if socket works. This is for testing purposes only via API_URL/socket
+  router.all('/v1/admins/testsocket', controller.V1TestSocket);
+
   // return router
   return router;
 };

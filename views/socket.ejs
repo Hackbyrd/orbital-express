@@ -1,0 +1,64 @@
+<!-- The purpose of this page is to test whether the websockets and background jobs are working property. -->
+<!-- http://localhost:PORT/socket -->
+
+<html>
+  <head>
+    <!-- Include Socket CSS -->
+    <link rel="stylesheet" href="/css/socket.css">
+  </head>
+  <body>
+    <!-- Have env variables on the page but hidden so we can grab them from the JavaScript -->
+    <div id="ws" style="display: none;"><%= WEBSOCKET %></div>
+    <div id="hn" style="display: none;"><%= HOSTNAME %></div>
+    
+    <!-- Title -->
+    <h1>Test Websockets & Background Jobs</h1>
+
+    <!-- Explanation -->
+    <p>The objective of this page is to verify the proper functionality of websockets and background jobs via our redis queue.</p>
+    <p>We are testing for the following:</p>
+    <ol>
+      <li>The <strong>Socket Status</strong> should be <span style="color: green;">Connected</span></li>
+      <li>
+        When the button is clicked, an API request is sent to the backend
+        <ul>
+          <li>The backend API request will then emit an event that this page will monitor. If the event is detected, a success message will be displayed.</li>
+          <li>After the first event is emitted, the backend API request will proceed to create a background task and add it to the redis job queue.</li>
+        </ul>
+      </li>
+      <li>
+        The redis job queue will process the newly added task.
+        <ul>
+          <li>Once the redis job queue processes the task, it will emit another event that this page will listen for. If the event is detected, a second success message will be displayed.</li>
+        </ul>
+      </li>
+      <li>
+        We must repeat the same process above by opening three more instances of the same page in order to test it works on multiple pages and not just one.
+        <ul>
+          <li>Use different browsers such as Safari, Chrome, and Firefox, and ensure that you have three separate tabs open for this page.</li>
+          <li>When the button is clicked on any one page, all three pages should display both success messages since they are all listening for the socket events.</li>
+        </ul>
+      </li>
+      <li>We are done!</li>
+    </ol>
+    <br/>
+
+    <!-- Socket Status -->
+    <div>Socket Status:
+      <span id="connected" style="display: none; color: green;"> Connected</span>
+      <span id="disconnected" style="color: red;"> Disconnected, trying to connect...</span>
+    </div>
+
+    <br/>
+    <button id="btn">Press Me</button>
+    <br/><br/>
+
+    <!-- Events -->
+    <div id="events"></div>
+  </body>
+</html>
+
+<!-- Include jQuery and Socket.io and custom JS -->
+<script type="text/javascript" src="/js/jquery-v3.6.4.min.js"></script>
+<script type="text/javascript" src="/js/socket.io-v4.6.0.min.js"></script>
+<script type="text/javascript" src="/js/socket.js"></script>

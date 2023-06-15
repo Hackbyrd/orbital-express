@@ -8,5 +8,6 @@
 'use strict';
 
 module.exports = {
-  ...require('./V1ExportTask')
+  ...require('./V1ExportTask'),
+  ...require('./V1TestSocketTask')
 }

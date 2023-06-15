@@ -27,6 +27,9 @@ const SOCKET_ROOMS = {
   GLOBAL: 'GLOBAL', // a global room
   ADMIN: 'ADMIN-', // admin room where only admin users can join
 
+  // This is for testing purposes only via API_URL/socket
+  TEST: 'TEST-',
+
   // add more rooms here
   ROOM: 'ROOM-', // add dash here so you can append a unique number for the room
 }
@@ -35,6 +38,10 @@ const SOCKET_ROOMS = {
 const SOCKET_EVENTS = {
   ADMIN_CREATED: 'ADMIN_CREATED',
   ADMIN_UPDATED: 'ADMIN_UPDATED',
+
+  // This is for testing purposes only via API_URL/socket
+  TEST_SOCKET_EVENT_ONE: 'TEST_SOCKET_EVENT_ONE',
+  TEST_SOCKET_EVENT_TWO: 'TEST_SOCKET_EVENT_TWO',
 
   // add more events here
   // COMPANY_CREATED: 'COMPANY_CREATED',
@@ -124,6 +131,11 @@ function connect(socket) {
   // join the global room for application
   if (socket.handshake.query.global)
     socket.join(`${SOCKET_ROOMS.GLOBAL}`);
+
+  // join the test room for application
+  // This is for testing purposes only via API_URL/socket
+  if (socket.handshake.query.test)
+    socket.join(`${SOCKET_ROOMS.TEST}${socket.handshake.query.test}`);
 
   // join the admin room for application
   if (socket.handshake.query.admin)

@@ -15,6 +15,7 @@ module.exports = {
   ...require('./V1Query'),
   ...require('./V1Read'),
   ...require('./V1ResetPassword'),
+  ...require('./V1TestSocket'),
   ...require('./V1Update'),
   ...require('./V1UpdatePassword')
 }

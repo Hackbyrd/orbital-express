@@ -17,7 +17,7 @@ const queue = require('./services/queue'); // Queue Service for Background Jobs
 // env variables
 const NODE_ENV = process.env.NODE_ENV || 'development';
 const PORT = process.env.PORT ? Number(process.env.PORT) : 8000;
-const PROCESSES = NODE_ENV === 'production' ? process.env.WEB_CONCURRENCY || os.cpus().length : 2; // number of cores
+const PROCESSES = NODE_ENV === 'production' ? process.env.WEB_CONCURRENCY || os.cpus().length : os.cpus().length; // number of cores
 
 // function to start app
 async function startApp(processId) {
