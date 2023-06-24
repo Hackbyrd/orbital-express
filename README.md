@@ -166,6 +166,10 @@ This can be found under the **config** folder. It is up to you to create your ow
   - .env.test
 
 You should copy the contents of the **.env.template** and create the files above and paste the copied content into the newly created config file. Then fill in all the config variables. The **.env.development**, **.env.production**, **.env.staging** and **.env.test** files are added to the .gitignore for security reasons and therefore **WILL NOT** show up on github. This is because you don't want other random people getting access to your important API keys and variables. Every time you add a new config variable, we recommend updating the **.env.template** file because this will be included in the git repository and any new developers who pull your changes or develop on your project can add the correct config variables need to run your project servers.
+<br/>
+### More on .env.staging and .env.production<br/>
+In practice, you don't actually need to store the .env.staging and .env.production config files in your local development. It is optional. The only use case where you should store these files on your local computer is if you ever want to connect directly to your staging or production servers and run the code locally on your computer. For example, you could run a /scripts file on your local computer using the .env.production config and it should connect to your production database directly. You might want to do this if you need to run a quick fix via a script. Also, it is important to note that staging and production are basically the same thing. We just call it staging because you can't name two files .env.production on your local computer. In reality, when you deploy to a service like Heroku or AWS, they treat all deployments as a production environment, and there is no such thing as a staging environment. Again everything is a production environment when you deploy. We just call it staging to help us not get confused between the two environments ourselves since we are choosing one production app to be our staging / testing app and the other production app to be the main app we launch for users to use.
+<br/>
 
 ### config/config.js
 In the **config** folder you'll find another file called **config.js**. This file is used to configure our ORM, Sequelize's migration tool. In short, it's the configuration to all the Sequelize-CLI to connect to the database to run migrations. Please note, that we have to configure this AGAIN in the **database/index.js** file seperately. We will go into more detail on in the **Database Folder / Configuration** section below.
@@ -197,7 +201,7 @@ In the **database** folder, there are few important things to note.
 <br />
 
 ### 2. The Schema via schema.sql
-This file may be misleading, because its a .sql file. Are we uploading this to PostgreSQL as our database schema? NO, we are not. This is purely for our notes and we should record ANY changes to the database here. You can think of this file are our master database schema plan for the entire application. However, the actual place where we modify the database is in the **migrations** folder.
+This file may be misleading, because its a .sql file. Are we uploading this to PostgreSQL as our database schema? NO, we are not. This is purely for our notes and we should record ANY changes to the database here. You can think of this file are our master database schema plan for the entire application. However, the actual place where we modify the database is in the **migrations** folder. It is **strongly** recommended that you make updates here whenever you make a database change and you take notes on all the columns and tables so that yourself and future developments can view one file and understand what is going on in your application. I understand the trades off to doing this is maintaining a file when you can just go off of the models files. If you want to do that, you will be shooting yourself in the foot as the app gets more complex and you start to deal with hundreds of tables and thousands of columns. Since every new engineer you onboard will be jumping around your app like a monkey trying to grab his banana. Maintain this file and you will move faster and your futureself plus future engineers will thank you.
 
 <br />
 
@@ -242,22 +246,93 @@ I do recommend not creating so many different **"sets"**. Just create a few with
 <br />
 
 ### 5. The Ordering of the table creation via sequence.js
-This file you don't really need to tough because it is updated automatically when you generate or destroy a feature via the commands we will highlight in the next section (**yarn gen** or **yarn del**). Basically, if you open up the file, you will see that its an array of all the existing tables. The order of the elements in this array matter a lot. This is because when we upload seed data OR fixture data (for testing), there are table foreign keys and dependencies. For example, what if you have two tables called "Company" and "User" and a "User" belongs to a "Company". You have to add the "Company" seed data/fixtures first before you add the "User" seed data/fixtures. Please don't modify this file unless you have to manually override something.
+This file you don't really need to modify because it is updated automatically when you generate or destroy a feature via the commands we will highlight in the next section (**yarn gen** or **yarn del**). Basically, if you open up the file, you will see that its an array of all the existing tables. The order of the elements in this array matter a lot. This is because when we upload seed data OR fixture data (for testing), there are table foreign keys and dependencies. For example, what if you have two tables called "Company" and "User" and a "User" belongs to a "Company". You have to add the "Company" seed data/fixtures first before you add the "User" seed data/fixtures. Please don't modify this file unless you have to manually override something.
 
 <br />
 
 ---
 ## The App Directory and Features
+<br/>
+Below is an example of what a FeatureFolder contains. This is where you will spend most of your development time on. 
+
+```
+- FeatureFolder
+  - actions
+    - index.js
+    - action1.js
+    - action2.js
+  - languages
+      - en.js
+      - es.js
+  - mailers
+      - ExampleEmail
+        - index.ejs
+        - preview.html
+      - ExampleEmail2
+        - index.ejs
+        - preview.html
+  - tasks
+      - index.js
+      - task1.js
+      - task2.js
+  - tests
+    - integration
+      - action1.test.js
+      - action2.test.js
+    - tasks
+      - task1.test.js
+      - task2.test.js
+    - helper.test.js
+  - controller.js
+  - error.js
+  - helper.js
+  - model.js
+  - routes.js
+  - worker.js
+```
+
+### The General Workflow
+The goal of having this feature folder structure is to make sure we create a repeatable process when developing new features or making updates to features. When you break it down, what is a backend API actually doing? We are essentially creating a layer of code that just connects to a database and makes updates to that database. We generally do this in two ways. 
+<br/><br/>
+The first way is a direct action that is made via an HTTP/HTTPS request from the client-side frontend, or in other words, an API request. Naturally, if we want to build an action that updates the feature folder, we can create an update action and place that in the actions folder. In this flow, after the req object is passed in through all the middleware that was defined in the server.js (remember the order matters) it then hits the feature folder code, starting with the routes.js, then the req object is passed to the controller.js, in the controller, we figure out which action is called and then return a response. That is the general lifecycle of an API request. Majority of your development will go through this flow.
+<br/><br/>
+The second way is instead of making changes and updates via an API request, we can also create background jobs via adding jobs to a queue. We do this if we know we need to perform a task in the background. The best example of this is when we need to do something that takes longer to process, like exporting a list of 1,000,000 records from the database or running some complex math algorithm that may take hours. If you tried to do this via an API request (the first method explained), the client-side (the end-user) might have to wait a long time before they get the response back from the request they made. So in this scenario, it is better to respond quickly to their request and state that we are processing their request via a background task and when it is done, we will notify the end-user via a notification by email, phone, or socket push. It is important to also note that there are two ways we can trigger a background job. The first way is what was just described, you can have an API request create a background job in the action itself, just like the example above for exporting a large dataset. The second way is to trigger it is via a cronjob (we explain what a cronjob is earlier above). An example is you can set up a cronjob to create a background job every set period of time to do some task such as resetting inventory for a restaurant on a daily basis. In this flow, everytime a background job is created either in an action or via a cronjob, it goes through the worker.js to figure out which task to run and then  that task is called.
+
+<br/><br/>
+
+## Let's Explore Each Section More In-Depth
 
 ### Model.js
+When you create a feature folder, it is **strongly** recommended that it is tied to a database table. You **should not** create a feature folder without it relating to an actual database table. This is bad practice and defeats the purpose of this entire structure.<br/>
+The purpose of this file is to define the table attributes and column attributes of this table and its columns in order for us to take full advantage of using this table in our ORM (Sequelize). You will notice, in every file that we need to make database changes, we include the global models.js. The global models.js will include and compile all the local feature folder model.js files so we can modify any database table / col. In this file, you will define the table name, its columns, its foreign keys and its relationship with other tables. Unlike the migrations file, this file can be constantly updated, where as the migrations file cannot be edited once deployed since it is modifying the database directly. Please note, we are just defining the model.js so we can avoid writing RAW .sql code and instead us the ORM to make changes to the database in our code instead. Once again, the migrations files directly modify the database whereas the model.js is only used in the ORM. One awesome thing you could do is add helper methods in this file that is directly tied to this feature folder model and you can call this method via the ORM.
+
 ### Routes.js
+The purpose of this file is to define the routes for this feature folder. You will notice we include the controller at the top of the file. This is because we want to make sure we are calling the correct controller method for each route. Therefore, each route should correspond to an action in the controller. We define a route via the following pattern / convention: <br/>
+```
+router.all('/version/feature_folder_name_plural/action_name', controller.VersionAction);
+```
+
+example:
+```
+router.all('/v1/admins/login', controller.V1Login);
+```
+As you can see above, this route is a version 1 route, we can add future versions like a v2 later. The reason why we define version is because as you build and maintain your API, you will eventually have to upgrade or make updates to your endpoints but you still want to keep the old API routes so older legacy code on the front-end or users of your older API endpoints won't feel the need to upgrade immediately. This allows you to maintain multiple versions of your API as you undergo a steady deprecation process. In the route you also will notice we are working in the admin feature folder. Remember, we pluralize admins here as a standard practice. Lastly, we add the action name without the versioning. Keep in mind our route convention is all lowercase and no spaces, dashes, or underscores. So if you had to have two words like UpdateOrders it would appear as '/v1/admins/updateorders' <br/><br/>
+Just a reminder, all the feature folder routes will get aggregated and add to the global routes.js file.
+<br/><br/>
+
 ### Controller.js
+The purpose of this file is to "control" which action is being called by what route and whether or not the req.user object has the correct permissions to access an action. At the top of the file, we include the actions/index.js file. This file is special because it aggregrates all the actions in the one main file to include in the controller so we don't have to manually include every new action to the controller when it is added. If you did not know, in node.js if you just include a folder, it will automatically look for an index.js file in the folder as default. That is why we name the file index.js. Again, by doing this, we are able to access all the actions to be used in the controller file without having to manually include all the actions.<br/><br/>
+
+
+```
 ### Actions Folder
 ### Tests Folder
 ### Worker.js
 ### Tasks Folder
 ### helper.js
+This file is very self explanatory. Just add any helper methods that are specific to this feature folder here.
 ### error.js
+### Mailers Folder
 ### Languages Folder
 
 <br/>

@@ -16,13 +16,16 @@ const queue = require('../../../services/queue'); // process background tasks fr
 const socket = require('../../../services/socket');
 const { SOCKET_ROOMS, SOCKET_EVENTS } = require('../../../services/socket');
 
+// helpers
+const { LIST_STRING_REGEX } = require('../../../helpers/constants');
+
 // methods
 module.exports = {
   V1Export
 }
 
 /**
- * Export an admin
+ * Add a job to export list of admins
  *
  * GET  /v1/admins/export
  * POST /v1/admins/export
@@ -34,7 +37,10 @@ module.exports = {
  *
  * req.params = {}
  * req.args = {
- *   @id - (NUMBER - REQUIRED): The id of the admin
+ *   @active - (BOOLEAN - OPTIONAL): Whether active or not
+ *   @roles - (STRING LIST - OPTIONAL): The roles of the admin (ADMIN, MANAGER, EMPLOYEE) constants.ADMIN_ROLE
+ *
+ *   @sort - (STRING - OPTIONAL) DEFAULT id, A comma separated list of columns of a table, could have a '-' in front which means descending, ex. id,-name,date
  * }
  *
  * Success: Export admin
@@ -46,7 +52,11 @@ module.exports = {
  */
 async function V1Export(req, res) {
   const schema = joi.object({
-    id: joi.number().integer().min(1).required()
+    roles: joi.string().regex(LIST_STRING_REGEX).optional(),
+    email: joi.string().email().lowercase().optional(),
+
+    // query params
+    sort: joi.string().min(1).default('id').optional(),
   });
 
   // validate
