@@ -322,9 +322,240 @@ Just a reminder, all the feature folder routes will get aggregated and add to th
 
 ### Controller.js
 The purpose of this file is to "control" which action is being called by what route and whether or not the req.user object has the correct permissions to access an action. At the top of the file, we include the actions/index.js file. This file is special because it aggregrates all the actions in the one main file to include in the controller so we don't have to manually include every new action to the controller when it is added. If you did not know, in node.js if you just include a folder, it will automatically look for an index.js file in the folder as default. That is why we name the file index.js. Again, by doing this, we are able to access all the actions to be used in the controller file without having to manually include all the actions.<br/><br/>
+The controller file is also where we define the permissions for each action. We do this by adding the following line of code to the action:
+```
+/* which method to call */
 
+// if admin user type
+if (req.admin)
+  method = `V1ActionNameByAdmin`;
+// if user user type
+else if (req.user)
+  method = `V1ActionNameByUser`;
+else
+  return res.status(401).json(errorResponse(req, ERROR_CODES.UNAUTHORIZED));
+
+/* example with roles */
+if (req.admin.role === 'ADMIN')
+  method = `V1ActionNameByAdminAdmin`;
+// if user user type
+else if (req.user.role === 'SUPERADMIN')
+  method = `V1ActionNameByUserSuperAdmin`;
+else
+  return res.status(401).json(errorResponse(req, ERROR_CODES.UNAUTHORIZED));
+
+/* example with client device (iOS) and user roles */
+if (req.device.type === 'ios') {
+  if (req.admin)
+    method = `V1ActionNameByAdminOniOS`;
+  // if user user type
+  else if (req.user.role === 'SUPERADMIN')
+    method = `V1ActionNameByUserSuperAdminOniOS`;
+}
+
+// default action
+else {
+  return method = `V1ActionName`;
+}
+
+```
+As you can see from the examples above, in the controller method, we are specifically checking for user types, roles for a user type, or client-side devices and then calling the correct action method approprietly. This is a very powerful feature because it allows us to have one action method that can be used for multiple user types, roles, or client-side devices. This is extremely important because the behavior of your action may differ slightly or significantly depending on the user type, role or device. You'll also notice we have a specific naming convention for the action methods. We use the following naming convention: <br/>
+```
+// VersionNumberActionNameByUserTypeRoleOnDevice
+V1UpdateByUserManagerOniOS
+
+// V1 = version name
+// Update = action name
+// By = denotes by which user type and / or role
+// User = user type (admin or user or whatever you have defined as a user type)
+// Manager = role (admin, superadmin, manager, etc) for that user type
+// On = denotes by which client-side device
+// iOS = client-side device (iOS, Android, Web, etc). This is optional and if no included, it will default to all devices
+
+```
+We are able to define the action method name in a very descriptive way so we know exactly what the action method is doing and who it is for. The file name of the action is also the same as the action method name but with just the VersionNumber and the ActionName. Then we defined the more granular methods inside the file. For example, if the filename of the example above would just be V1Update.js found in the actions folder.
+<br/><br/>
+Last thing to note is that in the controller method, in the last section, we take the result of the action that was called and either return the response or error in JSON form. If we throw an error, we immedietly move on to the next middleware, which is the error middleware found in the global middleware folder. If we don't throw an error, we just return the response.
 
 ### Actions Folder
+We store all the actions in this folder. Every actions folder has an index.js that we include only once in the controller.js file. In the actions/index.js file we include all the actions here and this is automatically updated if you use our yarn commands
+```
+// Generate action: yarn gen FeatureFolder -a ActionName
+yarn gen Admin -a V1Login
+
+// Delete action: yarn del FeatureFolder -a ActionName
+yarn del Admin -a V1Login
+```
+This will automatically create the action file and add it to the index.js file. This is a very powerful feature because it allows us to add/remove actions very quickly and easily. The action file name, as mentioned previously in the controller section, is the same as the action method name but with just the VersionNumber and the ActionName. Then we defined the more granular methods inside the file. For example, if the filename of the example above would just be V1Login.js found in the actions folder.
+<br/><br/>
+Inside the action file, we will write the meat of the action. This is where we will write the logic for the action. Let us use the feature folder Order and the action V1Update as an example. The first thing we need to think about is what user types and/or roles can perform such action. Let's say both Admin user type and User user type can perform this action. So we will create two methods in the action file. One for Admin user type and one for User user type.
+<br/><br/>
+**Important Note**: It is Highly recommended that you DO NOT try to stuff all logic into one method using if/else statements to distiguish betweem the two user types. It is much better to create two methods and call the correct method in the controller file. This is because it is much easier to read and understand what the action is doing. It is also much easier to debug and test as the methods change overtime and there are more and more differences between the two. As the methods get more and more complex, you do not want to edit the one method trying to make a change for one user type but accidentally breaking the other user type. It is much better to have two methods and make the changes to the correct method. This is a very important concept to understand and follow.
+<br/><br/>
+We will name the methods as follows:
+```
+// update by admin
+async function V1UpdateByAdmin(req) {}
+
+// update by user
+async function V1UpdateByUser(req) {}
+```
+
+We can even create more methods if you want to get more granular such as roles and device types as highlighted in the controller section. But for now, let's just stick with the two methods above. Now we need to think about what the action is actually doing. In this case, we are updating an order. If there are many similarities (shared code) between the two methods, you can write a helper method in the helper.js file in the feature folder and call that helper method in both methods. Another thing you can do is call a common more general method like the one below:
+```
+// common shared method called by both V1UpdateByAdmin and V1UpdateByUser
+async function V1Update(req) {}
+```
+In this example, you can write your custom logic in V1UpdateByAdmin to handle the admin user type and then call the more general method V1Update and passing in any needed params. You can do the same for the V1UpdateByUser. This allows you to share code between methods and not have to repeat yourself.
+<br/><br/>
+### Actions Folder Structure: Deep Dive<br/><br/>
+When using yarn gen, the action file is automatically created for you with a pre-filled structure and template. Please follow it religiously.
+```
+// 1. at the top we have a comment header that describes what the action is doing
+/**
+ * ADMIN V1Read ACTION
+ */
+
+// 2. then we have the 'use strict' statement
+// this enables JavaScript's strict mode. JavaScript's strict mode was introduced in ECMAScript 5. It enforces stricter parsing and error handling on the code at runtime. It also helps you write cleaner code and catch errors and bugs that might otherwise go unnoticed.
+'use strict'; 
+
+// 3. then we have native node modules (built into node.js so you don't need to install these) that we are importing
+// built-in node modules
+const fs = require('fs'); // built in node.js file system module
+// add more modules here
+
+// 4. then we have third-party node modules, we "yarn install" this third party modules
+// third-party
+const stripe = require('stripe'); // stripe api
+
+// 5. then we have services that we created ourselves that we import from the global services folder
+// services
+const queue = require('../../../services/queue'); // process background tasks from Queue
+
+// 6. then we have the helper methods that we created ourselves that we import from the both the global helpers folder and the feature folder helpers folder
+// helpers
+const { LIST_STRING_REGEX } = require('../../../helpers/constants');
+const { someMethod } = require('../helpers');
+
+// 7. then we have the models that we created ourselves that we import from the both the global models folder
+// models
+const models = require('../../../models');
+
+// 8. next and this is extremely important, we write the module.exports and list out ALL the methods we will define in this file. 
+// methods
+module.exports = {
+  V1ReadByAdmin,
+  V1ReadByUser,
+};
+```
+DO NOT do the following two things: <br/>
+1. Do not define the actual function instead of this module.export {}. <br/>
+2. Do no export each method individually on the same line you define the function. See below the example of what to do and what not to do and I'll explain why.<br/><br/>
+
+:white_check_mark: Here is an example of what you should do. Notice that module.exports defines the methods first and THEN we write the actual methods below. We do this BECAUSE as the file gets bigger and bigger, it is much easier to find the methods you are looking for. It may not seem like a problem now but as the codebase gets more complex and files get to be thousands of lines and you are debugging or figuring out how something works, it is much easier to find the method you are looking for if you have all the methods defined at the top of the file. This is extremely important.
+```
+// put at top of file
+module.exports = {
+  V1ReadByAdmin,
+  V1ReadByUser,
+};
+
+// define methods after exporting
+async function V1ReadByAdmin(req) {}
+async function V1ReadByUser(req) {}
+```
+
+:x: Don't do this, again because it makes it difficult to see immediately what methods are defined in this file as the file gets longer and longer.
+```
+// DO NOT export and define methods at the same time
+module.exports = {
+  V1ReadByAdmin: async function(req) {},
+  V1ReadByUser: async function(req) {},
+};
+```
+:x: Also, don't do this, once again because it makes it difficult to see immediately what methods are defined in this file as the file gets longer and longer.
+```
+// DO NOT export and define methods at the same time
+export const V1ReadByAdmin = async (req) => {}
+export async function V1ReadByUser(req) => {}
+```
+Alright, sorry that we got sidetracked, let's continue with the rest of the file structure.
+```
+// 9. Next we start to define the methods. You can define as many as you want. We'll just go through one method for now. The first thing we do is write the standarized comment header.
+/**
+ * Read and return an admin (description of method)
+ *
+ * GET  /v1/admins/read (method and route)
+ * POST /v1/admins/read (method and route)
+ *
+ * Use req.__('') or res.__('') for i18n language translations (DON'T require('i18n') since it is already attached to the req & res objects): https://github.com/mashpie/i18n-node
+ * 
+ * Must be logged in (describes what roles are allowed for this method)
+ * Roles: ['admin']
+ *
+ * req.params = {} (describes the params that are allowed for this method)
+ * (what arguments are allowed for this method)
+ * req.args = {
+ *   @id - (NUMBER - OPTIONAL) [DEFAULT - req.admin.id]: The id of an admin
+ * }
+ *
+ * Success: Return a admin. (describes what is returned if the method is successful)
+ * Errors: (describes what errors can be returned if the method fails)
+ *   400: BAD_REQUEST_INVALID_ARGUMENTS
+ *   400: ADMIN_BAD_REQUEST_ACCOUNT_DOES_NOT_EXIST
+ *   401: UNAUTHORIZED
+ *   500: INTERNAL_SERVER_ERROR
+ */
+
+// 10. Next we define the actual method. This method is called in the controller, we pass in the request and response object.
+async function V1Read(req, res) {
+
+  // 11. The first thing we should always do and define a schema to check and validate the req.args coming in from the client-side request. We use the joi library to do this. We define the schema and then we validate the req.args against the schema. If there is an error, we return an error response. If there is no error, we continue on with the method.
+  const schema = joi.object({
+    id: joi.number().min(1).default(req.admin.id).optional()
+  });
+
+  // 12. we run the joi validation against the req.args and if there is an error, we return the error
+  // validate
+  const { error, value } = schema.validate(req.args);
+  if (error)
+    return errorResponse(req, ERROR_CODES.BAD_REQUEST_INVALID_ARGUMENTS, joiErrorsMessage(error));
+
+  // 13. the joi validation library allows us to convert the variable types to the correct type. For example, if the client-side sends in a string '5' for the id, the joi library will convert it to a number 5. This is very useful because we don't have to worry about converting the variable types ourselves. We can just use the req.args.id variable and it will be the correct type.
+  req.args = value; // arguments are updated and variable types are converted to correct type. ex. '5' -> 5, 'true' -> true
+
+  // 14. this is where we write the core logic for this method. We can call other methods, we can call the database, we can call other services, etc. Usually we should wrap it in a try/catch if it involves calling the database or other services.
+  try {
+    // find admin
+    const findAdmin = await models.admin.findByPk(req.args.id, {
+      attributes: {
+        exclude: models.admin.getSensitiveData() // remove sensitive data
+      }
+    });
+
+    // check if admin exists
+    if (!findAdmin)
+      return errorResponse(req, ERROR_CODES.ADMIN_BAD_REQUEST_ACCOUNT_DOES_NOT_EXIST);
+
+    // 15. if the method is successful, we return a success response in an object format. We can also return any data we want to return to the client-side but we must ALWAYS have the status and success keys in the response.
+    return {
+      status: 200,
+      success: true,
+      admin: findAdmin.dataValues
+    };
+  } catch (error) {
+    // 16. Lastly, if any errors occur, we catch it and simply throw the error. The error will be caught in the controller and passed to the error middleware and then the error will be returned to the client-side in a format that is defined in the global services/error.js file. Format: { status, success, error, message }. Notice it also has the status and success keys just like if it was successful.
+    throw error;
+  }
+} // END V1Read
+
+// 17. we can add more methods here with that follow the same format
+
+```
+The actions folder is where we write the majority of our backend logic so get familiar with the structure. If you follow these convention, the codebase will become extremely easy to follow and maintainable over time no matter how many engineers come and go. It is very very very important that this structure is followed.
+<br/><br/>
+
 ### Tests Folder
 ### Worker.js
 ### Tasks Folder
