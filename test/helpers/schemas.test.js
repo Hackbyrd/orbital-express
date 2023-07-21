@@ -1,5 +1,7 @@
 /**
  * Test helpers/schemas
+ * 
+ * JEST CHEATSHEET: https://devhints.io/jest
  */
 
 'use strict';

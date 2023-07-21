@@ -31,7 +31,7 @@ const {
 } = process.env;
 
 // helpers
-const { LOCALES } = require('./helpers/constants');
+const { i18nSettings } = require('./services/language');
 
 // services
 const socket = require('./services/socket'); // require socket service to initiate socket.io
@@ -87,14 +87,7 @@ async function server() {
   // app.use(rawBody); // adds rawBody to req object
 
   // set up language
-  i18n.configure({
-    locales: LOCALES, // set the languages here
-    defaultLocale: LOCALES[0], // default is the first index
-    queryParameter: 'lang', // query parameter to switch locale (ie. /home?lang=ch) - defaults to NULL
-    cookie: 'i18n-locale', // if you change cookie name, you must also change in verifyJWTAuth res.cookie
-    directory: __dirname + '/locales'
-    // objectNotation: true // hierarchical translation catalogs. To enable this feature, be sure to set objectNotation to true
-  });
+  i18n.configure(i18nSettings());
 
   // you will need to use cookieParser to expose cookies to req.cookies
   app.use(cookieParser());

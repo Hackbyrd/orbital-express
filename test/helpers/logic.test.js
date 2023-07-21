@@ -1,5 +1,7 @@
 /**
  * Test logic.js Helper
+ * 
+ * JEST CHEATSHEET: https://devhints.io/jest
  */
 
 'use strict';

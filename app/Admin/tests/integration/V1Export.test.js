@@ -1,5 +1,7 @@
 /**
  * TEST ADMIN V1Export METHOD
+ * 
+ * JEST CHEATSHEET: https://devhints.io/jest
  */
 
 'use strict';

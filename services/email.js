@@ -249,6 +249,8 @@ async function send({ from, name, subject, template, tos, ccs, bccs, attachments
  *   @attachments - (OBJECT ARRAY - OPTIONAL): Any attachments. Docs: https://nodemailer.com/message/attachments/
  *   @args - (OBJECT - OPTIONAL): The variables to pass to the email template (refer to args in template using -arg- syntax). MUST BE ALL STRING VALUES
  * }
+ * 
+ * returns job = { id }
  */
 async function enqueue(data) {
   try {
@@ -256,7 +258,7 @@ async function enqueue(data) {
     const EmailQueue = await queue.get('EmailQueue');
 
     // create sending email job
-    await EmailQueue.add('V1SendEmailTask', data, {
+    const job = await EmailQueue.add('V1SendEmailTask', data, {
       priority: 1, // Highest priority so the worker will process this first
       attempts: 3,
       backoff: {
@@ -266,6 +268,9 @@ async function enqueue(data) {
       removeOnComplete: true,
       removeOnFail: true,
     });
+
+    // return job
+    return job; // { id }
   } catch (error) {
     console.log('Enqueue failed', error);
     throw error;

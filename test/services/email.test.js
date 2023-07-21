@@ -1,5 +1,7 @@
 /**
  * Test services/email
+ * 
+ * JEST CHEATSHEET: https://devhints.io/jest
  */
 
 'use strict';
@@ -13,16 +15,17 @@ require('dotenv').config({ path: path.join(__dirname, '../../config/.env.test') 
 // grab test emails
 const { MAILER_HOST } = process.env;
 
-// assertion library
-const { expect } = require('chai');
-
 // services
 const email = require('../../services/email');
+const queue = require('../../services/queue'); // process background tasks from Queue
+
+// queues: add queues you will use in testing here
+let EmailQueue = null; // initial value, will be set in beforeEach because it is async
 
 // test email service
-describe('services/email', async () => {
+describe('services/email', () => {
   // send
-  describe('send', async () => {
+  describe('send', () => {
     it('should send mail successfully with only required arguments passed in.', async () => {
       const params = {
         from: `from@${MAILER_HOST}`,
@@ -38,7 +41,7 @@ describe('services/email', async () => {
       // promise version
       try {
         const result = await email.send(params);
-        expect(result).to.be.an('object');
+        expect(result).toHaveProperty('accepted', [`to@${MAILER_HOST}`]);
       } catch (error) {
         expect(error).toBeNull();
       }
@@ -58,7 +61,7 @@ describe('services/email', async () => {
 
       try {
         const result = await email.send(params);
-        expect(result).to.be.an('object');
+        expect(result).toHaveProperty('accepted', [`to@${MAILER_HOST}`]);
       } catch (error) {
         expect(error).toBeNull();
       }
@@ -78,7 +81,7 @@ describe('services/email', async () => {
 
       try {
         const result = await email.send(params);
-        expect(result).to.be.an('object');
+        expect(result).toHaveProperty('accepted', [`to@${MAILER_HOST}`]);
       } catch (error) {
         expect(error).toBeNull();
       }
@@ -98,7 +101,7 @@ describe('services/email', async () => {
 
       try {
         const result = await email.send(params);
-        expect(result).to.be.an('object');
+        expect(result).toHaveProperty('accepted', [`to@${MAILER_HOST}`]);
       } catch (error) {
         expect(error).toBeNull();
       }
@@ -130,7 +133,7 @@ describe('services/email', async () => {
       // promise version
       try {
         const result = await email.send(params);
-        expect(result).to.be.an('object');
+        expect(result).toHaveProperty('accepted', [`to@${MAILER_HOST}`]);
       } catch (error) {
         expect(error).toBeNull();
       }
@@ -153,7 +156,7 @@ describe('services/email', async () => {
         const result1 = await email.send(params1);
         expect(result1).toBeNull();
       } catch (error) {
-        expect(error).to.be.an('error');
+        expect(error).toBeDefined();
         expect(error.message).toBe('Email must have a from, name, subject, and template in order to send.');
       }
 
@@ -173,7 +176,7 @@ describe('services/email', async () => {
         const result2 = await email.send(params2);
         expect(result2).toBeNull();
       } catch (error) {
-        expect(error).to.be.an('error');
+        expect(error).toBeDefined();
         expect(error.message).toBe('Email must have a from, name, subject, and template in order to send.');
       }
     }); // END should fail to send mail if "from" or "name" is not specified.
@@ -195,7 +198,7 @@ describe('services/email', async () => {
         const result = await email.send(params);
         expect(result).toBeNull();
       } catch (error) {
-        expect(error).to.be.an('error');
+        expect(error).toBeDefined();
         expect(error.message).toBe('Email must have a from, name, subject, and template in order to send.');
       }
     }); // END should fail to send mail if "subject" is not specified.
@@ -217,7 +220,7 @@ describe('services/email', async () => {
         const result = await email.send(params);
         expect(result).toBeNull();
       } catch (error) {
-        expect(error).to.be.an('error');
+        expect(error).toBeDefined();
         expect(error.message).toBe('Email must have a from, name, subject, and template in order to send.');
       }
     }); // END should fail to send mail if "template" is not specified.
@@ -239,9 +242,64 @@ describe('services/email', async () => {
         const result = await email.send(params);
         expect(result).toBeNull();
       } catch (error) {
-        expect(error).to.be.an('error');
+        expect(error).toBeDefined();
         expect(error.message).toBe('Email must be sent to at least one recipient.');
       }
     }); // END should fail to send mail if "tos" is not specified.
   }); // END send
+
+  // enqueue, add email job to queue to process later
+  describe('enqueue', () => {
+
+    // beforeEach: reset fixtures, establish & empty queue connections, establish socket connections and clear database
+    beforeEach(async () => {
+
+      try {
+        // create queue connections here
+        EmailQueue = queue.get('EmailQueue');
+        await EmailQueue.empty(); // make sure queue is empty before each test runs
+      } catch (error) {
+        console.error(error);
+        throw error;
+      }
+    });
+
+    // afterAll: close all queue & socket connections, close database & app server connections
+    afterAll(async () => {
+      try {
+        await queue.closeAll(); // close all queue connections
+      } catch (error) {
+        console.error(error);
+        throw error;
+      }
+    });
+
+    it.only('should enqueue mail successfully', async () => {
+      const params = {
+        from: `from@${MAILER_HOST}`,
+        name: 'John Doe',
+        subject: 'TEST EMAIL',
+        template: 'Test',
+        tos: [`to@${MAILER_HOST}`],
+        ccs: null,
+        bccs: null,
+        args: null
+      }
+
+      // promise version
+      try {
+        const job = await email.enqueue(params);
+        
+        // get number of jobs
+        const jobCountResult = await EmailQueue.getJobCounts();
+        expect(jobCountResult.waiting).toBe(1);
+
+        // check if job is there
+        const checkJob = await EmailQueue.getJob(job.id);
+        expect(typeof checkJob).toBe('object');
+      } catch (error) {
+        expect(error).toBeNull();
+      }
+    }); // END should enqueue mail successfully
+  }); // END enqueue
 }); // END services/email

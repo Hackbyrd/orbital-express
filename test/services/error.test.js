@@ -1,5 +1,7 @@
 /**
  * Test error.js Service
+ * 
+ * JEST CHEATSHEET: https://devhints.io/jest
  */
 
 'use strict';
@@ -7,14 +9,19 @@
 // build-in node modules
 const path = require('path');
 
+// helpers
+const { LOCALES } = require('../../helpers/constants');
+const { i18nSettings } = require('../../services/language');
+// require('./helpers/constants');
+
 // third-party
 const i18n = require('i18n');
 
+// set up language for testing. This same setup can be found in server.js and must mimic it
+i18n.configure(i18nSettings());
+
 // load test env
 require('dotenv').config({ path: path.join(__dirname, '../../config/.env.test') });
-
-// assertion library
-const { expect } = require('chai');
 
 // helper
 const { errorResponse, joiErrorsMessage, ERROR_CODES } = require('../../services/error');
@@ -23,7 +30,7 @@ describe('services/error.js', () => {
   describe('errorResponse', function() {
     it('should create the error response JSON correctly', done => {
       const resultJSON = errorResponse(i18n, ERROR_CODES.UNAUTHORIZED);
-      expect(resultJSON.success).to.be.false;
+      expect(resultJSON.success).toBe(false);
       expect(resultJSON.status).toBe(401);
       expect(resultJSON.error).toBe(ERROR_CODES.UNAUTHORIZED.error);
       expect(resultJSON.message).toBe(i18n.__(ERROR_CODES.UNAUTHORIZED.messages[0]));
@@ -32,7 +39,7 @@ describe('services/error.js', () => {
 
     it('should create the error response JSON with custom message correctly', done => {
       const resultJSON = errorResponse(i18n, ERROR_CODES.UNAUTHORIZED, 'TEST MESSAGE');
-      expect(resultJSON.success).to.be.false;
+      expect(resultJSON.success).toBe(false);
       expect(resultJSON.status).toBe(401);
       expect(resultJSON.error).toBe(ERROR_CODES.UNAUTHORIZED.error);
       expect(resultJSON.message).toBe('TEST MESSAGE');
@@ -41,7 +48,7 @@ describe('services/error.js', () => {
 
     it('should create the error response JSON with custom message and custom status code correctly', done => {
       const resultJSON = errorResponse(i18n, ERROR_CODES.UNAUTHORIZED, 'TEST MESSAGE', 408);
-      expect(resultJSON.success).to.be.false;
+      expect(resultJSON.success).toBe(false);
       expect(resultJSON.status).toBe(408);
       expect(resultJSON.error).toBe(ERROR_CODES.UNAUTHORIZED.error);
       expect(resultJSON.message).toBe('TEST MESSAGE');

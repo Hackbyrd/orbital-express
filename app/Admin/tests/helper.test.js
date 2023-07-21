@@ -1,5 +1,7 @@
 /**
  * TEST ADMIN Helper methods
+ * 
+ * JEST CHEATSHEET: https://devhints.io/jest
  */
 
 'use strict';
