@@ -274,7 +274,7 @@ describe('services/email', () => {
       }
     });
 
-    it.only('should enqueue mail successfully', async () => {
+    it('should enqueue mail successfully', async () => {
       const params = {
         from: `from@${MAILER_HOST}`,
         name: 'John Doe',
