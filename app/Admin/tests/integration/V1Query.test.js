@@ -68,7 +68,7 @@ describe('Admin.V1Query', () => {
     try {
       // create queue connections here
       AdminQueue = queue.get('AdminQueue');
-      await AdminQueue.empty(); // make sure queue is empty before each test runs
+      await AdminQueue.obliterate({ force: true }); // make sure queue is empty before each test runs
 
       await socket.get(); // create socket connection
       await reset(); // reset database

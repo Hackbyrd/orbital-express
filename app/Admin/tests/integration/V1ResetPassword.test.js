@@ -71,11 +71,11 @@ describe('Admin.V1ResetPassword', () => {
     try {
       // create queue connections here
       AdminQueue = queue.get('AdminQueue');
-      await AdminQueue.empty(); // make sure queue is empty before each test runs
+      await AdminQueue.obliterate({ force: true }); // make sure queue is empty before each test runs
 
       // establish email queue connection
       EmailQueue = queue.get('EmailQueue');
-      await EmailQueue.empty(); // make sure queue is empty before each test runs
+      await EmailQueue.obliterate({ force: true }); // make sure queue is empty before each test runs
 
       await socket.get(); // create socket connection
       await reset(); // reset database
@@ -125,7 +125,7 @@ describe('Admin.V1ResetPassword', () => {
 
         expect(res.statusCode).toBe(200);
         expect(res.body).toHaveProperty('success', true);
-        expect(res.body).toHaveProperty('message', 'An email has been sent to ' + params.email + '. Please check your email to confirm your new password change.');
+        expect(res.body).toHaveProperty('message', i18n.__('Admin[Reset Email Success Message]', { email: params.email }));
 
         // check if resetPassword, passwordResetToken, passwordResetExpire are there
         const foundAdmin = await models.admin.findByPk(admin1.id);

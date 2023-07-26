@@ -257,7 +257,7 @@ describe('services/email', () => {
       try {
         // create queue connections here
         EmailQueue = queue.get('EmailQueue');
-        await EmailQueue.empty(); // make sure queue is empty before each test runs
+        await EmailQueue.obliterate({ force: true }); // make sure queue is empty before each test runs
       } catch (error) {
         console.error(error);
         throw error;
