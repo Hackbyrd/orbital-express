@@ -36,6 +36,9 @@ app/*/mailers/*/preview.html
 mailers/*/preview.html
 */preview.html
 
+# locales *.json
+locales/*.json
+
 # scripts
 scripts/*.csv
 

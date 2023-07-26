@@ -12,6 +12,7 @@
     "npm": "6.14.8"
   },
   "scripts": {
+    "postinstall": "yarn lang",
     "start": "./node_modules/foreman/nf.js start",
     "s": "yarn start:dev",
     "start:dev": "./node_modules/nodemon/bin/nodemon.js --exec \"./node_modules/foreman/nf.js --env ./config/.env.development start web=1\"",
