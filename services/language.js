@@ -107,4 +107,6 @@ function compile() {
   });
 }
 
-compile();
+// took this out, should do this manually in the package.json yarn start:dev and yarn worker
+// make sure you have yarn gulp running so it can compile the locale .json files when you make changes to the language files
+// compile();
