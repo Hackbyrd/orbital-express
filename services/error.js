@@ -26,7 +26,7 @@ const ERROR_FILE = 'error.js'; // the error file name
 /**
  * Global Error Codes
  *
- * Error code object contains one error code and multiple messages.
+ * Error code object contains one error code and multiple messages because you may want to choose different messages and not always use the same one.
  * You can choose which message you want to use by passing in the message index to the errorResponse method
  * Add more custom global error codes here
  */
@@ -46,13 +46,13 @@ const ERROR_CODES = {
   INTERNAL_SERVER_ERROR: {
     error: 'INTERNAL_SERVER_ERROR',
     status: 500,
-    message: ['GLOBAL[Internal Server Error]']
+    messages: ['GLOBAL[Internal Server Error]']
   },
 
   SERVICE_UNAVAILABLE: {
     error: 'SERVICE_UNAVAILABLE',
     status: 503,
-    message: ['GLOBAL[Service Unavailable]']
+    messages: ['GLOBAL[Service Unavailable]']
   }
 
   //-- ADD MORE ERROR CODES BELOW --//

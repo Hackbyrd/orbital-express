@@ -21,10 +21,11 @@ const throng = require('throng'); // concurrency
 const email = require('./services/email');
 const queue = require('./services/queue'); // the queue service for background jobs
 const socket = require('./services/socket'); // require socket service to initiate socket.io
+const i18n = require('./services/language').getI18n(); // grab i18n after we configured it. defaults to en locale and defaults to './locales' relative to node_modules directory to grab language json files:
 
 // ENV variables
 const { NODE_ENV, WEB_CONCURRENCY } = process.env;
-const PROCESSES = NODE_ENV === 'production' ? WEB_CONCURRENCY || os.cpus().length : os.cpus().length; // number of cores
+const PROCESSES = NODE_ENV === 'production' ? WEB_CONCURRENCY || os.cpus().length : 1; // number of cores
 
 // variables
 const APP_DIR = './app'; // app directory

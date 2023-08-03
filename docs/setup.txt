@@ -9,6 +9,7 @@
     Add these to vscode setting.json (Cog icon on bottom left corner)
       {
         "editor.tabSize": 2,
+        "editor.insertSpaces": true,
         "files.trimTrailingWhitespace": true,
         "files.insertFinalNewline": true
       }

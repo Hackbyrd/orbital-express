@@ -39,7 +39,7 @@ module.exports = function(err, req, res, next) {
     email.send({
       from: email.emails.error.address,
       name: email.emails.error.name,
-      subject: 'URGENT! 500 Interal Server Error!',
+      subject: 'URGENT! 500 Internal Server Error!',
       template: 'ErrorRequest',
       tos: [email.emails.error.address],
       ccs: null,

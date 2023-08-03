@@ -1,6 +1,6 @@
 /**
  * Socket.js client-side
- * 
+ *
  * To test whether sockets and background jobs work
  */
 
@@ -14,6 +14,15 @@ const socket = io(ws, {
   },
   transports: ['websocket']
 });
+
+// !NOTE: Could potentially have multiple sockets
+// const socket2 = io(ws, {
+//   withCredentials: true, // session affinity is achieved with a cookie, you need to allow credentials for cross origin
+//   query: {
+//     admin: 'random-string'
+//   },
+//   transports: ['websocket']
+// });
 
 // listen for event one
 socket.on('TEST_SOCKET_EVENT_ONE', (data) => {

@@ -33,7 +33,7 @@
     "del": "node app/feature delete",
     "str": "node app/feature stringify",
     "seed": "node ./database/seed",
-    "lang": "node ./services/language.js",
+    "lang": "node ./scripts/compile-lang.js",
     "gulp": "./node_modules/gulp-cli/bin/gulp.js",
     "format": "NODE_ENV=development node format.js",
     "ngrok": "./node_modules/ngrok/bin/ngrok http 8000",

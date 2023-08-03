@@ -1,6 +1,6 @@
 /**
  * Aggregate all language files app directory to create global language locale files
- * 
+ *
  * In the actions files, you can access i18n via req.__() or res.__(). The i18n configuration is set in the server.js file
  * In non action files (tasks, services, helpers, scripts, etc...), you must require('i18n') module to use. By default, it will access the ./locales folder for the JSON language files
  *
@@ -13,12 +13,19 @@
 const fs = require('fs');
 const path = require('path');
 
+// require third-party node modules
+const i18n = require('i18n'); // defaults to en locale and defaults to './locales' relative to node_modules directory to grab language json files:
+
+// configured i18n
+let configuredI18n = null;
+
 // helpers
 const { LOCALES } = require('../helpers/constants');
 
 module.exports = {
-  compile, 
-  i18nSettings
+  i18nSettings,
+  getI18n,
+  compile,
 };
 
 /**
@@ -35,6 +42,19 @@ function i18nSettings() {
     // objectNotation: true // hierarchical translation catalogs. To enable this feature, be sure to set objectNotation to true
   };
 } // END i18nSettings
+
+/**
+ * Configure and return i18n module that already has the settings set up to be used in app server, worker server and tests
+ */
+function getI18n() {
+  // if not configured, configure it, else skip since we don't want to do it again
+  if (!configuredI18n) {
+    i18n.configure(i18nSettings());
+    configuredI18n = i18n;
+  }
+
+  return configuredI18n;
+} // END getI18n
 
 /**
  * Aggregate all language files app directory to create global language locale files
@@ -106,7 +126,3 @@ function compile() {
     fs.closeSync(fd);
   });
 }
-
-// took this out, should do this manually in the package.json yarn start:dev and yarn worker
-// make sure you have yarn gulp running so it can compile the locale .json files when you make changes to the language files
-// compile();

@@ -1,6 +1,6 @@
 /**
  * Test error.js Service
- * 
+ *
  * JEST CHEATSHEET: https://devhints.io/jest
  */
 
@@ -9,16 +9,11 @@
 // build-in node modules
 const path = require('path');
 
+// services
+const i18n = require('../../services/language').getI18n(); // grab i18n after we configured it
+
 // helpers
 const { LOCALES } = require('../../helpers/constants');
-const { i18nSettings } = require('../../services/language');
-// require('./helpers/constants');
-
-// third-party
-const i18n = require('i18n');
-
-// set up language for testing. This same setup can be found in server.js and must mimic it
-i18n.configure(i18nSettings());
 
 // load test env
 require('dotenv').config({ path: path.join(__dirname, '../../config/.env.test') });

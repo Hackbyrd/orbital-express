@@ -95,7 +95,7 @@ async function V1ResetPassword(req, res) {
       from: email.EMAILS.SUPPORT.address,
       name: email.EMAILS.SUPPORT.name,
       subject: req.__('ADMIN[Reset Email Subject]'), // reset email subject
-      template: 'AdminResetPassword',
+      template: 'Admin.AdminResetPassword', // must prepend with 'Admin.' since this is an admin email template
       tos: [req.args.email],
       ccs: null,
       bccs: null,

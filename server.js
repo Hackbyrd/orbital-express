@@ -19,7 +19,6 @@ const passport = require('passport');
 const helmet = require('helmet');
 const morgan = require('morgan'); // logging: https://github.com/expressjs/morgan
 const cors = require('cors'); // handle cors
-const i18n = require('i18n'); // set up language
 
 // env variables
 const {
@@ -30,11 +29,9 @@ const {
   RATE_LIMIT_MAX_PER_WINDOW
 } = process.env;
 
-// helpers
-const { i18nSettings } = require('./services/language');
-
 // services
 const socket = require('./services/socket'); // require socket service to initiate socket.io
+const i18n = require('./services/language').getI18n(); // grab i18n after we configured it
 
 // server
 async function server() {
@@ -86,9 +83,6 @@ async function server() {
   app.use(helmet()); // protect against vulnerabilities
   // app.use(rawBody); // adds rawBody to req object
 
-  // set up language
-  i18n.configure(i18nSettings());
-
   // you will need to use cookieParser to expose cookies to req.cookies
   app.use(cookieParser());
 
@@ -126,7 +120,7 @@ async function server() {
   // we are doing this only to test that socket.io works
   app.set('views', './views') // specify the views directory
   app.set('view engine', 'ejs'); // set ejs as the view engine
-  
+
   // host public files such as js, css, images, etc..
   // How to use in HTML/.ejs file:
   // <script src="/js/example.js" />
