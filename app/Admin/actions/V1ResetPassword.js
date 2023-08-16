@@ -9,7 +9,6 @@ const { NODE_ENV, ADMIN_WEB_HOSTNAME } = process.env;
 
 // third-party node modules
 const joi = require('joi'); // argument validations: https://github.com/hapijs/joi/blob/master/API.md
-const i18n = require('i18n'); // https://github.com/mashpie/i18n-node
 const moment = require('moment-timezone'); // manage timezone and dates: https://momentjs.com/timezone/docs/
 
 // services
@@ -72,6 +71,10 @@ async function V1ResetPassword(req, res) {
     if (!findAdmin)
       return errorResponse(req, ERROR_CODES.ADMIN_BAD_REQUEST_ACCOUNT_DOES_NOT_EXIST);
 
+    // update the locale since it was updated in the auth middleware because this route is called while being logged out
+    req.setLocale(findAdmin.locale);
+    res.setLocale(findAdmin.locale);
+
     // preparing for reset
     const passwordResetToken = randomString();
     const passwordResetExpire = moment.tz('UTC').add(6, 'hours'); // add 6 hours from now
@@ -94,7 +97,7 @@ async function V1ResetPassword(req, res) {
     await email.enqueue({
       from: email.EMAILS.SUPPORT.address,
       name: email.EMAILS.SUPPORT.name,
-      subject: req.__('ADMIN[Reset Email Subject]'), // reset email subject
+      subject: req.__('ADMIN[reset_email_subject]'), // reset email subject
       template: 'Admin.AdminResetPassword', // must prepend with 'Admin.' since this is an admin email template
       tos: [req.args.email],
       ccs: null,
@@ -110,7 +113,7 @@ async function V1ResetPassword(req, res) {
     return {
       status: 200,
       success: true,
-      message: req.__('ADMIN[Reset Email Success Message]', { email: req.args.email }),
+      message: req.__('ADMIN[reset_email_success_message]', { email: req.args.email }),
       resetLink: NODE_ENV === 'production' ? null : resetLink // In production, DO NOT return reset link. Only return reset link in dev and test env for testing purposes.
     };
   } catch (error) {

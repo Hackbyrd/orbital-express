@@ -35,7 +35,7 @@ function addressSchema() {
     state: joi.string().trim().uppercase().min(2).max(2).required(),
     postalCode: joi.string().trim().min(3).required(),
     countryCode: joi.string().trim().uppercase().min(2).required(),
-  });
+  }); // dont put required() or optional() because it will be handled by the parent schema
 }
 
 /**
@@ -52,5 +52,5 @@ function geocodeSchema() {
     lat: joi.number().required(),
     lng: joi.number().required(),
     alt: joi.number().required(),
-  });
+  }); // dont put required() or optional() because it will be handled by the parent schema
 }

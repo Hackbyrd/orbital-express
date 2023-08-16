@@ -34,7 +34,7 @@ const { API_VERSION } = process.env;
 
  module.exports = passport => {
    // Welcome
-   router.all('/', (req, res) => res.status(200).send(`API ${API_VERSION} - ${req.__('GLOBAL[Language]')}`));
+   router.all('/', (req, res) => res.status(200).send(`API ${API_VERSION} - ${req.__('GLOBAL[language]')}`));
 
    // Socket: Test that socket is working
    router.all('/socket', (req, res) => res.render('socket', { HOSTNAME: process.env.HOSTNAME, WEBSOCKET: process.env.WEBSOCKET })); // pass in env variables

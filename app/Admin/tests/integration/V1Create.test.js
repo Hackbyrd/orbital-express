@@ -14,7 +14,6 @@ require('dotenv').config({ path: path.join(__dirname, '../../../../config/.env.t
 
 // third party
 const _ = require('lodash'); // general helper methods: https://lodash.com/docs
-const i18n = require('i18n'); // defaults to en locale and defaults to './locales' relative to node_modules directory to grab language json files: https://github.com/mashpie/i18n-node
 const { faker } = require('@faker-js/faker'); // https://fakerjs.dev/api/
 
 // models
@@ -26,6 +25,7 @@ const request = require('supertest');
 // services
 const queue = require('../../../../services/queue'); // process background tasks from Queue
 const socket = require('../../../../services/socket'); // require socket service to initiate socket.io
+const i18n = require('../../../../services/language').getI18n(); // defaults to en locale and defaults to './locales' relative to node_modules directory to grab language json files:
 const { errorResponse, ERROR_CODES } = require('../../../../services/error');
 
 // helpers
@@ -219,7 +219,7 @@ describe('Admin.V1Create', () => {
           .send(params);
 
         expect(res.statusCode).toBe(400);
-        expect(res.body).toEqual(errorResponse(i18n, ERROR_CODES.BAD_REQUEST_INVALID_ARGUMENTS, i18n.__('ADMIN[Invalid Password Format]')));
+        expect(res.body).toEqual(errorResponse(i18n, ERROR_CODES.BAD_REQUEST_INVALID_ARGUMENTS, i18n.__('ADMIN[invalid_password_format]')));
       } catch (error) {
         throw error;
       }
@@ -358,4 +358,3 @@ describe('Admin.V1Create', () => {
     }); // END [admin] should not create new admin if timezone is invalid
   }); // END Role: Admin
 }); // END Admin.V1Create
- 

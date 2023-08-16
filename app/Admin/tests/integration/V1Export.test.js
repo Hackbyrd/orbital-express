@@ -1,6 +1,6 @@
 /**
  * TEST ADMIN V1Export METHOD
- * 
+ *
  * JEST CHEATSHEET: https://devhints.io/jest
  */
 
@@ -14,7 +14,6 @@ require('dotenv').config({ path: path.join(__dirname, '../../../../config/.env.t
 
 // third party
 const _ = require('lodash'); // general helper methods: https://lodash.com/docs
-const i18n = require('i18n'); // defaults to en locale and defaults to './locales' relative to node_modules directory to grab language json files: https://github.com/mashpie/i18n-node
 
 // models
 const models = require('../../../../models');
@@ -25,6 +24,7 @@ const request = require('supertest');
 // services
 const queue = require('../../../../services/queue'); // process background tasks from Queue
 const socket = require('../../../../services/socket'); // require socket service to initiate socket.io
+const i18n = require('../../../../services/language').getI18n(); // defaults to en locale and defaults to './locales' relative to node_modules directory to grab language json files:
 const { errorResponse, ERROR_CODES } = require('../../../../services/error');
 
 // helpers

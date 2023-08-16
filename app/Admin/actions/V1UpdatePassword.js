@@ -29,7 +29,7 @@ module.exports = {
  * POST /v1/admins/updatepassword
  *
  * Use req.__('') or res.__('') for i18n language translations (DON'T require('i18n') since it is already attached to the req & res objects): https://github.com/mashpie/i18n-node
- * 
+ *
  * Must be logged in
  * Roles: ['admin']
  *
@@ -51,8 +51,8 @@ module.exports = {
 async function V1UpdatePassword(req, res) {
   const schema = joi.object({
     password: joi.string().min(8).required(),
-    password1: joi.string().min(PASSWORD_LENGTH_MIN).regex(PASSWORD_REGEX).required().error(new Error(req.__('ADMIN[Invalid Password Format]'))),
-    password2: joi.string().min(PASSWORD_LENGTH_MIN).regex(PASSWORD_REGEX).required().error(new Error(req.__('ADMIN[Invalid Password Format]')))
+    password1: joi.string().min(PASSWORD_LENGTH_MIN).regex(PASSWORD_REGEX).required().error(new Error(req.__('ADMIN[invalid_password_format]'))),
+    password2: joi.string().min(PASSWORD_LENGTH_MIN).regex(PASSWORD_REGEX).required().error(new Error(req.__('ADMIN[invalid_password_format]')))
   });
 
   // validate

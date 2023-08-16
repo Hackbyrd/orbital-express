@@ -21,12 +21,21 @@ const {
 } = process.env;
 
 // third-party
-const mb = require('messagebird')(MESSAGE_BIRD_API_KEY);
+const mb = require('messagebird').initClient(MESSAGE_BIRD_API_KEY);
 const twilioClient = require('twilio')(TWILIO_ACCOUNT_SID, TWILIO_AUTH_TOKEN);
+
+// services
+const i18n = require('./language').getI18n();
+const queue = require('./queue'); // require queue service
+const { queueError } = require('./error'); // require error service
 
 module.exports = {
   message,
   validate,
+
+  // background job
+  worker,
+  enqueue
 };
 
 /**
@@ -184,7 +193,7 @@ async function validate(number) {
             errorDetailsArr.push(`Code ${e.code}: ${e.description}.`);
           });
 
-          return resolve({ errorMessage: 'Invalid Phone Number.', errorDetails: errorDetailsArr.join(' ') });
+          return resolve({ errorMessage: i18n.__('GLOBAL[invalid_phone_number]'), errorDetails: errorDetailsArr.join(' ') });
         }
       }
 
@@ -193,3 +202,75 @@ async function validate(number) {
     });
   }); // END Promise
 } // END validate
+
+/**
+ * Add a new send text message job to the PhoneQueue to be sent
+ *
+ * @data {
+ *   @to - (STRING - REQUIRED): phone number to send to
+ *   @message - (STRING - REQUIRED): message to send
+ * }
+ *
+ * returns job = { id }
+ */
+async function enqueue(data) {
+  try {
+    // grab phone queue
+    const PhoneQueue = await queue.get('PhoneQueue');
+
+    // create sending text message job job
+    const job = await PhoneQueue.add('V1SendTextMessageTask', data, {
+      priority: 1, // Highest priority so the worker will process this first
+      attempts: 3,
+      backoff: {
+        type: 'exponential',
+        delay: 1000,
+      },
+      removeOnComplete: true,
+      removeOnFail: true,
+    });
+
+    // return job
+    return job; // { id }
+  } catch (error) {
+    console.log('Enqueue failed', error);
+    throw error;
+  }
+} // END enqueue
+
+/**
+ * Worker function to process jobs in the PhoneQueue
+ */
+async function worker() {
+  // grab email queue
+  const PhoneQueue = await queue.get('PhoneQueue');
+
+   // Process Phone Feature Background Tasks
+   PhoneQueue.process('V1SendTextMessageTask', V1SendTextMessageTask); // task below
+   PhoneQueue.on('failed', async (job, error) => queueError(error, PhoneQueue, job));
+   PhoneQueue.on('stalled', async job => queueError(new Error('Queue Stalled.'), PhoneQueue, job));
+   PhoneQueue.on('error', async error => queueError(error, PhoneQueue));
+} // END worker
+
+/**
+ * Background job to send a text message
+ *
+ * @job {
+ *   @id - (NUMBER - REQUIRED): The id of the background job (automatically when creating a job)
+ *   @data {
+ *     @to - (STRING - REQUIRED): phone number to send to
+ *     @message - (STRING - REQUIRED): message to send
+ *   }
+ * }
+ */
+async function V1SendTextMessageTask(job) {
+  console.log(`V1SendTextMessageTask - ${job.id}`);
+
+  // Send text
+  try {
+    return await message(job.data);
+  } catch (error) {
+    console.log(`V1SendTextMessageTask - ${job.id} - ERROR: ${error}\n${JSON.stringify(job.data)}`);
+    throw error;
+  }
+} // END V1SendTextMessageTask

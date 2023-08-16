@@ -26,13 +26,13 @@ const path = require('path');
 // third-party
 const joi = require('joi'); // argument validations: https://github.com/hapijs/joi/blob/master/API.md
 const ejs = require('ejs'); // email html template
-const i18n = require('i18n'); // defaults to en locale and defaults to './locales' relative to node_modules directory to grab language json files: https://github.com/mashpie/i18n-node
 const nodemailer = require('nodemailer'); // https://nodemailer.com/about/
 const htmlToText = require('html-to-text'); // https://www.npmjs.com/package/html-to-text
 
 // services
 const queue = require('./queue'); // require queue service
 const { queueError } = require('./error'); // require error service
+const i18n = require('./language').getI18n(); // defaults to en locale and defaults to './locales' relative to node_modules directory to grab language json files: https://github.com/mashpie/i18n-node
 
 // !IMPORTANT Yahoo.com has a DMARC policy in place that prevents mail with yahoo.com in the from address from being delivered if it is sent from outside Yahoo’s infrastructure.
 // https://sendgrid.com/blog/yahoo-dmarc-update/
@@ -85,7 +85,7 @@ function dmarc(from) {
 *   @attachments - (OBJECT ARRAY - OPTIONAL): Any attachments. Docs: https://nodemailer.com/message/attachments/
 *   @args - (OBJECT - OPTIONAL): The variables to pass to the email template (refer to args in template using -arg- syntax). MUST BE ALL STRING VALUES
 * }
-* 
+*
 * return true/false
 */
 async function send({ from, name, subject, template, tos, ccs, bccs, attachments, args }) {
@@ -169,7 +169,7 @@ async function send({ from, name, subject, template, tos, ccs, bccs, attachments
 
     // if node environment is not production, then add TEST EMAIL disclaimer to top of email to help you distinguish between production and development emails.
     args.isTestEmail = NODE_ENV === 'production' ? '' : 'THIS IS A TEST EMAIL';
-    
+
     // add i18n to args
     // if in action files, we should pass in the req.__() or res.__() function
     if (!args.i18n) {
@@ -237,7 +237,7 @@ async function send({ from, name, subject, template, tos, ccs, bccs, attachments
 /**
  * Add a new send email job to the EmailQueue to be sent
  * Arguments are the same as the email.send method above because we are just passing it through
- * 
+ *
  * @data {
  *   @from - (STRING - REQUIRED): Where this email is from (email)
  *   @name - (STRING - REQUIRED): Where this email is from (name)
@@ -249,7 +249,7 @@ async function send({ from, name, subject, template, tos, ccs, bccs, attachments
  *   @attachments - (OBJECT ARRAY - OPTIONAL): Any attachments. Docs: https://nodemailer.com/message/attachments/
  *   @args - (OBJECT - OPTIONAL): The variables to pass to the email template (refer to args in template using -arg- syntax). MUST BE ALL STRING VALUES
  * }
- * 
+ *
  * returns job = { id }
  */
 async function enqueue(data) {
@@ -293,7 +293,7 @@ async function worker() {
 
 /**
  * Background job to send an email
- * 
+ *
  * @job {
  *   @id - (NUMBER - REQUIRED): The id of the background job (automatically when creating a job)
  *   @data {

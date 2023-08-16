@@ -9,11 +9,12 @@
 'use strict';
 
 module.exports = {
-  'GLOBAL[Language]': 'English',
-  'GLOBAL[Welcome]': 'Welcome',
+  'GLOBAL[language]': 'English',
+  'GLOBAL[welcome]': 'Welcome',
 
-  'GLOBAL[Invalid Arguments]': 'One or more request arguments are invalid.',
-  'GLOBAL[Unauthorized]': 'You do not have permission to make this request.',
-  'GLOBAL[Internal Server Error]': 'Oops... something went wrong.',
-  'GLOBAL[Service Unavailable]': 'Server is in the process of shutting down or restarting.'
+  'GLOBAL[invalid_arguments]': 'One or more request arguments are invalid.',
+  'GLOBAL[invalid_phone_number]': 'Invalid phone number.',
+  'GLOBAL[unauthorized]': 'You do not have permission to make this request.',
+  'GLOBAL[internal_server_error]': 'Oops... something went wrong.',
+  'GLOBAL[service_unavailable]': 'Server is in the process of shutting down or restarting.'
 };

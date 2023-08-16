@@ -34,25 +34,25 @@ const ERROR_CODES = {
   BAD_REQUEST_INVALID_ARGUMENTS: {
     error: 'BAD_REQUEST_INVALID_ARGUMENTS',
     status: 400,
-    messages: ['GLOBAL[Invalid Arguments]']
+    messages: ['GLOBAL[invalid_arguments]']
   },
 
   UNAUTHORIZED: {
     error: 'UNAUTHORIZED',
     status: 401,
-    messages: ['GLOBAL[Unauthorized]']
+    messages: ['GLOBAL[unauthorized]']
   },
 
   INTERNAL_SERVER_ERROR: {
     error: 'INTERNAL_SERVER_ERROR',
     status: 500,
-    messages: ['GLOBAL[Internal Server Error]']
+    messages: ['GLOBAL[internal_server_error]']
   },
 
   SERVICE_UNAVAILABLE: {
     error: 'SERVICE_UNAVAILABLE',
     status: 503,
-    messages: ['GLOBAL[Service Unavailable]']
+    messages: ['GLOBAL[service_unavailable]']
   }
 
   //-- ADD MORE ERROR CODES BELOW --//

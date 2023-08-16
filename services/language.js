@@ -20,7 +20,7 @@ const i18n = require('i18n'); // defaults to en locale and defaults to './locale
 let configuredI18n = null;
 
 // helpers
-const { LOCALES } = require('../helpers/constants');
+const { LOCALES, LOCALE } = require('../helpers/constants');
 
 module.exports = {
   i18nSettings,
@@ -35,7 +35,7 @@ function i18nSettings() {
   // set up language for testing. This same setup can be found in server.js and must mimic it
   return {
     locales: LOCALES, // set the languages here
-    defaultLocale: LOCALES[0], // default is the first index
+    defaultLocale: LOCALES.en, // default is the first index
     queryParameter: 'lang', // query parameter to switch locale (ie. /home?lang=ch) - defaults to NULL
     cookie: 'i18n-locale', // if you change cookie name, you must also change in verifyJWTAuth res.cookie
     directory: __dirname + '/../locales'

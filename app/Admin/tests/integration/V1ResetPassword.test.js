@@ -17,7 +17,6 @@ const { ADMIN_WEB_HOSTNAME } = process.env;
 
 // third party
 const _ = require('lodash'); // general helper methods: https://lodash.com/docs
-const i18n = require('i18n'); // defaults to en locale and defaults to './locales' relative to node_modules directory to grab language json files: https://github.com/mashpie/i18n-node
 
 // models
 const models = require('../../../../models');
@@ -28,6 +27,7 @@ const request = require('supertest');
 // services
 const queue = require('../../../../services/queue'); // process background tasks from Queue
 const socket = require('../../../../services/socket'); // require socket service to initiate socket.io
+const i18n = require('../../../../services/language').getI18n(); // defaults to en locale and defaults to './locales' relative to node_modules directory to grab language json files:
 const { errorResponse, ERROR_CODES } = require('../../../../services/error');
 
 // helpers
@@ -125,7 +125,7 @@ describe('Admin.V1ResetPassword', () => {
 
         expect(res.statusCode).toBe(200);
         expect(res.body).toHaveProperty('success', true);
-        expect(res.body).toHaveProperty('message', i18n.__('Admin[Reset Email Success Message]', { email: params.email }));
+        expect(res.body).toHaveProperty('message', i18n.__('ADMIN[reset_email_success_message]', { email: params.email }));
 
         // check if resetPassword, passwordResetToken, passwordResetExpire are there
         const foundAdmin = await models.admin.findByPk(admin1.id);

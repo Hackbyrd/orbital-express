@@ -279,6 +279,11 @@ function generate() {
   fs.writeSync(fd, tasksTestFileText({ ...NAMES, method: 'V1ExampleTask' }), 0, 'utf-8');
   fs.closeSync(fd);
 
+  // add README.txt for background tasks tests
+  fd = fs.openSync(path.join(newTestsDirPath, 'tasks/README.txt'), 'w');
+  fs.writeSync(fd, `This folder is to test all background tasks.`, 0, 'utf-8');
+  fs.closeSync(fd);
+
   fs.closeSync(fs.openSync(path.join(newTestsDirPath, 'helper.test.js'), 'w'));
   // fs.closeSync(fs.openSync(path.join(newTestsDirPath, 'action.test.js'), 'w'));
 

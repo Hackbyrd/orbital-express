@@ -15,7 +15,6 @@ require('dotenv').config({ path: path.join(__dirname, '../../../../config/.env.t
 // third party
 const _ = require('lodash'); // general helper methods: https://lodash.com/docs
 const moment = require('moment-timezone');
-const i18n = require('i18n'); // defaults to en locale and defaults to './locales' relative to node_modules directory to grab language json files: https://github.com/mashpie/i18n-node
 const bcrypt = require('bcrypt');
 
 // models
@@ -27,6 +26,7 @@ const request = require('supertest');
 // services
 const queue = require('../../../../services/queue'); // process background tasks from Queue
 const socket = require('../../../../services/socket'); // require socket service to initiate socket.io
+const i18n = require('../../../../services/language').getI18n(); // defaults to en locale and defaults to './locales' relative to node_modules directory to grab language json files:
 const { errorResponse, ERROR_CODES } = require('../../../../services/error');
 
 // helpers
@@ -288,7 +288,7 @@ describe('Admin.V1ConfirmPassword', () => {
           .send(params2);
 
         expect(res2.statusCode).toBe(400);
-        expect(res2.body).toEqual(errorResponse(i18n, ERROR_CODES.BAD_REQUEST_INVALID_ARGUMENTS, i18n.__('ADMIN[Invalid Password Format]')));
+        expect(res2.body).toEqual(errorResponse(i18n, ERROR_CODES.BAD_REQUEST_INVALID_ARGUMENTS, i18n.__('ADMIN[invalid_password_format]')));
       } catch (error) {
         throw error;
       }

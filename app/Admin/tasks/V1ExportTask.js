@@ -6,7 +6,6 @@
 
 // third-party
 const joi = require('joi'); // argument validations: https://github.com/hapijs/joi/blob/master/API.md
-const i18n = require('i18n'); // defaults to en locale and defaults to './locales' relative to node_modules directory to grab language json files: https://github.com/mashpie/i18n-node
 
 // services
 const socket = require('../../../services/socket');

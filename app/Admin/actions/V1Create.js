@@ -31,7 +31,7 @@ module.exports = {
  * POST /v1/admins/create
  *
  * Use req.__('') or res.__('') for i18n language translations (DON'T require('i18n') since it is already attached to the req & res objects): https://github.com/mashpie/i18n-node
- * 
+ *
  * Must be logged in
  * Roles: ['admin']
  *
@@ -69,8 +69,8 @@ async function V1Create(req, res) {
     phone: joi.string().trim().required(),
     timezone: joi.string().min(1).required(),
     locale: joi.string().min(1).required(),
-    password1: joi.string().min(PASSWORD_LENGTH_MIN).regex(PASSWORD_REGEX).required().error(new Error(req.__('ADMIN[Invalid Password Format]'))),
-    password2: joi.string().min(PASSWORD_LENGTH_MIN).regex(PASSWORD_REGEX).required().error(new Error(req.__('ADMIN[Invalid Password Format]'))),
+    password1: joi.string().min(PASSWORD_LENGTH_MIN).regex(PASSWORD_REGEX).required().error(new Error(req.__('ADMIN[invalid_password_format]'))),
+    password2: joi.string().min(PASSWORD_LENGTH_MIN).regex(PASSWORD_REGEX).required().error(new Error(req.__('ADMIN[invalid_password_format]'))),
     acceptedTerms: joi.boolean().required()
   });
 

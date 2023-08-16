@@ -10,34 +10,34 @@
 
 module.exports = {
   // Global
-  'ADMIN[Welcome]': 'Welcome',
+  'ADMIN[welcome]': 'Welcome',
 
   // V1Login
-  'ADMIN[Invalid Login Credentials]': 'The email and/or password you entered is incorrect.',
-  'ADMIN[Admin Account Inactive]': 'Admin account is inactive.',
-  'ADMIN[Admin Account Deleted]': 'Admin account has been deleted.',
+  'ADMIN[invalid_login_credentials]': 'The email and/or password you entered is incorrect.',
+  'ADMIN[admin_account_inactive]': 'Admin account is inactive.',
+  'ADMIN[admin_account_deleted]': 'Admin account has been deleted.',
 
   // V1Read
-  'ADMIN[Admin Account Does Not Exist]': 'Admin account does not exist.',
+  'ADMIN[admin_account_does_not_exist]': 'Admin account does not exist.',
 
   // V1Create
-  'ADMIN[Terms of Service Not Accepted]': 'You must agree to our Terms of Service.',
-  'ADMIN[Admin Already Exists]': 'Admin user already exists.',
-  'ADMIN[Invalid Time Zone]': 'Time Zone is invalid.',
+  'ADMIN[terms_of_service_not_accepted]': 'You must agree to our Terms of Service.',
+  'ADMIN[admin_already_exists]': 'Admin user already exists.',
+  'ADMIN[invalid_time_zone]': 'Time Zone is invalid.',
 
   // V1ResetPassword
-  'ADMIN[Reset Email Subject]': 'Your password has been changed. Please confirm.',
-  'ADMIN[Reset Email Success Message]': 'An email has been sent to {{email}}. Please check your email to confirm your new password change.',
+  'ADMIN[reset_email_subject]': 'Your password has been changed. Please confirm.',
+  'ADMIN[reset_email_success_message]': 'An email has been sent to {{email}}. Please check your email to confirm your new password change.',
 
   // V1ConfirmPassword
-  'ADMIN[Invalid Password Reset Token]': 'Invalid password reset token or reset token has expired.',
-  'ADMIN[Invalid Password Format]': 'Password must contain at least 1 lowercase letter, at least 1 uppercase letter, at least 1 number, at least one symbol (!@#$%^&*), and must be at least eight characters in length.',
-  'ADMIN[Passwords Not Equal]': 'The passwords entered do not match.',
+  'ADMIN[invalid_password_reset_token]': 'Invalid password reset token or reset token has expired.',
+  'ADMIN[invalid_password_format]': 'Password must contain at least 1 lowercase letter, at least 1 uppercase letter, at least 1 number, at least one symbol (!@#$%^&*), and must be at least eight characters in length.',
+  'ADMIN[passwords_not_equal]': 'The passwords entered do not match.',
 
   // V1UpdateEmail
-  'ADMIN[Same Email]': 'Your new email cannot be the same as your current email.',
-  'ADMIN[Email Already Taken]': 'The new email you entered is already taken.',
+  'ADMIN[same_email]': 'Your new email cannot be the same as your current email.',
+  'ADMIN[email_already_taken]': 'The new email you entered is already taken.',
 
   // V1UpdatePassword
-  'ADMIN[Password Authentication Failed]': 'Original password entered is incorrect.'
+  'ADMIN[password_authentication_failed]': 'Original password entered is incorrect.'
 };

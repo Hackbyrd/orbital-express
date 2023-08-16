@@ -1,5 +1,5 @@
 /**
- * Compiles Mailes and Languages
+ * Compiles Mailers and Languages
  *
  * yarn add gulp-cli gulp --dev --exact
  *
