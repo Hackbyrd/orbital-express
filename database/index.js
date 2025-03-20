@@ -16,28 +16,72 @@ const pg = require('pg');
 pg.defaults.ssl = NODE_ENV === 'production' || DB_SSL === 'true' ? true : false;
 pg.defaults.parseInt8 = true; // This will force Sequelize to parse the BIGINT type from DB as number in JS
 
-// connect to psql DB
-const conn = new Sequelize(DATABASE_URL, {
-  // only use this if trying to connect remotely
-  ssl: NODE_ENV === 'production' || DB_SSL === 'true' ? true : false,
-  dialectOptions: {
-    multipleStatements: true, // allows us to run multiple statements at once in a raw sequelize.query method
-    decimalNumbers: true, // postgres returns string decimals, this will convert it to a decimal
+// Extract database components from URL for dynamic database creation
+const parseDbUrl = (url) => {
+  const dbUrlRegex = /postgres:\/\/([^:]+)(?::([^@]+))?@([^:]+):(\d+)\/([^?]+)/;
+  const match = url.match(dbUrlRegex);
+  if (!match) {
+    throw new Error('Invalid DATABASE_URL format');
+  }
+  return {
+    user: match[1],
+    password: match[2] || '',
+    host: match[3],
+    port: match[4],
+    database: match[5]
+  };
+};
 
-    // need to put this here because: https://stackoverflow.com/questions/58965011/sequelizeconnectionerror-self-signed-certificate
-    ssl: NODE_ENV === 'production' || DB_SSL === 'true' ? { required: true, rejectUnauthorized: false } : false,
-    requestTimeout: 3000,
-  },
+// Function to create a dynamic database connection
+let conn = null;
+const getDatabaseConnection = (uniqueSuffix = '') => {
+  if (NODE_ENV === 'test' && uniqueSuffix) {
+    const dbInfo = parseDbUrl(DATABASE_URL);
+    const dynamicDbName = `${dbInfo.database}_${uniqueSuffix}`;
+    const dynamicDbUrl = `postgres://${dbInfo.user}${dbInfo.password ? ':' + dbInfo.password : ''}@${dbInfo.host}:${dbInfo.port}/${dynamicDbName}`;
+    
+    return new Sequelize(dynamicDbUrl, {
+      ssl: NODE_ENV === 'production' || DB_SSL === 'true' ? true : false,
+      dialectOptions: {
+        multipleStatements: true,
+        decimalNumbers: true,
+        ssl: NODE_ENV === 'production' || DB_SSL === 'true' ? { required: true, rejectUnauthorized: false } : false,
+        requestTimeout: 3000,
+      },
+      dialect: 'postgres',
+      logging: false,
+      pool: {
+        max: 10,
+        min: 1,
+        idle: 10000,
+      },
+      timezone: '+00:00', // UTC time
+    });
+  }
+  
+  // For non-test environments or when no unique suffix is provided, use the default connection
+  if (!conn) {
+    conn = new Sequelize(DATABASE_URL, {
+      ssl: NODE_ENV === 'production' || DB_SSL === 'true' ? true : false,
+      dialectOptions: {
+        multipleStatements: true,
+        decimalNumbers: true,
+        ssl: NODE_ENV === 'production' || DB_SSL === 'true' ? { required: true, rejectUnauthorized: false } : false,
+        requestTimeout: 3000,
+      },
+      dialect: 'postgres',
+      logging: false,
+      pool: {
+        max: 10,
+        min: 1,
+        idle: 10000,
+      },
+      timezone: '+00:00', // UTC time
+    });
+  }
+  
+  return conn;
+};
 
-  dialect: 'postgres',
-  logging: false, // log here, if you want log, put in console.log
-  pool: {
-    max: 10,
-    min: 1,
-    idle: 10000,
-  },
-  timezone: '+00:00', // UTC time
-});
-
-// return sql connection
-module.exports = conn;
+// return the database connection creator
+module.exports = getDatabaseConnection;

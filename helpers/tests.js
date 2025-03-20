@@ -7,9 +7,14 @@
 // built-in
 const fs = require('fs');
 const path = require('path');
+const { execSync } = require('child_process');
+const crypto = require('crypto');
 
 // require models
 const models = require('../models'); // grab db connection
+
+// require database connection creator
+const getDatabaseConnection = require('../database');
 
 // the order in which to create tables and add fixture data
 const seq = require('../database/sequence');
@@ -20,6 +25,9 @@ const redisClient = require('../services/redis');
 // Fixtures
 const fixturesSqlObj = {}; // this is for allow us to read from the fixture sql file only ONCE and then storing the string instead of reading the file every time a test is run. Basically save the sql statement sql in memory only ONCE ever time we run the suite of tests
 
+// Dynamic database connections cache
+const dynamicDbs = {};
+
 module.exports = {
   login,
   adminLogin,
@@ -27,7 +35,9 @@ module.exports = {
   reset,
   resetRedis,
   populateFix,
-  populate
+  populate,
+  createTestDatabase,
+  teardownTestDatabase
 };
 
 /**
@@ -93,13 +103,93 @@ async function userLogin(app, version, request, user) {
 }
 
 /**
+ * Creates a new database for testing and returns a connection to it
+ * 
+ * @returns {Object} The database connection
+ */
+async function createTestDatabase() {
+  try {
+    // Generate a unique identifier for this test run
+    const uniqueId = crypto.randomBytes(8).toString('hex');
+    
+    // Get database info from environment
+    const dbUrl = process.env.DATABASE_URL;
+    const match = dbUrl.match(/postgres:\/\/([^:]+)(?::([^@]+))?@([^:]+):(\d+)\/([^?]+)/);
+    if (!match) {
+      throw new Error('Invalid DATABASE_URL format');
+    }
+    
+    const user = match[1];
+    const host = match[3];
+    const port = match[4];
+    const database = match[5];
+    
+    // Create a unique database name for this test
+    const testDbName = `${database}_test_${uniqueId}`;
+    
+    // Create the test database
+    execSync(`PGPASSWORD=${process.env.DB_PASSWORD || ''} createdb -h ${host} -p ${port} -U ${user} ${testDbName}`);
+    
+    // Get a connection to the newly created database
+    const dbConnection = getDatabaseConnection(uniqueId);
+    
+    // Store the connection and database name for later cleanup
+    dynamicDbs[uniqueId] = {
+      connection: dbConnection,
+      name: testDbName,
+      host,
+      port,
+      user
+    };
+    
+    // Initialize the database schema
+    await dbConnection.authenticate();
+    await dbConnection.sync({ force: true });
+    
+    return {
+      db: dbConnection,
+      id: uniqueId
+    };
+  } catch (error) {
+    console.error('Error creating test database:', error);
+    throw error;
+  }
+}
+
+/**
+ * Cleans up and drops a test database
+ * 
+ * @param {String} dbId The unique identifier for the test database
+ */
+async function teardownTestDatabase(dbId) {
+  try {
+    if (dynamicDbs[dbId]) {
+      const { connection, name, host, port, user } = dynamicDbs[dbId];
+      
+      // Close the connection
+      await connection.close();
+      
+      // Drop the database
+      execSync(`PGPASSWORD=${process.env.DB_PASSWORD || ''} dropdb -h ${host} -p ${port} -U ${user} ${name} --if-exists`);
+      
+      // Remove from our cache
+      delete dynamicDbs[dbId];
+    }
+  } catch (error) {
+    console.error('Error dropping test database:', error);
+  }
+}
+
+/**
  * Reset the test database
  *
  * Clear all fixture data, throws error automatically if there is one
+ * 
+ * @param {Object} dbConnection The database connection to reset
  */
-async function reset() {
-  await models.db.authenticate();
-  await models.db.sync({ force: true });
+async function reset(dbConnection = models.db) {
+  await dbConnection.authenticate();
+  await dbConnection.sync({ force: true });
 }
 
 /**
@@ -193,11 +283,12 @@ async function populateFix(fixtureFolderName) {
 /**
  * Populates database according to the fixture set passed in. This uses the .sql fixtures instead of the .js fixtures
  *
- * @fixtureName - (STRING - REQUIRED): The fixtures name so we know which fixture to populate, ex. "fix1" or "fix1.sql", "fix2" or "fix2.sql", etc...
- *
- * return true
+ * @param {String} fixtureName The fixtures name so we know which fixture to populate, ex. "fix1" or "fix1.sql", "fix2" or "fix2.sql", etc...
+ * @param {Object} dbConnection The database connection to populate
+ * 
+ * @returns {Boolean} True if successful
  */
-async function populate(fixtureName) {
+async function populate(fixtureName, dbConnection = models.db) {
   // add .sql if not already there
   if (fixtureName.indexOf('.sql') < 0) fixtureName = fixtureName + '.sql';
 
@@ -210,8 +301,8 @@ async function populate(fixtureName) {
       fixturesSqlObj[fixtureName] = sqlStatement; // store sql statement
     }
 
-    // execute query
-    await models.db.query(fixturesSqlObj[fixtureName]);
+    // execute query on the provided database connection
+    await dbConnection.query(fixturesSqlObj[fixtureName]);
     return true;
   } catch (error) {
     console.log(error);

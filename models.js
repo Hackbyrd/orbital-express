@@ -10,7 +10,8 @@ const path = require('path');
 
 // require custom modules
 const Sequelize = require('sequelize');
-const conn = require('./database'); // grab db connection
+const getDatabaseConnection = require('./database'); // grab db connection function
+const conn = getDatabaseConnection(); // Use default connection for now
 
 // variables
 const APP_DIR = './app'; // app directory

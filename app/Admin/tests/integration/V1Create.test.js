@@ -30,13 +30,17 @@ const { errorResponse, ERROR_CODES } = require('../../../../services/error');
 
 // helpers
 const { PASSWORD_REGEX } = require('../../../../helpers/constants');
-const { adminLogin, reset, populate } = require('../../../../helpers/tests');
+const { adminLogin, reset, populate, createTestDatabase, teardownTestDatabase } = require('../../../../helpers/tests');
 
 // server: initialize server in the beforeAll function because it is an async function
 let app = null;
 
 // queues: add queues you will use in testing here
 let AdminQueue = null; // initial value, will be set in beforeEach because it is async
+
+// Dynamic database connection
+let dbInfo = null;
+let testDb = null;
 
 describe('Admin.V1Create', () => {
   // grab fixtures and convert to function so every test has fresh deep copy of fixtures otherwise if we don't do this, then fixtures will be modified by previous tests and affect other tests
@@ -51,9 +55,17 @@ describe('Admin.V1Create', () => {
   const routeMethod = '/create';
   const routeUrl = `${routeVersion}${routePrefix}${routeMethod}`;
 
-  // beforeAll: initialize app server
+  // beforeAll: initialize app server and create test database
   beforeAll(async () => {
     try {
+      // Create a dedicated test database for this test file
+      dbInfo = await createTestDatabase();
+      testDb = dbInfo.db;
+      
+      // Override the models.db with our test database connection
+      models.db = testDb;
+      
+      // Initialize server
       app = await require('../../../../server');
     } catch (error) {
       console.error(error);
@@ -61,7 +73,7 @@ describe('Admin.V1Create', () => {
     }
   });
 
-  // beforeEach: reset fixtures, establish & empty queue connections, establish socket connections and clear database
+  // beforeEach: reset fixtures, establish & empty queue connections, establish socket connections and reset database
   beforeEach(async () => {
     // reset fixtures with fresh deep copy, must call these functions to get deep copy because we don't want modified fixtures from previous tests to affect other tests
     adminFix = adminFixFn();
@@ -72,7 +84,7 @@ describe('Admin.V1Create', () => {
       await AdminQueue.obliterate({ force: true }); // make sure queue is empty before each test runs
 
       await socket.get(); // create socket connection
-      await reset(); // reset database
+      await reset(testDb); // reset database using our test database connection
     } catch (error) {
       console.error(error);
       throw error;
@@ -84,7 +96,15 @@ describe('Admin.V1Create', () => {
     try {
       await queue.closeAll(); // close all queue connections
       await socket.close(); // close socket connection
-      await models.db.close(); // close database connection
+      
+      // Close the database connection
+      await models.db.close();
+      
+      // Teardown the test database
+      if (dbInfo) {
+        await teardownTestDatabase(dbInfo.id);
+      }
+      
       app.close(); // close server connection
     } catch (error) {
       console.error(error);
@@ -97,7 +117,7 @@ describe('Admin.V1Create', () => {
     // populate database with fixtures and empty queues
     beforeEach(async () => {
       try {
-        await populate('fix1'); // populate test database with fix1 dataset
+        await populate('fix1', testDb); // populate test database with fix1 dataset
       } catch (error) {
         console.error(error);
         throw error;
@@ -122,7 +142,7 @@ describe('Admin.V1Create', () => {
     // populate database with fixtures and empty queues
     beforeEach(async () => {
       try {
-        await populate('fix1'); // populate test database with fix1 dataset
+        await populate('fix1', testDb); // populate test database with fix1 dataset
       } catch (error) {
         console.error(error);
         throw error;
