@@ -9,7 +9,7 @@
   "engines": {
     "node": "22.14.0",
     "yarn": "1.22.22",
-    "npm": "6.14.8"
+    "npm": "10.9.2"
   },
   "scripts": {
     "postinstall": "yarn lang",
