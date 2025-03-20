@@ -24,7 +24,7 @@ const { LOCALES, LOCALE } = require('../helpers/constants');
 
 module.exports = {
   i18nSettings,
-  getI18n,
+  getLocalI18n,
   compile,
 };
 
@@ -35,7 +35,7 @@ function i18nSettings() {
   // set up language for testing. This same setup can be found in server.js and must mimic it
   return {
     locales: LOCALES, // set the languages here
-    defaultLocale: LOCALES.en, // default is the first index
+    defaultLocale: LOCALE.EN, // default is the first index
     queryParameter: 'lang', // query parameter to switch locale (ie. /home?lang=ch) - defaults to NULL
     cookie: 'i18n-locale', // if you change cookie name, you must also change in verifyJWTAuth res.cookie
     directory: __dirname + '/../locales'
@@ -46,15 +46,27 @@ function i18nSettings() {
 /**
  * Configure and return i18n module that already has the settings set up to be used in app server, worker server and tests
  */
-function getI18n() {
-  // if not configured, configure it, else skip since we don't want to do it again
-  if (!configuredI18n) {
-    i18n.configure(i18nSettings());
-    configuredI18n = i18n;
-  }
+// function getDeprecatedI18n() {
+//   // if not configured, configure it, else skip since we don't want to do it again
+//   if (!configuredI18n) {
+//     i18n.configure(i18nSettings());
+//     configuredI18n = i18n;
+//   }
 
-  return configuredI18n;
-} // END getI18n
+//   return configuredI18n;
+// } // END getDeprecatedI18n
+
+/**
+ * Configure and return a new copy of i18n module with the correct settings. We do this since we don't want all users to be affected by changes. This so every time we call an action or function we get a fresh copy of this.
+ */
+function getLocalI18n() {
+  const localI18n = {}; // local i18n object
+  const settings = i18nSettings();
+  settings.register = localI18n; // register the local i18n object
+  i18n.configure(settings);
+
+  return localI18n;
+} // END getLocalI18n
 
 /**
  * Aggregate all language files app directory to create global language locale files
@@ -95,6 +107,9 @@ function compile() {
   // for each feature directory
   directories.forEach(dir => {
     const LANG_DIR = path.join(dir, '/languages'); // the language folder name
+
+    if (!fs.existsSync(LANG_DIR)) return;
+
     const languageFiles = fs.readdirSync(LANG_DIR)
 
     // append each feature language to the global language object

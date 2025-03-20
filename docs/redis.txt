@@ -6,6 +6,10 @@ cd redis-x.x.x
 make
 make test
 
+Next, change the folder "redis.x.x.x" name to just "redis".
+Then create a file inside the "redis" folder called "vX.X.X.txt" with your version number to keep track of what version you have.
+Note, this file is ONLY local to you and is included in the .gitignore. So all new developers will have to go through these steps in install a local version of redis
+
 Start Server:
 yarn redis
 or

@@ -14,6 +14,9 @@ const models = require('../models'); // grab db connection
 // the order in which to create tables and add fixture data
 const seq = require('../database/sequence');
 
+// redis client
+const redisClient = require('../services/redis');
+
 // Fixtures
 const fixturesSqlObj = {}; // this is for allow us to read from the fixture sql file only ONCE and then storing the string instead of reading the file every time a test is run. Basically save the sql statement sql in memory only ONCE ever time we run the suite of tests
 
@@ -22,6 +25,7 @@ module.exports = {
   adminLogin,
   userLogin,
   reset,
+  resetRedis,
   populateFix,
   populate
 };
@@ -96,6 +100,15 @@ async function userLogin(app, version, request, user) {
 async function reset() {
   await models.db.authenticate();
   await models.db.sync({ force: true });
+}
+
+/**
+ * Reset the redis database
+ *
+ * Clear all redis data
+ */
+async function resetRedis() {
+  await redisClient.flushAll();
 }
 
 /**

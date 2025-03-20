@@ -7,8 +7,8 @@
   "author": "Hackbyrd",
   "license": "MIT",
   "engines": {
-    "node": "18.13.0",
-    "yarn": "1.22.19",
+    "node": "22.14.0",
+    "yarn": "1.22.22",
     "npm": "6.14.8"
   },
   "scripts": {

@@ -17,7 +17,8 @@ const {
   MESSAGE_BIRD_NUMBER,
   TWILIO_ACCOUNT_SID,
   TWILIO_AUTH_TOKEN,
-  TWILIO_NUMBER
+  TWILIO_NUMBER,
+  TWILIO_SERVICE_ID
 } = process.env;
 
 // third-party
@@ -25,7 +26,7 @@ const mb = require('messagebird').initClient(MESSAGE_BIRD_API_KEY);
 const twilioClient = require('twilio')(TWILIO_ACCOUNT_SID, TWILIO_AUTH_TOKEN);
 
 // services
-const i18n = require('./language').getI18n();
+const lang = require('./language');
 const queue = require('./queue'); // require queue service
 const { queueError } = require('./error'); // require error service
 
@@ -35,7 +36,12 @@ module.exports = {
 
   // background job
   worker,
-  enqueue
+  enqueue,
+
+  // verify service
+  sendVerificationCode,
+  verifyCode,
+  cancelVerification
 };
 
 /**
@@ -129,11 +135,16 @@ async function messageMessageBird(to, message) {
 async function message({ to, message }) {
   return new Promise(async (resolve, reject) => {
     try {
-      const result = await twilioClient.messages.create({
+      const params = {
         body: message,
         from: TWILIO_NUMBER,
         to: to
-      });
+      };
+
+      // // log params for debug purposes
+      // console.log('Twilio message params', params);
+
+      const result = await twilioClient.messages.create(params);
 
       // console.log(result.sid);
       return resolve(result);
@@ -177,6 +188,8 @@ async function message({ to, message }) {
  * return { errorMessage: 'Invalid phone number.', errorDetails: errorDetailsArr.join(' ')}
  */
 async function validate(number) {
+  const i18n = lang.getLocalI18n(); // get local i18n object
+
   return new Promise((resolve, reject) => {
     const sanitizedNumber = number.replace(/\D/g, ''); // strip out all non-digit integers
 
@@ -274,3 +287,64 @@ async function V1SendTextMessageTask(job) {
     throw error;
   }
 } // END V1SendTextMessageTask
+
+/**
+ * Send a verification code to phone using Twilio's Verify service
+ *
+ * @phone - (STRING - REQUIRED): The phone number to send to
+ *
+ */
+async function sendVerificationCode(phone) {
+  try {
+    // send verification code
+    const result = await twilioClient.verify.v2.services(TWILIO_SERVICE_ID)
+      .verifications
+      .create({ to: phone, channel: 'sms' })
+
+    return result;
+  } catch (error) {
+    console.log('sendVerificationCode error', error);
+    throw error;
+  }
+} // END sendVerificationCode
+
+/**
+ * Verify a code sent to phone using Twilio's Verify service
+ *
+ * @phone - (STRING - REQUIRED): The phone number to send to
+ * @code - (STRING - REQUIRED): The code to verify
+ *
+ */
+async function verifyCode(phone, code) {
+  try {
+    // verify code
+    const result = await twilioClient.verify.v2.services(TWILIO_SERVICE_ID)
+      .verificationChecks
+      .create({ to: phone, code })
+
+    return result;
+  } catch (error) {
+    console.log('verifyCode error', error);
+    throw error;
+  }
+} // END verifyCode
+
+/**
+ * Update the verification status to canceled for testing purposes
+ *
+ * @phone - (STRING - REQUIRED): The phone number to send to
+ *
+ */
+async function cancelVerification(verificationSid) {
+  try {
+    // send verification code
+    const result = await twilioClient.verify.v2.services(TWILIO_SERVICE_ID)
+      .verifications(verificationSid)
+      .update({ status: 'canceled' })
+
+    return result;
+  } catch (error) {
+    console.log('cancelVerification error', error);
+    throw error;
+  }
+} // END sendVerificationCode

@@ -19,6 +19,7 @@ const throng = require('throng'); // concurrency
 
 // services
 const email = require('./services/email');
+const phone = require('./services/phone');
 const queue = require('./services/queue'); // the queue service for background jobs
 const socket = require('./services/socket'); // require socket service to initiate socket.io
 const i18n = require('./services/language').getI18n(); // grab i18n after we configured it. defaults to en locale and defaults to './locales' relative to node_modules directory to grab language json files:
@@ -66,6 +67,7 @@ async function startWorker(processId) {
   // run all feature workers and add feature specific queues to QueuesArray
   workerRoutes.forEach(worker => worker());
   email.worker(); // run email worker
+  phone.worker(); // run phone worker
 
   // Graceful exit
   process.on('SIGTERM', async () => {
