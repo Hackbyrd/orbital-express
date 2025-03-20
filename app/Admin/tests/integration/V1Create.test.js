@@ -141,7 +141,7 @@ describe('Admin.V1Create', () => {
           lastName: faker.person.lastName(),
           active: true,
           email: faker.internet.email().toLowerCase(), // lowercase
-          phone: faker.phone.number('+1##########'),
+          phone: faker.phone.number({ style: 'international' }), // '+15551234567'
           timezone: faker.location.timeZone(),
           locale: 'en',
           password1: 'asdfGHJK1234@$', // faker.internet.password doesn't work with PASSWORD_REGEX
