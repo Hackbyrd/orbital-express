@@ -1,0 +1,76 @@
+In order to get Devin AI set up, we must install dependencies
+
+# Install node.js latest version
+> nvm install v22.14.0 or latest version
+
+# Install Yarn
+> npm install --global yarn
+
+# Install node packages
+> yarn install
+
+# Install Redis
+sudo apt-get update
+sudo apt-get install redis-server -y
+# Start Redis service
+sudo service redis-server start
+
+# Install PostgreSQL
+sudo apt-get update
+sudo apt-get install postgresql postgresql-contrib -y
+# Start PostgreSQL service
+sudo service postgresql start
+
+# create database
+
+# switch to the PostgreSQL system user
+sudo -i -u postgres
+
+# open pqsl
+pqsl
+
+# create local app database
+CREATE DATABASE orbital_dev;
+
+# create test database
+CREATE DATABASE orbital_test
+
+# user: postgres
+# set password
+ALTER USER postgres PASSWORD 'password'; # "1234567890"
+
+# grab information for database url
+SHOW listen_addresses;
+SHOW port;
+SELECT current_user;
+
+# exit using "ctrl"+"d"
+
+-------
+Then, you'll need to modify PostgreSQL's authentication configuration. Edit the pg_hba.conf file:
+
+```bash
+sudo nano /etc/postgresql/*/main/pg_hba.conf
+```
+
+3. Find the lines that look something like this:
+```
+# Database administrative login by Unix domain socket
+local all postgres peer
+# "local" is for Unix domain socket connections only
+local all all peer
+# IPv4 local connections:
+host all all 127.0.0.1/32 scram-sha-256
+```
+
+4. Change the authentication method from `peer` to `md5` or `password`:
+```
+local all postgres md5
+local all all md5
+host all all 127.0.0.1/32 md5
+```
+
+5. Restart PostgreSQL to apply the changes:
+```bash
+sudo service postgresql restart
+```
