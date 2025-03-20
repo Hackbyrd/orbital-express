@@ -3,7 +3,7 @@
  * Write all events and rooms here
  *
  * https://socket.io/docs/
- * 
+ *
  * TODO: TEST
  */
 
@@ -14,7 +14,7 @@ const { NODE_ENV, REDIS_URL, REDISCLOUD_URL } = process.env;
 
 // require third-party node modules
 const { Server } = require('socket.io');
-const { createClient } = require('redis');
+const { redisClient } = require('./redis.js');
 const { createAdapter } = require('@socket.io/redis-adapter');
 
 // the rooms for sockets
@@ -74,14 +74,17 @@ async function get(newServer) {
   io = newServer ? new Server(newServer, serverOptions) : new Server(serverOptions);
 
   // create the redis pub client
-  pubClient = createClient({
-    url: REDIS_URL || REDISCLOUD_URL,
-    // socket option is required in Heroku, https://devcenter.heroku.com/articles/connecting-heroku-redis#connecting-in-node-js
-    socket: {
-      tls: NODE_ENV === 'production', // only use TLS in production, REDIS_URL='redis://localhost:6379' in development
-      rejectUnauthorized: false,
-    }
-  });
+  // pubClient = createClient({
+  //   url: REDIS_URL || REDISCLOUD_URL,
+  //   // socket option is required in Heroku, https://devcenter.heroku.com/articles/connecting-heroku-redis#connecting-in-node-js
+  //   socket: {
+  //     tls: NODE_ENV === 'production', // only use TLS in production, REDIS_URL='redis://localhost:6379' in development
+  //     rejectUnauthorized: false,
+  //   }
+  // });
+
+  // create the redis pub client
+  pubClient = redisClient;
 
   // create the redis sub client by duplicating the pub client
   subClient = pubClient.duplicate();
@@ -118,8 +121,8 @@ async function get(newServer) {
 } // END get
 
 /**
- * Handle io.on('connection') event 
- * 
+ * Handle io.on('connection') event
+ *
  * @socket - (OBJECT): the socket object
  */
 function connect(socket) {
@@ -188,7 +191,7 @@ async function close() {
 module.exports = {
   // main io connection object
   io,
-  
+
   // constant variables
   SOCKET_ROOMS,
   SOCKET_EVENTS,

@@ -18,6 +18,7 @@ const bodyParser = require('body-parser');
 const passport = require('passport');
 const helmet = require('helmet');
 const morgan = require('morgan'); // logging: https://github.com/expressjs/morgan
+const i18n = require('i18n'); // defaults to en locale and defaults to './locales' relative to node_modules directory to grab language json files:
 const cors = require('cors'); // handle cors
 
 // env variables
@@ -31,7 +32,7 @@ const {
 
 // services
 const socket = require('./services/socket'); // require socket service to initiate socket.io
-const i18n = require('./services/language').getI18n(); // grab i18n after we configured it
+const lang = require('./services/language'); // grab i18n after we configured it
 
 // server
 async function server() {
@@ -60,17 +61,17 @@ async function server() {
   if (NODE_ENV === 'production') {
     app.set('trust proxy', 1); // get ip address using req.ip
 
-    // set a rate limit for incoming requests
-    const limiter = RateLimit({
-      windowMs: RATE_LIMIT_WINDOW_MS, // 5 minutes
-      max: RATE_LIMIT_MAX_PER_WINDOW, // limit each IP to 300 requests per windowMs
-      store: new RedisStore({
-        redisURL: REDIS_URL || REDISCLOUD_URL
-      })
-    });
+    // // set a rate limit for incoming requests
+    // const limiter = RateLimit({
+    //   windowMs: RATE_LIMIT_WINDOW_MS, // 5 minutes
+    //   max: RATE_LIMIT_MAX_PER_WINDOW, // limit each IP to 300 requests per windowMs
+    //   store: new RedisStore({
+    //     redisURL: REDIS_URL || REDISCLOUD_URL
+    //   })
+    // });
 
-    // set rate limiter
-    app.use(limiter);
+    // // set rate limiter
+    // app.use(limiter);
   }
 
   // log requests using morgan, don't log in test env
@@ -88,7 +89,8 @@ async function server() {
 
   // i18n init parses req for language headers, cookies, etc.
   // NOTE: If user is logged in, locale is set in verifyJWTAuth method
-  app.use(i18n.init);
+  i18n.configure(lang.i18nSettings()); // grab settings
+  app.use(i18n.init); // then init i18n
 
   // save raw body
   function rawBodySaver(req, res, buf, encoding) {
@@ -97,8 +99,8 @@ async function server() {
   }
 
   // body parser
-  app.use(bodyParser.json({ limit: '32mb', verify: rawBodySaver })); // raw application/json
-  app.use(bodyParser.urlencoded({ limit: '32mb', verify: rawBodySaver, extended: false })); // application/x-www-form-urlencoded
+  app.use(bodyParser.json({ limit: '4096mb', verify: rawBodySaver })); // raw application/json
+  app.use(bodyParser.urlencoded({ limit: '4096mb', verify: rawBodySaver, extended: false })); // application/x-www-form-urlencoded
 
   // NOTE: take this out because it interferes with multer
   // app.use(bodyParser.raw({ limit: '32mb', verify: rawBodySaver, type: () => true }));

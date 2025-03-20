@@ -32,7 +32,7 @@ const htmlToText = require('html-to-text'); // https://www.npmjs.com/package/htm
 // services
 const queue = require('./queue'); // require queue service
 const { queueError } = require('./error'); // require error service
-const i18n = require('./language').getI18n(); // defaults to en locale and defaults to './locales' relative to node_modules directory to grab language json files: https://github.com/mashpie/i18n-node
+const i18n = require('./language').getLocalI18n(); // defaults to en locale and defaults to './locales' relative to node_modules directory to grab language json files: https://github.com/mashpie/i18n-node
 
 // !IMPORTANT Yahoo.com has a DMARC policy in place that prevents mail with yahoo.com in the from address from being delivered if it is sent from outside Yahoo’s infrastructure.
 // https://sendgrid.com/blog/yahoo-dmarc-update/

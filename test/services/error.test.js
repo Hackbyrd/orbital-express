@@ -10,7 +10,7 @@
 const path = require('path');
 
 // services
-const i18n = require('../../services/language').getI18n(); // grab i18n after we configured it
+const i18n = require('../../services/language').getLocalI18n(); // grab i18n after we configured it
 
 // helpers
 const { LOCALES } = require('../../helpers/constants');

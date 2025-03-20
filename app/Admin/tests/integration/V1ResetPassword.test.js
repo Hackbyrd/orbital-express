@@ -27,7 +27,7 @@ const request = require('supertest');
 // services
 const queue = require('../../../../services/queue'); // process background tasks from Queue
 const socket = require('../../../../services/socket'); // require socket service to initiate socket.io
-const i18n = require('../../../../services/language').getI18n(); // defaults to en locale and defaults to './locales' relative to node_modules directory to grab language json files:
+const i18n = require('../../../../services/language').getLocalI18n(); // defaults to en locale and defaults to './locales' relative to node_modules directory to grab language json files:
 const { errorResponse, ERROR_CODES } = require('../../../../services/error');
 
 // helpers

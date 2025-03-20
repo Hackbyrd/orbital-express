@@ -22,7 +22,7 @@ const email = require('./services/email');
 const phone = require('./services/phone');
 const queue = require('./services/queue'); // the queue service for background jobs
 const socket = require('./services/socket'); // require socket service to initiate socket.io
-const i18n = require('./services/language').getI18n(); // grab i18n after we configured it. defaults to en locale and defaults to './locales' relative to node_modules directory to grab language json files:
+const i18n = require('./services/language').getLocalI18n(); // grab i18n after we configured it. defaults to en locale and defaults to './locales' relative to node_modules directory to grab language json files:
 
 // ENV variables
 const { NODE_ENV, WEB_CONCURRENCY } = process.env;
