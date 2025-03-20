@@ -36,6 +36,7 @@
     "lang": "node ./scripts/compile-lang.js",
     "gulp": "./node_modules/gulp-cli/bin/gulp.js",
     "format": "NODE_ENV=development node format.js",
+    "lint": "yarn format",
     "ngrok": "./node_modules/ngrok/bin/ngrok http 8000",
     "ngrok:auth": "./node_modules/ngrok/bin/ngrok authtoken",
     "redis": "./redis/src/redis-server",
