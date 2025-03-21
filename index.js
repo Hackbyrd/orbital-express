@@ -32,10 +32,19 @@ async function startApp(processId) {
   console.log(`WEB process.env.NODE_ENV: ${NODE_ENV}`);
 
   // to check if database connection is established
-  await models.db.authenticate().catch(err => {
-    console.error(err);
+  try {
+    // authenticate
+    await models.db.authenticate()
+
+    // Enable Citus
+    // await sequelize.query('CREATE EXTENSION IF NOT EXISTS citus;');
+
+    // Ensure sharding is applied
+    // await sequelize.query("SELECT create_distributed_table('Orders', 'user_id') ON CONFLICT DO NOTHING;");
+  } catch (error) {
+    console.error(error);
     process.exit(1);
-  });
+  }
 
   // start GlobalQueue
   // queue.get('GlobalQueue');

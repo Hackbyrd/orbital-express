@@ -46,6 +46,9 @@ SELECT current_user;
 
 # exit using "ctrl"+"d"
 
+# use cases
+https://docs.devin.ai/enterprise/use-cases/menu
+
 -------
 Then, you'll need to modify PostgreSQL's authentication configuration. Edit the pg_hba.conf file:
 

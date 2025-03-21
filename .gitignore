@@ -54,3 +54,11 @@ dump.rdb
 
 # test fixtures sql files
 test/fixtures/*.sql
+
+# circleci test results
+jest-html-reporters-attach
+jest_html_reporters.html
+junit.xml
+
+# jest database names
+jest.database.txt

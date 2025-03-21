@@ -67,7 +67,8 @@ Important: When installing a new node module. Please install the EXACT version b
 ------------------------------------------------------------------------------------
 --------------------------------- Common Variables ---------------------------------
 ------------------------------------------------------------------------------------
-err = error
+err = error -> use this if NOT in a try catch and is just a catch after an await
+error = error -> use this after a try catch
 req = request
 res = response
 result = result
