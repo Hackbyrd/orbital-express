@@ -3,6 +3,7 @@ const os = require('os');
 
 const config = {
   verbose: true,
+  // To test concurrency, uncomment the following lines and set -runInBand to false in yarn test in package.json
   // maxConcurrency: os.cpus().length - 1, // number of cores available on your machine minus one for the main thread
   // maxWorkers: os.cpus().length - 1, // number of cores available on your machine minus one for the main thread
   // setupFiles: ['./jest.setup.js'],
