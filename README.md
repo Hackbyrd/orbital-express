@@ -143,6 +143,8 @@ We have a ##"middleware"## folder where you can add your own custom middlewares.
 
 The most important one to know is the **"args.js"** file. In short, we create and append a variable to the **req** object called **req.args**. This variable contains the request body IF it is a POST request, or the request query IF it is a GET request. We do this because you as the developer don't need to know or remember if the API request you are working on is a POST or a GET. All you need to know is that the arguments are going to be attach to **req.args** so you can focus on building your feature.
 
+For a complete step-by-step breakdown of the full request lifecycle — middleware order, `req.args` normalization, auth dispatch, controller pattern, response shape, and error flow — see **[docs/core/request-lifecycle.md](docs/core/request-lifecycle.md)**.
+
 ---
 ## The Config Folder / Environment Set Up
 When building any application, its common to have variables be different depending on what environment we are in. There are four main environments that we have:
@@ -650,6 +652,8 @@ Lastly, because we are autogenerating the **preview.html**, when you insert the 
 ---
 ## Migrations
 Migrations, although similar to models, are different in that they are used to create and update database tables. Remember models are used when we are actually coding and does not change the database whatsoever. We use the [sequelize](https://sequelize.org/) library to manage our migrations. The migrations are located in the **migrations** directory.<br/><br/>
+
+Deep reference: **`docs/database/migrations.md`** — full conventions, annotated examples, and run commands.<br/><br/>
 
 There are two instances when we need to generate a model.
 1. When we are creating a new table run the following command:

@@ -1,5 +1,5 @@
 Add New Feature
-1. Write Schema in [database/Schema.sql](database/Schema.sql)
+1. Write Schema in database/schema.sql
 2. Generate Feature
   2-1. Go to Terminal, type in "yarn gen FOLDERNAME" (folder name is singular)
 3. Write Model

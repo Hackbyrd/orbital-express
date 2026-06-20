@@ -7,13 +7,13 @@
   "author": "Hackbyrd",
   "license": "MIT",
   "engines": {
-    "node": "22.14.0",
-    "yarn": "1.22.22",
-    "npm": "10.9.2"
+    "node": "22.18.0",
+    "yarn": "1.22.22"
   },
   "scripts": {
     "postinstall": "yarn lang",
     "start": "./node_modules/foreman/nf.js start",
+    "server": "yarn start",
     "s": "yarn start:dev",
     "start:dev": "yarn lang && ./node_modules/nodemon/bin/nodemon.js --ignore locales/ --exec \"./node_modules/foreman/nf.js --env ./config/.env.development start web=1\"",
     "w": "yarn worker",
@@ -27,7 +27,7 @@
     "model": "./node_modules/.bin/sequelize model:create --env development --name NewModel --attributes exString:string,exInt:integer,exBool:boolean,exDate:date && rm models/newmodel.js",
     "migration": "./node_modules/.bin/sequelize migration:create --env development --name add-cols-newCol-to-ExistingTable-tbl",
     "backup": "pg_dump orbital_dev > database/backups/backup.sql",
-    "restore": "dropdb orbital_dev; createdb stimulus_dev; psql stimulus_dev < database/backups/backup.sql",
+    "restore": "dropdb orbital_dev; createdb orbital_dev; psql orbital_dev < database/backups/backup.sql",
     "cron": "./node_modules/nodemon/bin/nodemon.js --exec \"./node_modules/foreman/nf.js --env ./config/.env.development start clock=1\"",
     "gen": "node app/feature generate",
     "del": "node app/feature delete",
@@ -38,11 +38,11 @@
     "format": "NODE_ENV=development node format.js",
     "lint": "yarn format",
     "ngrok": "./node_modules/ngrok/bin/ngrok http 8000",
-    "ngrok:auth": "./node_modules/ngrok/bin/ngrok authtoken",
+    "ngrok:auth": "./node_modules/ngrok/bin/ngrok config add-authtoken",
     "redis": "./redis/src/redis-server",
     "redis:stop": "./redis/src/redis-cli shutdown",
     "sql": "node test/fixtures/sql.js",
-    "test": "yarn lang && yarn sql fix1 && node --max-old-space-size=8192 --expose-gc ./node_modules/.bin/jest --runInBand --logHeapUsage --detectOpenHandles",
+    "test": "yarn lang && yarn sql fix1 && node --experimental-vm-modules --max-old-space-size=8192 --expose-gc ./node_modules/.bin/jest --runInBand --ci --verbose --logHeapUsage --detectOpenHandles",
     "t": "yarn test"
   },
   "dependencies": {
@@ -56,6 +56,7 @@
     "cookie-parser": "1.4.7",
     "cors": "2.8.5",
     "cron": "4.1.0",
+    "crypto": "1.0.1",
     "csv-parser": "3.2.0",
     "currency.js": "2.0.4",
     "ejs": "3.1.10",
@@ -68,7 +69,7 @@
     "html-to-text": "9.0.5",
     "i18n": "0.15.1",
     "joi": "17.13.3",
-    "jwt-simple": "0.5.6",
+    "jsonwebtoken": "9.0.3",
     "lodash": "4.17.21",
     "moment": "2.30.1",
     "moment-timezone": "0.5.47",
@@ -87,7 +88,9 @@
     "sequelize-cli": "6.6.2",
     "slugify": "1.6.6",
     "socket.io": "4.8.1",
-    "throng": "5.0.0"
+    "throng": "5.0.0",
+    "ua-parser-js": "2.0.3",
+    "zod": "3"
   },
   "devDependencies": {
     "@faker-js/faker": "9.6.0",
@@ -97,7 +100,8 @@
     "jest": "29.7.0",
     "jest-html-reporters": "3.1.7",
     "jest-junit": "16.0.0",
-    "ngrok": "4.3.0",
+    "ngrok": "5.0.0-beta.2",
+    "node-fetch": "3.3.2",
     "nodemon": "2.0.2",
     "prettier": "2.8.8",
     "supertest": "6.3.3"

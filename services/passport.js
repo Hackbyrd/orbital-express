@@ -1,5 +1,13 @@
 /**
  * passport.js configuration
+ *
+ * Two kinds of strategies per user type:
+ *   - Local strategy ('JWT<Type>Login')  — verifies email+password at login time.
+ *   - JWT strategy   ('JWTAuth<Type>')    — verifies the ACCESS TOKEN on every request.
+ *
+ * Access tokens are signed with ACCESS_TOKEN_SECRET (see helpers/logic.createAccessToken),
+ * carry `sub`, `type`, `tokenVersion`, and have `exp`/`iss` enforced here. A token whose
+ * tokenVersion no longer matches the user's current tokenVersion is rejected (instant revocation).
  */
 
 'use strict';
@@ -8,12 +16,18 @@
 const LocalStrategy = require('passport-local');
 const JwtStrategy = require('passport-jwt').Strategy;
 const ExtractJwt = require('passport-jwt').ExtractJwt;
+const bcrypt = require('bcrypt');
 
 // require custom node modules
 const models = require('../models');
+const { TOKEN_AUDIENCE } = require('../helpers/constants');
 
 // extract env variables
-const { SESSION_SECRET } = process.env;
+const { ACCESS_TOKEN_SECRET, HOSTNAME } = process.env;
+
+// A throwaway bcrypt hash used to equalize timing when an account is not found, so an attacker
+// cannot distinguish "no such email" (fast) from "wrong password" (slow) and enumerate accounts.
+const DUMMY_BCRYPT_HASH = bcrypt.hashSync('not-a-real-password', 10);
 
 // set up passport
 module.exports = async passport => {
@@ -22,67 +36,65 @@ module.exports = async passport => {
   /**********************************************/
 
   /**
-   * Use local login to authenticate
-   *
-   * @email (STRING): Email of user
-   * @password (STRING): password of user
+   * Local login strategy — verify a user's email + password.
    */
   passport.use('JWTUserLogin', new LocalStrategy({
-    usernameField: 'email', // change username field to email instead of username
+    usernameField: 'email',
     passwordField: 'password',
     passReqToCallback: true
   }, async (req, email, password, done) => {
-    email = email.toLowerCase().trim(); // lowercase email
+    email = email.toLowerCase().trim();
 
-    process.nextTick(async () => {
-      try {
-        const getUser = await models.user.findOne({
-          paranoid: false, // This will also retrieve soft-deleted records
-          where: {
-            email: email
-          }
-        });
+    try {
+      const getUser = await models.user.scope(null).findOne({
+        paranoid: false, // also retrieve soft-deleted records (the action decides what to do with them)
+        where: { email }
+      });
 
-        // check if user email is not found
-        if (!getUser)
-          return done(null, false);
-
-        // check password
-        const result = await models.user.validatePassword(password, getUser.password);
-
-        // if password is invalid
-        if (!result)
-          return done(null, null);
-
-        // if password is valid, return user
-        return done(null, getUser);
-      } catch (error) {
-        return done(error, null);
+      // not found — still run a bcrypt compare against a dummy hash to keep timing constant
+      if (!getUser) {
+        await models.user.validatePassword(password, DUMMY_BCRYPT_HASH).catch(() => false);
+        return done(null, false);
       }
-    });
+
+      // verify password
+      const isValid = await models.user.validatePassword(password, getUser.password);
+      if (!isValid)
+        return done(null, false);
+
+      return done(null, getUser);
+    } catch (error) {
+      return done(error, false);
+    }
   }));
 
   /**
-   * Use JSON WEB TOKEN via our api to authenticate users for each request
+   * JWT access-token strategy — authenticate a user on each request.
    *
-   * @payload (OBJECT): token object that contains { sub: user.id, iat: timestamp }
+   * @payload (OBJECT): { sub: user.id, type: 'user', tokenVersion, iat, exp, iss }
    *
-   * curl -v -H "Authorization: jwt-user eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MSwiaWF0IjoxNDc3MTM0NzM4fQ.Ky3iKYcguIstYPDbMbIbDR5s7e_UF0PI1gal6VX5eyI"
+   * curl -v -H "Authorization: jwt-user <access-token>"
    */
   passport.use('JWTAuthUser', new JwtStrategy({
-    jwtFromRequest: ExtractJwt.fromAuthHeaderWithScheme('jwt-user'), // must be from auth header for HTTPS to work, should NOT use fromHeader because it is only applied to http
-    secretOrKey: SESSION_SECRET
+    jwtFromRequest: ExtractJwt.fromAuthHeaderWithScheme('jwt-user'), // must be the auth header (works over HTTPS)
+    secretOrKey: ACCESS_TOKEN_SECRET,
+    algorithms: ['HS256'], // pin the accepted algorithm — defense against alg-confusion attacks
+    issuer: HOSTNAME, // enforced (no longer decorative); exp is enforced by default
+    audience: Object.values(TOKEN_AUDIENCE.USER) // accept any user client (user-web, user-mobile)
   }, async (payload, done) => {
-    process.nextTick(async () => {
-      // check if user id is not found
-      const findUser = await models.user.findOne({
-        where: {
-          id: payload.sub // subject or id of user
-        }
-      }).catch(err => done(err, null));
+    try {
+      const findUser = await models.user.findOne({ where: { id: payload.sub } });
+      if (!findUser)
+        return done(null, false);
 
-      return done(null, findUser ? findUser : false);
-    });
+      // instant revocation: a stale tokenVersion means this access token has been invalidated
+      if (findUser.tokenVersion !== payload.tokenVersion)
+        return done(null, false);
+
+      return done(null, findUser);
+    } catch (error) {
+      return done(error, false);
+    }
   }));
 
   /***********************************************/
@@ -90,66 +102,64 @@ module.exports = async passport => {
   /***********************************************/
 
   /**
-   * Use local login to authenticate
-   *
-   * @email (STRING): Email of admin
-   * @password (STRING): password of admin
+   * Local login strategy — verify an admin's email + password.
    */
   passport.use('JWTAdminLogin', new LocalStrategy({
-    usernameField: 'email', // change username field to email instead of username
+    usernameField: 'email',
     passwordField: 'password',
     passReqToCallback: true
   }, async (req, email, password, done) => {
-    email = email.toLowerCase().trim(); // lowercase email
+    email = email.toLowerCase().trim();
 
-    process.nextTick(async () => {
-      try {
-        const admin = await models.admin.findOne({
-          paranoid: false, // This will also retrieve soft-deleted records
-          where: {
-            email: email
-          }
-        });
+    try {
+      const admin = await models.admin.scope(null).findOne({
+        paranoid: false, // also retrieve soft-deleted records (the action decides what to do with them)
+        where: { email }
+      });
 
-        // check if admin email is not found
-        if (!admin)
-          return done(null, false);
-
-        // check password
-        const result = await models.admin.validatePassword(password, admin.password);
-
-        // if password is invalid
-        if (!result)
-          return done(null, null);
-
-        // if password is valid, return admin
-        return done(null, admin);
-      } catch (err) {
-        return done(err, null);
+      // not found — still run a bcrypt compare against a dummy hash to keep timing constant
+      if (!admin) {
+        await models.admin.validatePassword(password, DUMMY_BCRYPT_HASH).catch(() => false);
+        return done(null, false);
       }
-    });
+
+      // verify password
+      const isValid = await models.admin.validatePassword(password, admin.password);
+      if (!isValid)
+        return done(null, false);
+
+      return done(null, admin);
+    } catch (error) {
+      return done(error, false);
+    }
   }));
 
   /**
-   * Use JSON WEB TOKEN via our api to authenticate admins for each request
+   * JWT access-token strategy — authenticate an admin on each request.
    *
-   * @payload (OBJECT): token object that contains { sub: admin.id, iat: timestamp }
+   * @payload (OBJECT): { sub: admin.id, type: 'admin', tokenVersion, iat, exp, iss }
    *
-   * curl -v -H "Authorization: jwt-admin eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MSwiaWF0IjoxNDc3MTM0NzM4fQ.Ky3iKYcguIstYPDbMbIbDR5s7e_UF0PI1gal6VX5eyI"
+   * curl -v -H "Authorization: jwt-admin <access-token>"
    */
   passport.use('JWTAuthAdmin', new JwtStrategy({
-    jwtFromRequest: ExtractJwt.fromAuthHeaderWithScheme('jwt-admin'), // must be from auth header for HTTPS to work, should NOT use fromHeader because it is only applied to http
-    secretOrKey: SESSION_SECRET
+    jwtFromRequest: ExtractJwt.fromAuthHeaderWithScheme('jwt-admin'), // must be the auth header (works over HTTPS)
+    secretOrKey: ACCESS_TOKEN_SECRET,
+    algorithms: ['HS256'], // pin the accepted algorithm — defense against alg-confusion attacks
+    issuer: HOSTNAME, // enforced (no longer decorative); exp is enforced by default
+    audience: Object.values(TOKEN_AUDIENCE.ADMIN) // accept any admin client (admin-web, admin-mobile)
   }, async (payload, done) => {
-    process.nextTick(async () => {
-      // check if admin id is not found
-      const admin = await models.admin.findOne({
-        where: {
-          id: payload.sub // subject or id of admin
-        }
-      }).catch(err => done(err, null));
+    try {
+      const findAdmin = await models.admin.findOne({ where: { id: payload.sub } });
+      if (!findAdmin)
+        return done(null, false);
 
-      return done(null, admin ? admin : false);
-    });
+      // instant revocation: a stale tokenVersion means this access token has been invalidated
+      if (findAdmin.tokenVersion !== payload.tokenVersion)
+        return done(null, false);
+
+      return done(null, findAdmin);
+    } catch (error) {
+      return done(error, false);
+    }
   }));
 };

@@ -1,0 +1,16 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 120" fill="none">
+  <!-- Orbit ring -->
+  <ellipse cx="60" cy="60" rx="50" ry="20" stroke="#646cff" stroke-width="3" fill="none" opacity="0.6"/>
+  <!-- Tilted orbit ring -->
+  <ellipse cx="60" cy="60" rx="50" ry="20" stroke="#646cff" stroke-width="3" fill="none" opacity="0.4"
+    transform="rotate(60 60 60)"/>
+  <!-- Second tilted ring -->
+  <ellipse cx="60" cy="60" rx="50" ry="20" stroke="#646cff" stroke-width="3" fill="none" opacity="0.4"
+    transform="rotate(-60 60 60)"/>
+  <!-- Center planet -->
+  <circle cx="60" cy="60" r="14" fill="#646cff"/>
+  <!-- Highlight -->
+  <circle cx="55" cy="55" r="5" fill="white" opacity="0.3"/>
+  <!-- Orbiting dot -->
+  <circle cx="110" cy="60" r="5" fill="#42d392"/>
+</svg>

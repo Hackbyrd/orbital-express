@@ -26,8 +26,10 @@ const SEQUELIZE_OPERATORS = {
 module.exports = {
   getOffset,
   getOrdering,
+  getOrderingWithModel,
   convertStringListToWhereStmt,
-  parseUrlQueryFilter
+  parseUrlQueryFilter,
+  convertToSequelizeOps
 };
 
 /**
@@ -63,6 +65,35 @@ function getOrdering(cols) {
 
     // ordersArr.push({ col: colsArr[i], order: order });
     ordersArr.push([colsArr[i], order]);
+  }
+
+  return ordersArr;
+}
+
+/**
+ * Get Ordering with model
+ *
+ * @cols (STRING - REQUIRED): A comma separated list of columns of a table with model, could have a '-' in front which means descending, ex. user.id,-conversationUser.name,order.date
+ * return [[model.xxxx, col, order], ...]
+ */
+function getOrderingWithModel(cols, models) {
+  const colsArr = logic.removeAllWhiteSpace(cols).split(',');
+  const ordersArr = [];
+
+  for (let i = 0; i < colsArr.length; i++) {
+    let order = 'ASC';
+
+    // check for descending
+    if (colsArr[i][0] === '-') {
+      colsArr[i] = colsArr[i].substring(1); // take out the '-' character
+      order = 'DESC'; // make descending
+    }
+
+    // split the column by '.'
+    const colArr = colsArr[i].split('.');
+
+    // ordersArr.push({ model: model[colArr[0]], col: colArr[1], order: order });
+    ordersArr.push([models[colArr[0]], colArr[1], order]);
   }
 
   return ordersArr;
@@ -137,4 +168,30 @@ function parseUrlQueryFilter(args) {
   });
 
   return newArgs;
+}
+
+/**
+ * Convert comparison filter object to Sequelize operators
+ * Converts { gte: 123, lte: 456 } to { [Op.gte]: 123, [Op.lte]: 456 }
+ * Also handles exact match (number) by returning the number as-is
+ *
+ * @filterObj - (NUMBER or OBJECT): The filter value to convert
+ * @return - The converted filter with Sequelize operators
+ */
+function convertToSequelizeOps(filterObj) {
+  // If it's a number, return as-is (exact match)
+  if (typeof filterObj === 'number') {
+    return filterObj;
+  }
+
+  // Convert string keys to Sequelize operators
+  const result = {};
+
+  for (const [key, value] of Object.entries(filterObj)) {
+    if (SEQUELIZE_OPERATORS[key]) {
+      result[SEQUELIZE_OPERATORS[key]] = value;
+    }
+  }
+
+  return result;
 }

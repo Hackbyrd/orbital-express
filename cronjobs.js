@@ -25,7 +25,11 @@ console.log(`CLOCK process.env.NODE_ENV: ${NODE_ENV}`);
 /*****************/
 const AdminQueue = queue.get('AdminQueue');
 
-// Example automatically make request. Run every 1 min.
-// new CronJob('0 0 * * * *', () => { AdminQueue.add('V1ExportTask', { adminId: 1 }); }, null, true, 'UTC');
+// Example: run a task every minute.
+// new CronJob('0 * * * * *', () => { AdminQueue.add('V1ExampleTask', {}); }, null, true, 'UTC');
+
+// Example: run a task daily at midnight UTC (every 5 min in development).
+// const dailySchedule = NODE_ENV === 'development' ? '0 */5 * * * *' : '0 0 0 * * *';
+// new CronJob(dailySchedule, () => { AdminQueue.add('V1DailyMaintenanceTask', {}); }, null, true, 'UTC');
 
 // add future cronjobs here

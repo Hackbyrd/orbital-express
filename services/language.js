@@ -22,6 +22,9 @@ let configuredI18n = null;
 // helpers
 const { LOCALES, LOCALE } = require('../helpers/constants');
 
+// ENV variables
+const { NODE_ENV } = process.env;
+
 module.exports = {
   i18nSettings,
   getLocalI18n,
@@ -32,29 +35,27 @@ module.exports = {
  * Return i18n configuration settings. Setup can be found in server.js and other tests files when needed
  */
 function i18nSettings() {
-  // set up language for testing. This same setup can be found in server.js and must mimic it
   return {
     locales: LOCALES, // set the languages here
     defaultLocale: LOCALE.EN, // default is the first index
     queryParameter: 'lang', // query parameter to switch locale (ie. /home?lang=ch) - defaults to NULL
     cookie: 'i18n-locale', // if you change cookie name, you must also change in verifyJWTAuth res.cookie
-    directory: __dirname + '/../locales'
+    directory: __dirname + '/../locales',
     // objectNotation: true // hierarchical translation catalogs. To enable this feature, be sure to set objectNotation to true
+
+    // Called when a translation key is missing from the locale file.
+    // Logs loudly in all environments so missing keys are never silent.
+    // In test and production, throws so a missing key cannot reach users.
+    missingKeyFn: (locale, value) => {
+      const msg = `[i18n] MISSING TRANSLATION KEY: "${value}" for locale "${locale}"`;
+      if (NODE_ENV === 'test' || NODE_ENV === 'production')
+        throw new Error(msg);
+      else
+        console.error('\x1b[31m%s\x1b[0m', msg); // red in dev/staging
+      return value; // return raw key as fallback so app does not crash
+    }
   };
 } // END i18nSettings
-
-/**
- * Configure and return i18n module that already has the settings set up to be used in app server, worker server and tests
- */
-// function getDeprecatedI18n() {
-//   // if not configured, configure it, else skip since we don't want to do it again
-//   if (!configuredI18n) {
-//     i18n.configure(i18nSettings());
-//     configuredI18n = i18n;
-//   }
-
-//   return configuredI18n;
-// } // END getDeprecatedI18n
 
 /**
  * Configure and return a new copy of i18n module with the correct settings. We do this since we don't want all users to be affected by changes. This so every time we call an action or function we get a fresh copy of this.
@@ -140,4 +141,74 @@ function compile() {
     fs.writeSync(fd, localeJSON, 0, 'utf-8');
     fs.closeSync(fd);
   });
-}
+
+  // after compiling, validate all static translation keys used in the codebase exist in the default locale
+  validateKeys(LANGUAGES[`${LOCALE.EN}.js`]);
+} // END compile
+
+/**
+ * Scan all app JS files for static translation key calls and verify every key
+ * exists in the compiled default locale. Warns in development, throws in test and production.
+ *
+ * Only checks static string keys — template literal keys (e.g. i18n.__(`${var}_key`)) are
+ * dynamic and cannot be statically analyzed, so they are skipped.
+ *
+ * @compiledLocale - (OBJECT - REQUIRED): The compiled default locale key/value map
+ */
+function validateKeys(compiledLocale) {
+  // directories to scan for translation key usage
+  const SCAN_DIRS = [
+    path.join(__dirname, '../app'),
+    path.join(__dirname, '../services'),
+    path.join(__dirname, '../helpers'),
+    path.join(__dirname, '../middleware'),
+  ];
+
+  const missingKeys = []; // accumulate all missing keys before reporting
+
+  // files to skip — the feature generator template holds i18n calls as literal
+  // code strings (e.g. ${upperName}_...) that are not real keys and must not be scanned
+  const EXCLUDED_FILES = new Set(['feature.js']);
+
+  // matches a static, single/double-quoted i18n key call — skips template literals
+  const KEY_REGEX = /\.__\(['"]([^'"]+)['"]/g;
+
+  // recursively walk a directory and scan every .js file
+  function scanDir(dirPath) {
+    if (!fs.existsSync(dirPath)) return;
+
+    fs.readdirSync(dirPath).forEach(entry => {
+      const fullPath = path.join(dirPath, entry);
+      const stat = fs.lstatSync(fullPath);
+
+      if (stat.isDirectory()) {
+        scanDir(fullPath); // recurse into subdirectory
+      } else if (entry.endsWith('.js') && !EXCLUDED_FILES.has(entry)) {
+        const content = fs.readFileSync(fullPath, 'utf8');
+        const regex = new RegExp(KEY_REGEX.source, 'g'); // fresh regex instance per file (global regex has state)
+        let match;
+
+        while ((match = regex.exec(content)) !== null) {
+          const key = match[1];
+          if (!compiledLocale[key]) {
+            const relativePath = path.relative(path.join(__dirname, '..'), fullPath);
+            missingKeys.push(`  "${key}"  →  ${relativePath}`);
+          }
+        }
+      }
+    });
+  }
+
+  SCAN_DIRS.forEach(dir => scanDir(dir));
+
+  if (missingKeys.length > 0) {
+    // deduplicate — same key may appear in multiple files
+    const unique = [...new Set(missingKeys)];
+    const msg = `[i18n] ${unique.length} missing translation key(s) found:\n${unique.join('\n')}`;
+
+    if (NODE_ENV === 'test' || NODE_ENV === 'production')
+      throw new Error(msg);
+    else
+      console.warn('\x1b[33m%s\x1b[0m', msg); // yellow warning in dev/staging
+  }
+} // END validateKeys

@@ -69,8 +69,32 @@ async function startWorker(processId) {
   email.worker(); // run email worker
   phone.worker(); // run phone worker
 
-  // Graceful exit
+  // Graceful exit on terminate command: killall node or process.kill(process.pid)
   process.on('SIGTERM', async () => {
+    console.log('SIGTERM: Process exiting...');
+
+    try {
+      // close connection to queue
+      await queue.closeAll();
+
+      // close socket connections
+      await socket.close();
+
+      // close connection to database
+      await models.db.close();
+      console.log('Database connection closed.');
+
+      process.exit(0);
+    } catch (error) {
+      console.error(error);
+      process.exit(1);
+    }
+  });
+
+  // On terminate command: ctrl + c
+  process.on('SIGINT', async () => {
+    console.log('SIGINT: Process exiting...');
+
     try {
       // close connection to queue
       await queue.closeAll();

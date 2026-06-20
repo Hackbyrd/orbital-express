@@ -10,7 +10,7 @@ const { NODE_ENV } = process.env; // get node env
 // services
 const socket = require('../services/socket');
 const queue = require('../services/queue');
-const { ERROR_CODES } = require('../services/error');
+const { ERROR_CODES, errorResponse } = require('../services/error'); // errorResponse used by the shutdown 503
 
 // models
 const models = require('../models');

@@ -1,0 +1,33 @@
+{
+  "name": "orbital-express-mcp",
+  "version": "1.0.0",
+  "description": "MCP server for Orbital Express — gives AI assistants full framework knowledge (conventions, skills, docs)",
+  "bin": {
+    "orbital-express-mcp": "./src/index.js"
+  },
+  "scripts": {
+    "prepare": "node scripts/bundle-content.js",
+    "start": "node src/index.js"
+  },
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "1.12.1",
+    "zod": "3.25.51"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  },
+  "keywords": [
+    "orbital-express",
+    "mcp",
+    "model-context-protocol",
+    "express",
+    "api",
+    "claude"
+  ],
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/orbital-express/orbital-express.git",
+    "directory": "mcp"
+  }
+}

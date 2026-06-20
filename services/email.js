@@ -34,7 +34,7 @@ const queue = require('./queue'); // require queue service
 const { queueError } = require('./error'); // require error service
 const i18n = require('./language').getLocalI18n(); // defaults to en locale and defaults to './locales' relative to node_modules directory to grab language json files: https://github.com/mashpie/i18n-node
 
-// !IMPORTANT Yahoo.com has a DMARC policy in place that prevents mail with yahoo.com in the from address from being delivered if it is sent from outside Yahoo’s infrastructure.
+// !IMPORTANT Yahoo.com has a DMARC policy in place that prevents mail with yahoo.com in the from address from being delivered if it is sent from outside Yahoo's infrastructure.
 // https://sendgrid.com/blog/yahoo-dmarc-update/
 const BLOCKED_EMAILS = ['@yahoo.com', '@y7mail.com', '@yahoo.at', '@yahoo.be', '@yahoo.bg', '@yahoo.cl', '@yahoo.co.hu', '@yahoo.co.id', '@yahoo.co.il', '@yahoo.co.kr', '@yahoo.co.th', '@yahoo.co.za', '@yahoo.com.co', '@yahoo.com.hr', '@yahoo.com.my', '@yahoo.com.pe', '@yahoo.com.ph', '@yahoo.com.sg', '@yahoo.com.tr', '@yahoo.com.tw', '@yahoo.com.ua', '@yahoo.com.ve', '@yahoo.com.vn', '@yahoo.cz', '@yahoo.dk', '@yahoo.ee', '@yahoo.fi', '@yahoo.hr', '@yahoo.hu', '@yahoo.ie', '@yahoo.lt', '@yahoo.lv', '@yahoo.nl', '@yahoo.no', '@yahoo.pl', '@yahoo.pt', '@yahoo.rs', '@yahoo.se', '@yahoo.si', '@yahoo.sk', '@yahoogroups.co.kr', '@yahoogroups.com.cn', '@yahoogroups.com.sg', '@yahoogroups.com.tw', '@yahoogrupper.dk', '@yahoogruppi.it', '@yahooxtra.co.nz'];
 

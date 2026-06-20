@@ -1,14 +1,11 @@
 /**
  * All Authentication and Authorization middleware goes here
+ *
+ * To support a new authenticated user type, add ONE entry to AUTH_TYPES below — every function
+ * in this file is driven by that registry, so there is a single source of truth.
  */
 
 'use strict';
-
-// env variables
-const { NODE_ENV } = process.env;
-
-// require custom node modules
-const models = require('../models');
 
 module.exports = {
   attachJWTAuth,
@@ -17,77 +14,78 @@ module.exports = {
 };
 
 /**
- * Takes in the req object and attaches the JWTAuthUser, JWTAuthAdmin, JWTAuthPartner
- *
- * ADD ANY MORE AUTHS HERE
+ * The authenticated user types. One entry per type:
+ *   scheme   - the Authorization header scheme prefix ('jwt-user <token>')
+ *   strategy - the passport JWT strategy name (see services/passport.js)
+ *   reqKey   - where the authenticated record is attached on req (req.user, req.admin, ...)
+ */
+const AUTH_TYPES = [
+  { scheme: 'jwt-user',  strategy: 'JWTAuthUser',  reqKey: 'user' },
+  { scheme: 'jwt-admin', strategy: 'JWTAuthAdmin', reqKey: 'admin' }
+];
+
+/**
+ * Returns the AUTH_TYPES entry matching the request's Authorization scheme, or null.
+ * Uses an exact scheme-prefix match ('jwt-admin ') — not a loose substring search.
+ */
+function getAuthType(req) {
+  const header = req.headers.authorization;
+  if (!header)
+    return null;
+
+  return AUTH_TYPES.find(type => header.startsWith(`${type.scheme} `)) || null;
+} // END getAuthType
+
+/**
+ * Attach a passport authenticator for every auth type onto req.JWTAuth.
  */
 function attachJWTAuth(passport) {
   return (req, res, next) => {
-    // Add Passport Authentications to req
-    req.JWTAuth = {
-      JWTAuthUser: passport.authenticate('JWTAuthUser', { session: false }),
-      JWTAuthAdmin: passport.authenticate('JWTAuthAdmin', { session: false })
-    };
+    req.JWTAuth = {};
+
+    AUTH_TYPES.forEach(type => {
+      req.JWTAuth[type.strategy] = passport.authenticate(type.strategy, { session: false });
+    });
 
     return next();
   };
-}
+} // END attachJWTAuth
 
 /**
- * Looks into the request header and checks the 'authorization' header to see which auth to select
- *
- * 'authorization': 'jwt-user token' => JWTAuthUser
- * 'authorization': 'jwt-admin token' => JWTAuthAdmin
- * 'authorization': 'jwt-partner token' => JWTAuthPartner
- *
- * returns a function that will call the correct method
- *
- * ADD ANY MORE AUTHS HERE
+ * Inspect the Authorization header and run the matching JWT strategy.
+ * If no recognized scheme is present, continue (the route may be public — the controller enforces auth).
  */
 function JWTAuth(req, res, next) {
-  // choose method
-  if (req.headers.authorization && req.headers.authorization.indexOf('jwt-user') >= 0)
-    req.JWTAuth.JWTAuthUser(req, res, next);
-  else if (req.headers.authorization && req.headers.authorization.indexOf('jwt-admin') >= 0)
-    req.JWTAuth.JWTAuthAdmin(req, res, next);
-  else
+  const authType = getAuthType(req);
+
+  if (!authType)
     return next();
-}
+
+  return req.JWTAuth[authType.strategy](req, res, next);
+} // END JWTAuth
 
 /**
- * Verify that a admin/user is active during JWT auth
- * Also attach the correct user object
- * Set user's locale
- *
- * TODO: TEST
- *
- * req.user = { id, active, company:active }
+ * After the JWT strategy runs, passport sets the authenticated record on req.user by default.
+ * Move it to the correct key for the matched type (e.g. req.admin) and set the locale.
  *
  * Success: Return next().
- * Errors:
- *   401: Token is invalid, request denied.
- *   401: Your account is inactive, request denied.
  */
 function verifyJWTAuth(req, res, next) {
-  // if logged in
+  // if authenticated
   if (req.user) {
-    // if logged in, set locale to user's locale
+    // set locale to the authenticated record's locale
     req.setLocale(req.user.locale);
     res.setLocale(req.user.locale);
 
-    // use existing user
-    if (req.headers.authorization && req.headers.authorization.indexOf('jwt-user') >= 0) {
-      req.user = req.user;
-    }
-
-    // attach admin and remove user
-    else if (req.headers.authorization && req.headers.authorization.indexOf('jwt-admin') >= 0) {
-      req.admin = req.user;
+    // reassign req.user to the correct key for non-user types (e.g. req.admin)
+    const authType = getAuthType(req);
+    if (authType && authType.reqKey !== 'user') {
+      req[authType.reqKey] = req.user;
       req.user = null;
     }
   }
 
-  // save the locale to the cookie in the res.cookie (final step)
+  // save the locale to the cookie (final step)
   // if you change cookie name, you must also change in server.js i18n.configure
   res.cookie('i18n-locale', req.getLocale(), {
     maxAge: 999999, // about 11 days
@@ -95,4 +93,4 @@ function verifyJWTAuth(req, res, next) {
   });
 
   return next();
-}
+} // END verifyJWTAuth

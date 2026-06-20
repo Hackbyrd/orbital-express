@@ -11,9 +11,6 @@ const os = require('os');
 // third-party node modules
 const throng = require('throng'); // concurrency
 
-// services
-const queue = require('./services/queue'); // Queue Service for Background Jobs
-
 // env variables
 const NODE_ENV = process.env.NODE_ENV || 'development';
 const PORT = process.env.PORT ? Number(process.env.PORT) : 8000;
@@ -55,7 +52,15 @@ async function startApp(processId) {
 
     // On terminate command: killall node or process.kill(process.pid)
     process.on('SIGTERM', async () => {
-      console.log(`Process ${processId} exiting...`);
+      console.log(`SIGTERM:Process ${processId} exiting...`);
+
+      // gracefully exit server
+      await gracefulExit(server);
+    });
+
+    // On terminate command: ctrl + c
+    process.on('SIGINT', async () => {
+      console.log(`SIGINT: Process ${processId} exiting...`);
 
       // gracefully exit server
       await gracefulExit(server);

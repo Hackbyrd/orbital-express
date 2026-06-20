@@ -39,7 +39,16 @@ module.exports = {
  */
 function get(name) {
   if (!QUEUES[name])
-    QUEUES[name] = new Queue(name, REDIS_URL || REDISCLOUD_URL);
+    QUEUES[name] = new Queue(name, REDIS_URL || REDISCLOUD_URL, {
+      // reliability defaults inherited by EVERY job added to this queue.
+      // Override per-job via queue.add(name, data, { ...overrides }) when needed.
+      defaultJobOptions: {
+        attempts: 5,                                   // retry transient failures (DB blip, 3rd-party 5xx)
+        backoff: { type: 'exponential', delay: 5000 }, // wait 5s → 10s → 20s → 40s between attempts
+        removeOnComplete: 1000,                        // keep only the last 1000 completed jobs (prevent Redis bloat)
+        removeOnFail: 5000                             // keep the last 5000 failed jobs for inspection/replay
+      }
+    });
 
   return QUEUES[name];
 } // END get

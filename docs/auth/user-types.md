@@ -1,0 +1,198 @@
+# User Types
+
+Orbital-Express enforces a strict rule: **one table per authenticated user type**. This page explains the rule, the built-in types, and how to extend the system.
+
+---
+
+## One table per type — never a role column
+
+A common antipattern is adding a `role` column to a single users table:
+
+```sql
+-- ❌ Wrong
+CREATE TABLE users (
+  id UUID PRIMARY KEY,
+  email TEXT,
+  role TEXT CHECK (role IN ('admin', 'user'))  -- never do this
+);
+```
+
+Orbital-Express requires a separate table for each type:
+
+```sql
+-- ✅ Right
+CREATE TABLE users (
+  id UUID PRIMARY KEY,
+  email TEXT
+  -- user-specific columns
+);
+
+CREATE TABLE admins (
+  id UUID PRIMARY KEY,
+  email TEXT,
+  permissions JSONB  -- admin-specific columns
+);
+```
+
+---
+
+## Why separate tables?
+
+**Different columns.** Admins may carry permission sets, audit flags, or internal roles. Users carry subscription plans, onboarding state, device tokens. Forcing both into one table yields a sparse, nullable-heavy schema.
+
+**Different auth audiences.** Access tokens are issued with an `audience` claim (`admin-web`, `user-web`, etc.). A token minted for an admin cannot be accepted on a user route — the middleware rejects it at the audience check. With a role column you would have to validate the role at every route instead.
+
+**Independent scaling and querying.** Admin queries (dashboards, reports) never touch the users table. User queries never scan admins. Indexes stay tight.
+
+**No accidental cross-exposure.** It is structurally impossible to present an admin token to a user endpoint and have it succeed, because the Passport strategy that validates admin tokens is only mounted on admin routes.
+
+---
+
+## Built-in types
+
+### User
+Regular app users — the primary audience of the product.
+
+- Table: `Users`
+- Session table: `UserSessions`
+- Auth audience: `user-web`
+- Token attached to `req.user` inside authenticated routes
+- Login/refresh/logout actions live in `app/User/`
+
+### Admin
+Backoffice and internal operators.
+
+- Table: `Admins`
+- Session table: `AdminSessions`
+- Auth audience: `admin-web`
+- Token attached to `req.admin` inside authenticated routes
+- Login/refresh/logout actions live in `app/Admin/`
+
+---
+
+## Adding a new user type (e.g. Partner)
+
+Use the `add-auth-user-type` skill (`.claude/skills/add-auth-user-type/SKILL.md`). The high-level steps are:
+
+**1. Register the audience in `middleware/auth.js`**
+
+```js
+// middleware/auth.js
+const AUTH_TYPES = {
+  USER:    'user-web',
+  ADMIN:   'admin-web',
+  PARTNER: 'partner-web',  // add this
+};
+```
+
+**2. Add a Passport strategy in `services/passport.js`**
+
+```js
+passport.use('partner-jwt', new JwtStrategy({
+  ...baseJwtOptions,
+  audience: AUTH_TYPES.PARTNER,
+}, async (payload, done) => {
+  const partner = await Partner.findByPk(payload.sub);
+  return partner ? done(null, partner) : done(null, false);
+}));
+```
+
+**3. Create the `Partners` and `PartnerSessions` tables**
+
+Generate a migration:
+
+```bash
+sequelize migration:create --name create-partners-and-partner-sessions
+```
+
+Follow the same column conventions as `Users` / `UserSessions` (see schema below).
+
+**4. Scaffold the feature**
+
+```bash
+yarn gen Partner
+```
+
+This creates `app/Partner/` with the model, controller, routes, and action stubs. Then add your auth actions (`V1Login`, `V1Refresh`, `V1Logout`) and remove the generator placeholder with:
+
+```bash
+yarn del Partner -a V1Example
+```
+
+**5. Branch on `req.partner` in your actions**
+
+```js
+// app/Partner/actions/V1GetMe.js
+module.exports = async (req, res) => {
+  const partner = req.partner;  // set by passport('partner-jwt') middleware
+  return res.respond({ status: 200, partner: partner.toJSON() });
+};
+```
+
+Mount the strategy on partner routes only:
+
+```js
+// app/Partner/routes.js
+router.post('/v1/partners/me', passport.authenticate('partner-jwt', { session: false }), V1GetMe);
+```
+
+---
+
+## The UserSessions / AdminSessions table
+
+Every authenticated user type gets a dedicated sessions table. It stores revocable refresh tokens and supports token rotation.
+
+### Schema
+
+```sql
+CREATE TABLE IF NOT EXISTS UserSessions (
+  id                    UUID        PRIMARY KEY DEFAULT gen_random_uuid(),
+  userId                UUID        NOT NULL REFERENCES Users(id),
+  replacedBySessionId   UUID        DEFAULT NULL REFERENCES UserSessions(id), -- set on token rotation
+  refreshTokenHash      TEXT        NOT NULL UNIQUE, -- SHA-256 (hex) hash of the raw refresh token
+  expiresAt             TIMESTAMP WITHOUT TIME ZONE NOT NULL,
+  revokedAt             TIMESTAMP WITHOUT TIME ZONE DEFAULT NULL, -- set on logout / logout-all
+  lastUsedAt            TIMESTAMP WITHOUT TIME ZONE DEFAULT NULL,
+  userAgent             TEXT        DEFAULT NULL,
+  ipAddress             TEXT        DEFAULT NULL,
+  client                TEXT        NOT NULL DEFAULT 'web',   -- e.g. 'web', 'app'
+  platform              TEXT        NOT NULL DEFAULT 'web',   -- e.g. 'web', 'ios', 'android'
+
+  -- Autogenerated by Sequelize
+  deletedAt             TIMESTAMP WITHOUT TIME ZONE DEFAULT NULL,
+  createdAt             TIMESTAMP WITHOUT TIME ZONE NOT NULL DEFAULT (now() AT TIME ZONE 'utc'),
+  updatedAt             TIMESTAMP WITHOUT TIME ZONE NOT NULL DEFAULT (now() AT TIME ZONE 'utc')
+); -- END UserSessions TABLE
+```
+
+`tokenVersion` lives on the **owner table** (`Users.tokenVersion INT NOT NULL DEFAULT 0`), not on the session row — it increments on logout-all and lets the server reject stale access tokens without a DB query per request.
+
+### Column reference
+
+| Column | Purpose |
+|---|---|
+| `refreshTokenHash` | The refresh token is never stored raw. It is SHA-256 hashed (hex) before insert; the raw token is returned once to the client. Refresh tokens are high-entropy random values so the fast SHA-256 is sufficient — bcrypt is not used here. |
+| `replacedBySessionId` | When a refresh rotates a token, the old session records the new session's id here. Allows detecting replay attacks — if a rotated token is replayed, its replacement chain is visible and the session family can be revoked. |
+| `revokedAt` | Set on logout or logout-all. The server rejects any session with a non-null `revokedAt`. Soft-delete (`deletedAt`) is also used via paranoid mode. |
+| `expiresAt` | Absolute expiry for the refresh token. The server rejects sessions past this timestamp regardless of the JWT `exp`. |
+| `client` / `platform` | Used to re-mint the access token audience on refresh (e.g. `user-web` vs `user-app`). Stored at login time so refresh doesn't need the client to re-declare it. |
+
+### Token flow
+
+```
+Client                        Server
+  |                              |
+  |-- POST /v1/users/login ----> |  Verify credentials
+  |                              |  Create UserSession { tokenHash, expiresAt, audience }
+  |<-- { accessToken, refreshToken } --
+  |                              |
+  |-- POST /v1/users/refresh --> |  Hash inbound token, look up session
+  |                              |  Verify not expired, not replaced
+  |                              |  Create new session, set replacedBySessionId on old
+  |<-- { accessToken, refreshToken (new) } --
+  |                              |
+  |-- POST /v1/users/logout ---> |  Soft-delete session (paranoid)
+  |<-- { status: 200 } ---------
+```
+
+An identical sessions table (`AdminSessions`, `PartnerSessions`, …) is created for each user type, with the foreign key pointing at its own parent table.

@@ -10,35 +10,44 @@
 'use strict';
 
 // ENV variables
-const { NODE_ENV, REDIS_URL, REDISCLOUD_URL } = process.env;
+const { NODE_ENV, ACCESS_TOKEN_SECRET, HOSTNAME } = process.env;
 
 // require third-party node modules
+const jsonwebtoken = require('jsonwebtoken'); // verify the access token on socket connect (same token used for HTTP auth)
 const { Server } = require('socket.io');
 const { redisClient } = require('./redis.js');
 const { createAdapter } = require('@socket.io/redis-adapter');
 
-// the rooms for sockets
-let io = null; // this is the io connection that will be passed around the entire application
+// require models
+const models = require('../models');
+
+// require helpers
+const { TOKEN_AUDIENCE } = require('../helpers/constants');
+
+// NOTE: this is the core real-time layer only — Socket.IO server, JWT auth on connect, the Redis
+// adapter, and generic rooms. The previous product's chat/presence events (conversations, messages,
+// typing, online-presence) were removed with their features. Register new socket events in connect().
+
+// the io connection that will be passed around the entire application
+// !IMPORTANT: never import `io` directly from this module — use getIO() so you always get the live instance, not the null snapshot at require-time
+let io = null;
 let pubClient = null;
 let subClient = null;
 
 // the rooms for sockets
 const SOCKET_ROOMS = {
-  GLOBAL: 'GLOBAL', // a global room
-  ADMIN: 'ADMIN-', // admin room where only admin users can join
+  GLOBAL: 'GLOBAL', // a global room every connection can be placed in
+  USER: 'USER', // per-user room (USER<userId>) for targeting events at a single user
 
   // This is for testing purposes only via API_URL/socket
-  TEST: 'TEST-',
+  TEST: 'TEST',
 
   // add more rooms here
-  ROOM: 'ROOM-', // add dash here so you can append a unique number for the room
+  ROOM: 'ROOM',
 }
 
 // the events the socket can emit or listen to
 const SOCKET_EVENTS = {
-  ADMIN_CREATED: 'ADMIN_CREATED',
-  ADMIN_UPDATED: 'ADMIN_UPDATED',
-
   // This is for testing purposes only via API_URL/socket
   TEST_SOCKET_EVENT_ONE: 'TEST_SOCKET_EVENT_ONE',
   TEST_SOCKET_EVENT_TWO: 'TEST_SOCKET_EVENT_TWO',
@@ -46,6 +55,17 @@ const SOCKET_EVENTS = {
   // add more events here
   // COMPANY_CREATED: 'COMPANY_CREATED',
 }
+
+/*
+ * Convention to wrap the id in < > so that it can be used in the socket.io rooms
+ *
+ * @id - (STRING): the id to wrap
+ *
+ * return: the wrapped id
+ */
+function socketWrapper(id) {
+  return `<${id}>`;
+} // END socketWrapper
 
 /**
  * Creates a new io connection if one does not exist already and returns the io object to use to emit events
@@ -74,31 +94,23 @@ async function get(newServer) {
   io = newServer ? new Server(newServer, serverOptions) : new Server(serverOptions);
 
   // create the redis pub client
-  // pubClient = createClient({
-  //   url: REDIS_URL || REDISCLOUD_URL,
-  //   // socket option is required in Heroku, https://devcenter.heroku.com/articles/connecting-heroku-redis#connecting-in-node-js
-  //   socket: {
-  //     tls: NODE_ENV === 'production', // only use TLS in production, REDIS_URL='redis://localhost:6379' in development
-  //     rejectUnauthorized: false,
-  //   }
-  // });
-
-  // create the redis pub client
   pubClient = redisClient;
 
   // create the redis sub client by duplicating the pub client
   subClient = pubClient.duplicate();
 
-  // handle redis pubClient error
+  // handle redis pubClient error — LOG ONLY, never re-throw. node-redis emits 'error' on every
+  // transient blip (idle drop, TLS renegotiation, failover); throwing here turns a recoverable
+  // hiccup into an uncaught exception that destabilizes the worker AND breaks node-redis's
+  // automatic reconnection — leaving the client permanently closed so later commands (e.g. the
+  // OAuth-state setEx in V1GoogleAuthStart) throw "The client is closed" and return 500.
   pubClient.on('error', err => {
-    console.error('Socket Pub Redis Client Error', err);
-    throw err;
+    console.error('Socket Pub Redis Client Error', err.message);
   });
 
-  // handle redis subClient error
+  // handle redis subClient error — log only (same reasoning as above)
   subClient.on('error', err => {
-    console.error('Socket Sub Redis Client Error', err);
-    throw err;
+    console.error('Socket Sub Redis Client Error', err.message);
   });
 
   // connect
@@ -121,43 +133,84 @@ async function get(newServer) {
 } // END get
 
 /**
+ * Handle JWT authentication
+ *
+ * @socket - (OBJECT): the socket object
+ */
+async function authenticate(socket, next) {
+  console.log(`${process.pid}: Client socketId: ${socket.id} Authenticating...`);
+  // get the token from the socket handshake
+  const token = socket.handshake.auth.token;
+
+  // if no token, return error
+  if (!token) {
+    console.log('no token');
+    return next(new Error('Socket Authentication Error: Invalid Token'));
+  }
+
+  try {
+
+    // verify the access token (signature + expiry + issuer + audience) — same token used for HTTP auth
+    const payload = jsonwebtoken.verify(token, ACCESS_TOKEN_SECRET, { issuer: HOSTNAME, audience: Object.values(TOKEN_AUDIENCE.USER) });
+
+    // get the user from the database
+    const findUser = await models.user.findByPk(payload.sub);
+
+    // if user does not exist, return error
+    if (!findUser) {
+      return next(new Error('Socket Authentication Error: User Not Found'));
+    }
+
+    // instant revocation: reject if the token's version no longer matches the user's
+    if (findUser.tokenVersion !== payload.tokenVersion) {
+      return next(new Error('Socket Authentication Error: Token Invalidated'));
+    }
+
+    // set the user on the socket
+    socket.user = findUser;
+
+    // call next
+    console.log(`${process.pid}: Client socketId: ${socket.id} Authenticated Successfully.`);
+    return next(null, socket); // pass the socket to the next middleware
+  } catch (error) {
+    return next(new Error('Socket Authentication Error: Invalid Token'));
+  }
+} // END authenticate
+
+/**
  * Handle io.on('connection') event
  *
  * @socket - (OBJECT): the socket object
  */
-function connect(socket) {
+async function connect(socket) {
   // only print this if not in test environment
   if (NODE_ENV !== 'test') {
-    console.log(`${process.pid}: Client socketId: ${socket.id} Connected`);
+    console.log(`${process.pid}: Client socketId: ${socket.id} Connecting...`);
   }
 
-  // join the global room for application
-  if (socket.handshake.query.global)
-    socket.join(`${SOCKET_ROOMS.GLOBAL}`);
+  // the user room
+  const userRoomName = `${SOCKET_ROOMS.USER}${socketWrapper(socket.user.id)}`;
 
-  // join the test room for application
-  // This is for testing purposes only via API_URL/socket
-  if (socket.handshake.query.test)
-    socket.join(`${SOCKET_ROOMS.TEST}${socket.handshake.query.test}`);
+  console.log(`Joining Room: ${userRoomName}`);
+  socket.join(userRoomName); // ex. socket.join('USER<8f1fbd57-7e71-4a9b-9ad4-3c6db06a76b2>') - only user with id 1 will receive the event
+  console.log(`Joined Room: ${userRoomName} Successfully.`);
 
-  // join the admin room for application
-  if (socket.handshake.query.admin)
-    socket.join(`${SOCKET_ROOMS.ADMIN}${socket.handshake.query.admin}`); // ex. socket.join('ADMIN-1') - only admin with id 1 will receive the event
+  //---------- Add more rooms here ----------/
 
-  // add more rooms here
-  // ex. join the correct room for company with a dynamic company id
-  // socket.handshake.query.company is the company id so that you create a room with that company ID so that you can emit to that room and all clients who that company id will receive the event
-  // if (socket.handshake.query.company)
-  //   socket.join(`${SOCKET_ROOMS.COMPANY}${socket.handshake.query.company}`); // ex. socket.join('COMPANY-1');
-
-  // add more rooms here
-
-  socket.on('disconnect', () => {
+  // disconnect event
+  socket.on('disconnect', async () => {
     // only print this if not in test environment
     if (NODE_ENV !== 'test') {
-      console.log(`${process.pid}: Client socketId: ${socket.id} Disconnected`);
+      console.log(`${process.pid}: Client socketId: ${socket.id} Disconnected.`);
     }
-  });
+  }); // END disconnect event
+
+  //---------- Add more events here ----------/
+
+  // only print this if not in test environment
+  if (NODE_ENV !== 'test') {
+    console.log(`${process.pid}: Client socketId: ${socket.id} Connected Successfully.`);
+  }
 } // END connect
 
 /**
@@ -165,18 +218,28 @@ function connect(socket) {
  */
 async function close() {
   try {
+    // If io is null, there's nothing to close
+    if (!io) {
+      return true;
+    }
 
-    // close pubClient
+    // Close the socket.io server
+    await io.close();
+
+    // Close Redis clients
     if (pubClient && pubClient.isOpen) {
-      await pubClient.disconnect();
+      await pubClient.quit();
     }
 
-    // close subClient
     if (subClient && subClient.isOpen) {
-      await subClient.disconnect();
+      await subClient.quit();
     }
 
-    // connection successfully closed
+    // Reset the global variables
+    io = null;
+    pubClient = null;
+    subClient = null;
+
     // only print this if not in test environment
     if (NODE_ENV !== 'test') {
       console.log('Socket connection closed.');
@@ -189,15 +252,25 @@ async function close() {
 } // END close
 
 module.exports = {
-  // main io connection object
-  io,
-
   // constant variables
   SOCKET_ROOMS,
   SOCKET_EVENTS,
 
   // methods
+  getIO,
+  socketWrapper,
   get,
+  authenticate,
   connect,
   close,
 };
+
+/**
+ * Returns the live io instance. Always use this instead of importing io directly —
+ * the module-level variable is null at require-time and only set after get() is called.
+ *
+ * return: io instance or null if socket server has not been initialized yet
+ */
+function getIO() {
+  return io;
+} // END getIO

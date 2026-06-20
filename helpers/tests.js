@@ -24,6 +24,8 @@ module.exports = {
   login,
   adminLogin,
   userLogin,
+  refresh,
+  logout,
   reset,
   resetRedis,
   populateFix,
@@ -91,6 +93,50 @@ async function userLogin(app, version, request, user) {
   // login request
   return login(app, version, request, 'users', user);
 }
+
+/**
+ * Exchange a refresh token for a new access token (rotates the refresh token).
+ *
+ * @app - (OBJECT - REQUIRED): The express server
+ * @version - (STRING - REQUIRED): The api version, e.g. '/v1'
+ * @request - (OBJECT - REQUIRED): The supertest request object
+ * @model - (STRING - REQUIRED): 'users', 'admins', etc...
+ * @refreshToken - (STRING - REQUIRED): the raw refresh token (sent in the body, mobile-style)
+ *
+ * return { token, refreshToken, response }
+ */
+async function refresh(app, version, request, model, refreshToken) {
+  const response = await request(app)
+    .post(`${version}/${model}/refresh`)
+    .send({ refreshToken });
+
+  return {
+    token: response.body.token,
+    refreshToken: response.body.refreshToken,
+    response
+  };
+} // END refresh
+
+/**
+ * Log out of the current session.
+ *
+ * @app - (OBJECT - REQUIRED): The express server
+ * @version - (STRING - REQUIRED): The api version, e.g. '/v1'
+ * @request - (OBJECT - REQUIRED): The supertest request object
+ * @model - (STRING - REQUIRED): 'users', 'admins', etc...
+ * @jwt - (STRING - REQUIRED): the auth scheme + access token, e.g. 'jwt-user <token>'
+ * @refreshToken - (STRING - OPTIONAL): the raw refresh token to revoke (body, mobile-style)
+ *
+ * return { response }
+ */
+async function logout(app, version, request, model, jwt, refreshToken) {
+  const response = await request(app)
+    .post(`${version}/${model}/logout`)
+    .set('authorization', jwt)
+    .send({ refreshToken });
+
+  return { response };
+} // END logout
 
 /**
  * Reset the test database
@@ -173,10 +219,15 @@ async function populateFix(fixtureFolderName) {
           individualHooks: true
         });
 
-      const tableName = models[files[idx]].getTableName(); // grab tablename of model
-      const queryText = `SELECT setval('"${tableName}_id_seq"', (SELECT MAX(id) FROM "${tableName}"));`;
 
-      await models.db.query(queryText);
+      // reset the primary key id only if the table is using regular id sequence and NOT uuid
+      const tableName = models[files[idx]].getTableName(); // grab tablename of model
+
+      if (tableName === 'Admins') {
+        const queryText = `SELECT setval('"${tableName}_id_seq"', (SELECT MAX(id) FROM "${tableName}"));`;
+        await models.db.query(queryText);
+      }
+
       idx++;
     }
 
