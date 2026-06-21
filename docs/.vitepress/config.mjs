@@ -24,6 +24,7 @@ export default defineConfig({
   themeConfig: {
     nav: [
       { text: 'Home', link: '/' },
+      { text: 'Why', link: '/philosophy/' },
       { text: 'Guide', link: '/guide/introduction' },
       { text: 'Reference', link: '/reference/conventions' },
       {
@@ -35,14 +36,21 @@ export default defineConfig({
 
     sidebar: [
       {
+        text: 'Why Orbital Express',
+        items: [
+          { text: 'The Philosophy', link: '/philosophy/' },
+          { text: 'The Origin Story', link: '/philosophy/the-origin' },
+          { text: 'JavaScript, Not TypeScript', link: '/philosophy/javascript-not-typescript' },
+          { text: 'Vue.js, Not React', link: '/philosophy/vue-not-react' },
+          { text: 'One Repo, Not Microservices', link: '/philosophy/one-repo' },
+        ],
+      },
+      {
         text: 'Getting Started',
         items: [
           { text: 'What is Orbital Express', link: '/guide/introduction' },
           { text: 'Installation & First Run', link: '/guide/getting-started' },
           { text: 'Repo Structure Explained', link: '/guide/project-structure' },
-          { text: 'The Origin Story', link: '/guide/the-origin' },
-          { text: 'Why JavaScript, Not TypeScript', link: '/guide/javascript-not-typescript' },
-          { text: 'Why Vue.js, Not React', link: '/guide/vue-not-react' },
         ],
       },
       {
