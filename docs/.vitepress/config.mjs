@@ -40,6 +40,8 @@ export default defineConfig({
           { text: 'What is Orbital Express', link: '/guide/introduction' },
           { text: 'Installation & First Run', link: '/guide/getting-started' },
           { text: 'Repo Structure Explained', link: '/guide/project-structure' },
+          { text: 'The Origin Story', link: '/guide/the-origin' },
+          { text: 'Why JavaScript, Not TypeScript', link: '/guide/javascript-not-typescript' },
         ],
       },
       {
