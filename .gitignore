@@ -22,6 +22,8 @@ config/.env.test
 
 # remove package-lock.json file because we are using yarn.lock
 package-lock.json
+# except the docs site which uses npm
+!docs/package-lock.json
 
 # npm debug files
 npm-debug.log

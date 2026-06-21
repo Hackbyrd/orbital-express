@@ -30,10 +30,10 @@ sudo -i -u postgres
 pqsl
 
 # create local app database
-CREATE DATABASE orbital_dev;
+CREATE DATABASE myapp_dev;
 
 # create test database
-CREATE DATABASE orbital_test
+CREATE DATABASE myapp_test
 
 # user: postgres
 # set password

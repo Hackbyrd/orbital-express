@@ -77,7 +77,7 @@ https://docs.github.com/en/authentication/connecting-to-github-with-ssh/generati
 
 5. Install Node Version Manager (NVM)
   Instructions: https://github.com/creationix/nvm
-  Run: curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.39.0/install.sh | zsh
+  Run: curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.40.3/install.sh | zsh
   Notice we are installing as "zsh" and NOT "bash"
 
   If nvm command does not work do the following:
@@ -89,21 +89,21 @@ https://docs.github.com/en/authentication/connecting-to-github-with-ssh/generati
 ===============================================================================
 
 6. Install node.js
-  nvm install v18.13.0
+  nvm install v22.14.0
 
 ===============================================================================
 
 7. Download Yarn Package Manager
-  npm install --global yarn
+  npm install --global yarn@1.22.22
 
 ===============================================================================
 
-5. Download PostgreSQL App for Mac
+8. Download PostgreSQL App for Mac
   https://postgresapp.com/
   Open the postgresapp up and click "Initialize"
 
-  Add the following to use 'psql' command: [!!NOTE you MUST add psql into your $PATH before you run "yarn install" below or else it will crash!]
-  Run: sudo mkdir -p /etc/paths.d && echo /Applications/Postgres.app/Contents/Versions/latest/bin | sudo tee /etc/paths.d/postgresapp
+  Add the following to use 'psql' command:
+  Run: export PATH="/Applications/Postgres.app/Contents/Versions/latest/bin:$PATH"
 
   Set Timezone to UTC:
     Run in Terminal:
@@ -118,18 +118,18 @@ https://docs.github.com/en/authentication/connecting-to-github-with-ssh/generati
 
 ===============================================================================
 
-6. Install Postico PostgreSQL Client App
+9. Install Postico PostgreSQL Client App
   Download from "https://eggerapps.at/postico/" or Mac app store
   Open and add a "localhost" connection. Password should be empty string
 
 ===============================================================================
 
-7. Create Databases on local computer using the Postico Client App
-  create database name 'orbital_dev' and 'orbital_test'
+10. Create Databases on local computer using the Postico Client App
+  create database name 'myapp_dev' and 'myapp_test'
 
 ===============================================================================
 
-8. Download Redis In Memory Database
+11. Download Redis In Memory Database
   Download from "https://redis.io/download"
   Unzip and move folder to under main directory "orbital-express"
   Remember the version, and delete the version so the folder is just called "redis"
@@ -141,12 +141,12 @@ https://docs.github.com/en/authentication/connecting-to-github-with-ssh/generati
 
 ===============================================================================
 
-9. Install all node modules dependencies
+12. Install all node modules dependencies
   yarn install
 
 ===============================================================================
 
-10. Set up Configurations:
+13. Set up Configurations:
   Create two new files under orbital-express/config/
     .env.development
     .env.test
@@ -154,18 +154,18 @@ https://docs.github.com/en/authentication/connecting-to-github-with-ssh/generati
 
 ===============================================================================
 
-11. Install ngrok for development webhooks
+14. Install ngrok for development webhooks
   https://ngrok.com/download
   ./ngrok http 8000
 
 ===============================================================================
 
-12. Migrate Database, to create tables and columns in database
+15. Migrate Database, to create tables and columns in database
   Run: yarn migrate
 
 ===============================================================================
 
-13. Set Up Third Party Vendors
+16. Set Up Third Party Vendors
   - Heroku
     - Mailtrap
   - MessageBird
@@ -176,7 +176,7 @@ https://docs.github.com/en/authentication/connecting-to-github-with-ssh/generati
 
 ===============================================================================
 
-14. Run Full Application (Make sure orbital_dev database is created)
+17. Run Full Application (Make sure myapp_dev database is created)
   1. Run Main Server
     yarn s
 
@@ -194,5 +194,5 @@ https://docs.github.com/en/authentication/connecting-to-github-with-ssh/generati
 
 ===============================================================================
 
-15. Run All Tests (Redis must be running and orbital_test database must be created)
+18. Run All Tests (Redis must be running and myapp_test database must be created)
   yarn test

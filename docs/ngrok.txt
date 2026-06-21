@@ -1,5 +1,7 @@
+Get a token from https://dashboard.ngrok.com/
+
 Authenticate ngrok so there is not expiration:
-yarn ngrok:auth
+yarn ngrok:auth <AUTH_TOKEN>
 
 start ngrok:
 yarn ngrok
