@@ -42,6 +42,7 @@ export default defineConfig({
           { text: 'Repo Structure Explained', link: '/guide/project-structure' },
           { text: 'The Origin Story', link: '/guide/the-origin' },
           { text: 'Why JavaScript, Not TypeScript', link: '/guide/javascript-not-typescript' },
+          { text: 'Why Vue.js, Not React', link: '/guide/vue-not-react' },
         ],
       },
       {
