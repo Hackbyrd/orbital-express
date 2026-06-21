@@ -10,8 +10,8 @@ export default defineConfig({
     ['meta', { property: 'og:type', content: 'website' }],
     ['meta', { property: 'og:title', content: 'Orbital Express' }],
     ['meta', { property: 'og:description', content: 'An opinionated Express.js + Sequelize framework for building production-grade APIs' }],
-    ['meta', { property: 'og:image', content: 'https://orbital-express.github.io/orbital-express/og-image.png' }],
-    ['meta', { property: 'og:url', content: 'https://orbital-express.github.io/orbital-express/' }],
+    ['meta', { property: 'og:image', content: 'https://hackbyrd.github.io/orbital-express/og-image.png' }],
+    ['meta', { property: 'og:url', content: 'https://hackbyrd.github.io/orbital-express/' }],
     ['meta', { name: 'twitter:card', content: 'summary_large_image' }],
     ['meta', { name: 'twitter:title', content: 'Orbital Express' }],
     ['meta', { name: 'twitter:description', content: 'An opinionated Express.js + Sequelize framework for building production-grade APIs' }],
@@ -28,7 +28,7 @@ export default defineConfig({
       { text: 'Reference', link: '/reference/conventions' },
       {
         text: 'GitHub',
-        link: 'https://github.com/orbital-express/orbital-express',
+        link: 'https://github.com/Hackbyrd/orbital-express',
         target: '_blank',
       },
     ],
@@ -119,16 +119,17 @@ export default defineConfig({
     ],
 
     socialLinks: [
-      { icon: 'github', link: 'https://github.com/orbital-express/orbital-express' },
+      { icon: 'github', link: 'https://github.com/Hackbyrd/orbital-express' },
+      { icon: 'linkedin', link: 'https://www.linkedin.com/in/hackbyrd' },
     ],
 
     footer: {
       message: 'Released under the MIT License.',
-      copyright: 'Copyright © 2024-present Orbital Express Contributors',
+      copyright: 'Copyright © 2024-present <a href="https://www.linkedin.com/in/hackbyrd" target="_blank">Jonathan Chen (Hackbyrd)</a>',
     },
 
     editLink: {
-      pattern: 'https://github.com/orbital-express/orbital-express/edit/main/docs/:path',
+      pattern: 'https://github.com/Hackbyrd/orbital-express/edit/main/docs/:path',
       text: 'Edit this page on GitHub',
     },
 
