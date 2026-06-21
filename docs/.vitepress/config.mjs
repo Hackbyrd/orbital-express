@@ -120,6 +120,7 @@ export default defineConfig({
         text: 'Releases',
         items: [
           { text: 'Changelog', link: '/changelog' },
+          { text: 'Release Guide', link: '/release-guide' },
         ],
       },
     ],
