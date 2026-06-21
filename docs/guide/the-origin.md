@@ -4,7 +4,7 @@
 
 ---
 
-I've been writing code since I was 14. I'm 34 now. That's twenty years of building things, breaking things, and occasionally setting things on fire and watching them burn.
+I've been writing code since 2006 — over 20 years of building things, breaking things, and occasionally setting things on fire and watching them burn.
 
 I studied Computer Science at the University of Maryland, graduated valedictorian of my class, then went on to Stanford Graduate School of Business. In 2013, I co-founded **[FiscalNote](https://fiscalnote.com/)** — a government data and AI company. I built and led the engineering org there as CTO for almost a decade.
 
@@ -18,7 +18,7 @@ FiscalNote grew fast. We hired fast. Engineers came in with strong opinions, bui
 
 This cycle has a name: **spaghetti code by committee**. Every engineer who touched the codebase left their fingerprints on it. Some of those fingerprints were bad decisions made with good intentions. Some were good decisions that got buried under bad ones that came later. All of it accumulated into a codebase that was increasingly expensive to change.
 
-We were, at our worst, shipping **four features a year**.
+We were, at our worst, shipping **four features a year**. These decisions cost me over **$10 million** across a decade. Not from a single catastrophic failure — from a slow, grinding burn. Engineering salaries for teams that couldn't move. Rewrite projects that took six months and delivered the same thing we already had. Opportunity cost from features that never shipped because we were too deep in firefighting to build anything new. Millions of dollars a year, year after year, spent on the consequences of bad architectural decisions that seemed reasonable at the time.
 
 The turning point was when I stepped back and realized I'd been thinking about scaling entirely wrong. I was obsessed with technical scaling — how do we handle more requests, how do we distribute load, how do we process more data. Meanwhile, the real scaling problem was staring me in the face: **people**. How do engineers onboard? How quickly can someone new contribute something real? How much of the codebase can a new hire actually understand in their first month?
 
@@ -53,6 +53,24 @@ The engineers who built those services were gone. The engineers who inherited th
 **Microservices are an organizational solution masquerading as a technical one.** They're designed for companies like Netflix, where you have hundreds of engineers working on genuinely independent domains and the cost of coordinating deployments outweighs the cost of operational complexity. At a 15-person startup, that tradeoff is exactly backwards. You don't have the engineering bandwidth to run the infrastructure, and your domains aren't independent enough to justify the split.
 
 Start with a monolith. Keep it until it actually hurts. Most companies never get to the point where it actually hurts.
+
+---
+
+## The 2 AM phone calls
+
+On top of the microservices complexity, we were running everything on AWS. Dozens of services, manual infrastructure configuration, custom deployment pipelines, VPC networking, IAM policies, load balancers — the works. It felt like the professional choice at the time.
+
+What it actually produced was a dedicated DevOps team that was waking up at 2 AM on a regular basis to fight fires. Not occasionally — regularly. We had people whose entire job was managing infrastructure, and they were still getting paged in the middle of the night. The system was too complex to be reliable, and too custom for any one person to fully understand. When something broke, it broke in ways that took hours to trace.
+
+The cost was real: salaries for a team that existed purely to manage the infrastructure tax we had imposed on ourselves. And even with that team, we still had outages, still had deployment failures, still had nights where someone's weekend got ruined because a service went down in a way nobody anticipated.
+
+When I started Nitra and built on Orbital Express, I made a different call: **Heroku for deployment, Redis Cloud and Render for services**. Managed infrastructure. No DevOps team. No custom pipelines. No 2 AM pages.
+
+In over five years at Nitra, we have had **zero** deployment firefighting incidents. Zero. Not "fewer" — zero. The infrastructure just works. When I want to deploy, I push code. That is the entire process. The time that would have gone to a DevOps team, to on-call rotations, to incident postmortems — all of it goes to building features instead.
+
+AWS is powerful. It is also an enormous operational burden that most startups have no business taking on. The managed hosting services available today — Heroku, Render, Railway — are production-grade, reliable, and cost a fraction of what it costs to staff the engineering time AWS requires. You trade some theoretical ceiling on customization for a practical floor on operational sanity. For the vast majority of products, that trade is obviously correct.
+
+Don't hire a DevOps team. Don't manage your own infrastructure. Ship features.
 
 ---
 
