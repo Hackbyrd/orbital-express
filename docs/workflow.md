@@ -19,7 +19,7 @@ This doc is the high-level map. Always follow the rules in [conventions.txt](con
 
 The product team decides *what* the feature is; engineering decides *how*. Before writing code:
 
-1. **Design the schema** — which table(s), which columns (types, FKs, defaults, indexes). Write it into [`database/schema.sql`](../database/schema.sql) (documentation; not executed). Follow the column-order / naming template at the top of that file.
+1. **Design the schema** — which table(s), which columns (types, FKs, defaults, indexes). Write it into `database/schema.sql` (documentation; not executed). Follow the column-order / naming template at the top of that file.
 2. **Plan the surface** — which **actions** (real-time endpoints) and **tasks** (background jobs) are needed, and which user types/roles use them.
 3. **For a net-new table/feature, get sign-off on the schema + action/task plan before scaffolding.** Once agreed, execute the rest end-to-end. (For small Path-B additions, just proceed.)
 
