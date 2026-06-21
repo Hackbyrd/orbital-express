@@ -116,6 +116,12 @@ export default defineConfig({
           { text: 'Add Real-Time', link: '/tutorials/real-time' },
         ],
       },
+      {
+        text: 'Releases',
+        items: [
+          { text: 'Changelog', link: '/changelog' },
+        ],
+      },
     ],
 
     socialLinks: [

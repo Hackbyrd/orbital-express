@@ -1,6 +1,6 @@
 {
   "name": "orbital-express",
-  "version": "1.0.0",
+  "version": "3.0.0",
   "description": "A better way to organize and develop on your express.js node application. Built for developers who need a more opinionated structure for their express.js applications and for helping engineering teams scale their developer experience.",
   "main": "index.js",
   "repository": "git@github.com:Hackbyrd/orbital-express.git",
