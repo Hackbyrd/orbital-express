@@ -7,7 +7,6 @@ export default defineConfig({
 
   head: [
     ['link', { rel: 'icon', type: 'image/svg+xml', href: '/orbital-express/favicon.svg' }],
-    ['link', { rel: 'icon', type: 'image/png', href: '/orbital-express/favicon.png' }],
     ['meta', { property: 'og:type', content: 'website' }],
     ['meta', { property: 'og:title', content: 'Orbital Express' }],
     ['meta', { property: 'og:description', content: 'An opinionated Express.js + Sequelize framework for building production-grade APIs' }],
