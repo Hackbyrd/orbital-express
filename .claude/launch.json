@@ -1,0 +1,12 @@
+{
+  "version": "0.0.1",
+  "configurations": [
+    {
+      "name": "docs",
+      "runtimeExecutable": "npm",
+      "runtimeArgs": ["run", "docs:dev"],
+      "cwd": "/Users/jonathan/Documents/Code/orbital-express/docs",
+      "port": 5173
+    }
+  ]
+}

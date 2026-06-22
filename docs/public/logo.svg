@@ -1,5 +1,12 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 120" fill="none">
-  <!-- Orbit ring -->
+  <!-- Orbit ring paths for animation reference -->
+  <defs>
+    <path id="orbit-path-h" d="M 110 60 A 50 20 0 0 1 10 60 A 50 20 0 0 1 110 60"/>
+    <path id="orbit-path-a" d="M 85 8.4 A 50 20 0 0 1 35 111.6 A 50 20 0 0 1 85 8.4" transform="rotate(60 60 60)"/>
+    <path id="orbit-path-b" d="M 35 8.4 A 50 20 0 0 1 85 111.6 A 50 20 0 0 1 35 8.4" transform="rotate(-60 60 60)"/>
+  </defs>
+
+  <!-- Orbit ring horizontal -->
   <ellipse cx="60" cy="60" rx="50" ry="20" stroke="#646cff" stroke-width="3" fill="none" opacity="0.6"/>
   <!-- Tilted orbit ring -->
   <ellipse cx="60" cy="60" rx="50" ry="20" stroke="#646cff" stroke-width="3" fill="none" opacity="0.4"
@@ -7,10 +14,27 @@
   <!-- Second tilted ring -->
   <ellipse cx="60" cy="60" rx="50" ry="20" stroke="#646cff" stroke-width="3" fill="none" opacity="0.4"
     transform="rotate(-60 60 60)"/>
+
   <!-- Center planet -->
   <circle cx="60" cy="60" r="14" fill="#646cff"/>
   <!-- Highlight -->
   <circle cx="55" cy="55" r="5" fill="white" opacity="0.3"/>
-  <!-- Orbiting dot -->
-  <circle cx="110" cy="60" r="5" fill="#42d392"/>
+
+  <!-- Animated orbiting dot on horizontal ring -->
+  <circle r="5.5" fill="#42d392" filter="url(#glow)">
+    <animateMotion dur="2.8s" repeatCount="indefinite" calcMode="linear">
+      <mpath href="#orbit-path-h"/>
+    </animateMotion>
+  </circle>
+
+  <!-- Glow filter -->
+  <defs>
+    <filter id="glow" x="-50%" y="-50%" width="200%" height="200%">
+      <feGaussianBlur stdDeviation="2" result="blur"/>
+      <feMerge>
+        <feMergeNode in="blur"/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+  </defs>
 </svg>

@@ -14,7 +14,7 @@ hero:
       link: /zh-TW/guide/introduction
     - theme: alt
       text: 在 GitHub 上查看
-      link: https://github.com/orbital-express/orbital-express
+      link: https://github.com/Hackbyrd/orbital-express
 
 features:
   - icon: 📁

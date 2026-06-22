@@ -1,0 +1,84 @@
+/* ── Home page: let matrix rain show through ── */
+.VPHome {
+  background: transparent !important;
+}
+
+.VPHero {
+  position: relative;
+  z-index: 1;
+}
+
+/* Dark scrim behind hero text so it reads over the rain */
+.VPHero .container {
+  position: relative;
+}
+
+.VPHero .container::before {
+  content: '';
+  position: absolute;
+  inset: -32px -48px;
+  background: radial-gradient(ellipse at 40% 50%, rgba(0,0,0,0.72) 60%, transparent 100%);
+  border-radius: 24px;
+  z-index: 0;
+  pointer-events: none;
+}
+
+.VPHero .main,
+.VPHero .image {
+  position: relative;
+  z-index: 1;
+}
+
+/* Hero name — green accent to match the orbiting dot */
+.VPHero .name .clip {
+  background: linear-gradient(135deg, #42d392 0%, #646cff 60%) !important;
+  -webkit-background-clip: text !important;
+  -webkit-text-fill-color: transparent !important;
+  background-clip: text !important;
+}
+
+/* Features section — slight dark glass effect */
+.VPFeatures {
+  position: relative;
+  z-index: 1;
+}
+
+.VPFeature {
+  background: rgba(0, 0, 0, 0.55) !important;
+  border: 1px solid rgba(66, 211, 146, 0.15) !important;
+  backdrop-filter: blur(8px);
+  transition: border-color 0.2s, background 0.2s;
+}
+
+.VPFeature:hover {
+  border-color: rgba(66, 211, 146, 0.45) !important;
+  background: rgba(0, 0, 0, 0.72) !important;
+}
+
+/* Navbar logo sizing */
+.VPNavBarTitle .logo {
+  height: 24px;
+  width: 24px;
+  margin-right: 6px;
+}
+
+/* ── Animated hero logo image ── */
+.VPHero .image-container {
+  animation: float 4s ease-in-out infinite;
+}
+
+@keyframes float {
+  0%, 100% { transform: translateY(0px); }
+  50%       { transform: translateY(-12px); }
+}
+
+/* Glow ring behind the hero logo */
+.VPHero .image-bg {
+  background: radial-gradient(circle, rgba(66,211,146,0.25) 0%, rgba(100,108,255,0.15) 50%, transparent 70%) !important;
+  animation: pulse-glow 3s ease-in-out infinite;
+}
+
+@keyframes pulse-glow {
+  0%, 100% { opacity: 0.6; transform: scale(1); }
+  50%       { opacity: 1;   transform: scale(1.08); }
+}
