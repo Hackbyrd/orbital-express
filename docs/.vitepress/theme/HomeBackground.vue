@@ -91,7 +91,8 @@ function mkGalaxy() {
   const edgeOn = incl > Math.PI * 0.38            // roughly 40% nearly edge-on
   // Spiral arms wind in the +theta direction (counter-clockwise in math coords,
   // which is clockwise on canvas). Positive rotSpeed spins in that same direction.
-  const rotSpeed = (Math.PI * 2 / 300) * (Math.random() < 0.5 ? 1 : -1)
+  // Edge-on galaxies (thin ellipse) don't visibly spin — only face-on/tilted ones do
+  const rotSpeed = edgeOn ? 0 : (Math.PI * 2 / 300) * (Math.random() < 0.5 ? 1 : -1)
   return {
     x:        80 + Math.random() * (w - 160),
     y:        80 + Math.random() * (h - 160),
@@ -296,12 +297,18 @@ function drawBlackHole(ctx, bh, mx = 0, my = 0) {
     ctx.stroke()
   }
 
-  // ── 5. Photon ring ────────────────────────────────────────────────────────
+  // ── 5. Photon ring — must use same shadow transform so it hugs the shadow ──
+  // Drawing at origin would misalign with the shifted/scaled shadow and
+  // cause a ring arc to peek out below the shadow boundary.
+  ctx.save()
+  ctx.translate(0, -r * 0.14)
+  ctx.scale(1.0, 1.22)
   ctx.beginPath()
-  ctx.arc(0, 0, r * 1.065, 0, Math.PI * 2)
+  ctx.arc(0, 0, r * 1.028, 0, Math.PI * 2)
   ctx.strokeStyle = `rgba(255,118,8,${(0.78*pulse).toFixed(3)})`
-  ctx.lineWidth   = r * 0.034
+  ctx.lineWidth   = r * 0.028
   ctx.stroke()
+  ctx.restore()
 
   ctx.restore()
 }
