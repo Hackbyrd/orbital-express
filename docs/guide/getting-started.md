@@ -6,7 +6,52 @@ This guide gets you from zero to a running local environment. If you have not re
 
 ---
 
-## Prerequisites
+## What You Should Know First
+
+Orbital Express is not a beginner framework. Before you use it, you should be comfortable with everything below. If any of these feel unfamiliar, work through the linked resources first — the investment will pay off immediately.
+
+### JavaScript Fundamentals
+
+If you're new to JavaScript, start here:
+- [W3Schools JavaScript Tutorial](https://www.w3schools.com/js/) — covers the basics
+- [MDN JavaScript Guide](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Guide) — more thorough reference
+
+### Advanced JavaScript *(required)*
+
+You need to deeply understand how JavaScript actually works — not just the syntax, but the runtime, scope, closures, prototypes, and the event loop. These two courses are the best available:
+
+- **[JavaScript: Understanding the Weird Parts](https://www.youtube.com/watch?v=Bv_5Zv5c-Ts)** by Anthony Alicea — free intro on YouTube; full course on Udemy. Watch this first.
+- **ES6 and Modern JavaScript** — Stephen Grider's *ES6 JavaScript: The Complete Developer's Guide* (Udemy). Covers arrow functions, destructuring, classes, modules, async/await, and everything added since ES5.
+
+### Node.js *(required)*
+
+- **Learn and Understand NodeJS** by Anthony Alicea (Udemy) — covers the Node runtime, the event loop, streams, modules, and how Express fits in. Go through **Section 9** and stop there — you don't need beyond that to use this framework effectively.
+
+### Databases — PostgreSQL
+
+- [PostgreSQL Tutorial](https://www.postgresqltutorial.com/) — practical SQL from scratch
+- [Official PostgreSQL Docs](https://www.postgresql.org/docs/) — reference
+
+### JavaScript Libraries Used in This Framework
+
+You don't need to master these before starting, but you'll use all of them. Bookmark the docs:
+
+| Library | What it's for | Docs |
+|---|---|---|
+| **Sequelize** | PostgreSQL ORM — models, migrations, queries | [sequelize.org](https://sequelize.org/docs/v6/) |
+| **Joi** | Schema validation for every request | [joi.dev](https://joi.dev/api/) |
+| **Jest** | Test runner — integration tests, assertions | [jestjs.io](https://jestjs.io/docs/getting-started) · [Cheatsheet](https://devhints.io/jest) |
+| **Moment.js** | Date/time handling and timezone support | [momentjs.com](https://momentjs.com/docs/) |
+| **accounting.js** | Money formatting (display) | [openexchangerates.github.io/accounting.js](http://openexchangerates.github.io/accounting.js/) |
+| **currency.js** | Money math and calculations | [currency.js.org](https://currency.js.org/) |
+
+::: tip You don't need to know all of this on day one
+The most important things to have solid before you start: advanced JavaScript (the Alicea course), Node.js basics, and SQL. The libraries you'll pick up as you use them.
+:::
+
+---
+
+## System Prerequisites
 
 Before you install anything, make sure your machine has:
 
