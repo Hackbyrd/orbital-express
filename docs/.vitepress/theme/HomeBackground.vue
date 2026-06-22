@@ -91,7 +91,7 @@ function mkGalaxy() {
   const edgeOn = incl > Math.PI * 0.38            // roughly 40% nearly edge-on
   // Spiral arms wind in the +theta direction (counter-clockwise in math coords,
   // which is clockwise on canvas). Positive rotSpeed spins in that same direction.
-  const rotSpeed = (0.00008 + Math.random() * 0.00012) * (Math.random() < 0.5 ? 1 : -1)
+  const rotSpeed = (0.0018 + Math.random() * 0.0022) * (Math.random() < 0.5 ? 1 : -1)
   return {
     x:        80 + Math.random() * (w - 160),
     y:        80 + Math.random() * (h - 160),
