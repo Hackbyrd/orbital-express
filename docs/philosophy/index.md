@@ -51,6 +51,16 @@ And behind all of it: [the story of why this framework exists](/philosophy/the-o
 
 ---
 
+## Why this framework, not another
+
+Most frameworks are built by engineers, for engineers. They optimize for technical elegance, flexibility, and architectural purity — all admirable goals that have nothing to do with shipping a product.
+
+Orbital Express is different. It is [built for business outcomes, not engineering satisfaction](/philosophy/business-first). Every opinion it holds — about language, structure, deployment, patterns — was chosen because it reduces your total cost of building software over time: faster onboarding, fewer architectural debates, lower operational burden, and a codebase that any engineer can extend without a month of context transfer.
+
+That is a different kind of framework. [Read the full argument →](/philosophy/business-first)
+
+---
+
 ::: tip The bottom line
 The best engineering team isn't the one with the best technology. It's the one that ships the most, learns the fastest, and doesn't break down every time someone new joins. Build for that team.
 :::

@@ -5,6 +5,7 @@ const enSidebar = [
     text: 'Why Orbital Express',
     items: [
       { text: 'The Philosophy', link: '/philosophy/' },
+      { text: 'Built for Business, Not Engineers', link: '/philosophy/business-first' },
       { text: 'The Origin Story', link: '/philosophy/the-origin' },
       { text: 'JavaScript, Not TypeScript', link: '/philosophy/javascript-not-typescript' },
       { text: 'Vue.js, Not React', link: '/philosophy/vue-not-react' },
@@ -113,6 +114,7 @@ const zhTWSidebar = [
     text: '為何選擇 Orbital Express',
     items: [
       { text: '設計理念', link: '/zh-TW/philosophy/' },
+      { text: '以商業為優先，而非工程師', link: '/zh-TW/philosophy/business-first' },
       { text: '起源故事', link: '/zh-TW/philosophy/the-origin' },
       { text: '為何選擇 JavaScript 而非 TypeScript', link: '/zh-TW/philosophy/javascript-not-typescript' },
       { text: '為何選擇 Vue.js 而非 React', link: '/zh-TW/philosophy/vue-not-react' },
