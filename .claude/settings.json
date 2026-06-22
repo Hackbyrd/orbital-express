@@ -1,0 +1,8 @@
+{
+  "mcpServers": {
+    "orbital-express": {
+      "command": "npx",
+      "args": ["-y", "orbital-express-mcp"]
+    }
+  }
+}

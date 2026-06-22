@@ -94,6 +94,12 @@ const enSidebar = [
     ],
   },
   {
+    text: 'AI & Claude Code',
+    items: [
+      { text: 'MCP Server & Skills', link: '/ai/overview' },
+    ],
+  },
+  {
     text: 'Releases',
     items: [
       { text: 'Changelog', link: '/changelog' },
@@ -193,6 +199,12 @@ const zhTWSidebar = [
       { text: '建立第一個功能', link: '/zh-TW/tutorials/first-feature' },
       { text: '加入身份驗證', link: '/zh-TW/tutorials/add-auth' },
       { text: '加入即時功能', link: '/zh-TW/tutorials/real-time' },
+    ],
+  },
+  {
+    text: 'AI 與 Claude Code',
+    items: [
+      { text: 'MCP Server 與 Skills', link: '/zh-TW/ai/overview' },
     ],
   },
   {
