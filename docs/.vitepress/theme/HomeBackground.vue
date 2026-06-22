@@ -75,80 +75,127 @@ function mkComet() {
 }
 
 // ── Galaxies ───────────────────────────────────────────────────────────────
+// core = bright nucleus colour, disk = bulge/inner disk, arms = outer star-forming regions
 const GALAXY_PALETTES = [
-  { core: [200, 185, 255], mid: [120,  90, 220], outer: [55, 35, 140] },  // blue-purple spiral
-  { core: [255, 195, 210], mid: [205, 100, 140], outer: [95, 38, 75]  },  // rose-pink
-  { core: [255, 235, 170], mid: [200, 160,  75], outer: [95, 65, 28]  },  // golden elliptical
-  { core: [175, 240, 255], mid: [ 75, 185, 220], outer: [28, 75, 130] },  // cyan-blue
-  { core: [255, 200, 255], mid: [180, 100, 205], outer: [75, 38, 115] },  // violet-rose
+  { core: [255,252,225], disk: [215,175, 82], arms: [155,200,255] },  // classic golden spiral, blue arms
+  { core: [255,248,215], disk: [200,155, 72], arms: [195,222,255] },  // warm barred spiral
+  { core: [238,248,255], disk: [148,178,218], arms: [205,232,255] },  // blue elliptical
+  { core: [255,245,205], disk: [225,148, 58], arms: [255,192,138] },  // starburst/irregular, reddish arms
+  { core: [255,252,238], disk: [198,188,148], arms: [175,212,255] },  // dusty barred spiral
 ]
 
+let galaxyCanvas = null   // pre-rendered offscreen — galaxies are static
+
 function mkGalaxy() {
+  // Random inclination: 0=face-on (circle), π/2=edge-on (thin lens)
+  const incl   = Math.random() * Math.PI / 2
+  const yScale = Math.max(0.06, Math.cos(incl))   // how squished vertically
+  const edgeOn = incl > Math.PI * 0.38            // roughly 40% nearly edge-on
   return {
-    x:       80 + Math.random() * (w - 160),
-    y:       80 + Math.random() * (h - 160),
-    size:    40 + Math.random() * 35,
-    rot:     Math.random() * Math.PI,
-    tilt:    0.28 + Math.random() * 0.44,
-    palette: GALAXY_PALETTES[Math.floor(Math.random() * GALAXY_PALETTES.length)],
-    twist:   Math.random() * Math.PI * 0.6,
-    alpha:   0.55 + Math.random() * 0.35,
+    x:        80 + Math.random() * (w - 160),
+    y:        80 + Math.random() * (h - 160),
+    size:     44 + Math.random() * 44,
+    rot:      Math.random() * Math.PI * 2,         // screen rotation
+    yScale,
+    edgeOn,
+    palette:  GALAXY_PALETTES[Math.floor(Math.random() * GALAXY_PALETTES.length)],
+    armBase:  Math.random() * Math.PI * 2,         // first arm start angle
+    numArms:  Math.random() < 0.35 ? 4 : 2,
+    alpha:    0.58 + Math.random() * 0.38,
   }
 }
 
-function drawGalaxy(ctx, g) {
-  const { x, y, size, rot, tilt, palette, alpha, twist } = g
+function renderGalaxy(ctx, g) {
+  const { size, rot, yScale, palette, armBase, numArms, alpha, edgeOn } = g
   const [cr, cg, cb] = palette.core
-  const [mr, mg, mb] = palette.mid
-  const [or, og, ob] = palette.outer
+  const [dr, dg, db] = palette.disk
+  const [ar, ag, ab] = palette.arms
 
   ctx.save()
-  ctx.translate(x, y)
   ctx.rotate(rot)
+  ctx.scale(1, yScale)   // apply inclination squish
 
-  // Outer diffuse halo
-  ctx.save()
-  ctx.scale(1, tilt * 0.55)
-  const halo = ctx.createRadialGradient(0, 0, size * 0.15, 0, 0, size * 1.7)
-  halo.addColorStop(0,   `rgba(${mr},${mg},${mb},${(alpha * 0.22).toFixed(3)})`)
-  halo.addColorStop(0.5, `rgba(${or},${og},${ob},${(alpha * 0.08).toFixed(3)})`)
-  halo.addColorStop(1,   `rgba(${or},${og},${ob},0)`)
-  ctx.beginPath()
-  ctx.arc(0, 0, size * 1.7, 0, Math.PI * 2)
-  ctx.fillStyle = halo
-  ctx.fill()
-  ctx.restore()
+  if (edgeOn) {
+    // ── Edge-on: elongated lens + bright bulge + dust lane ──────────────
+    const lens = ctx.createRadialGradient(0, 0, size * 0.02, 0, 0, size * 0.92)
+    lens.addColorStop(0,   `rgba(${cr},${cg},${cb},${(alpha*0.88).toFixed(3)})`)
+    lens.addColorStop(0.18,`rgba(${dr},${dg},${db},${(alpha*0.65).toFixed(3)})`)
+    lens.addColorStop(0.55,`rgba(${dr},${dg},${db},${(alpha*0.28).toFixed(3)})`)
+    lens.addColorStop(1,   'rgba(0,0,0,0)')
+    ctx.beginPath(); ctx.arc(0, 0, size*0.92, 0, Math.PI*2)
+    ctx.fillStyle = lens; ctx.fill()
 
-  // Spiral arm layers — 3 rotated flat ellipses for multicolour dust bands
-  for (let i = 0; i < 3; i++) {
-    ctx.save()
-    ctx.rotate(twist + i * (Math.PI * 2 / 3))
-    ctx.scale(1, tilt * (0.22 + i * 0.07))
-    const arm = ctx.createRadialGradient(0, 0, size * 0.04, 0, 0, size * 0.92)
-    arm.addColorStop(0,   `rgba(${cr},${cg},${cb},${(alpha * (0.32 - i * 0.07)).toFixed(3)})`)
-    arm.addColorStop(0.4, `rgba(${mr},${mg},${mb},${(alpha * (0.18 - i * 0.04)).toFixed(3)})`)
-    arm.addColorStop(1,   `rgba(${or},${og},${ob},0)`)
-    ctx.beginPath()
-    ctx.arc(0, 0, size * 0.92, 0, Math.PI * 2)
-    ctx.fillStyle = arm
-    ctx.fill()
-    ctx.restore()
+    // Subtle dust lane through middle
+    ctx.fillStyle = 'rgba(0,0,0,0.20)'
+    ctx.fillRect(-size*0.88, -size*0.05, size*1.76, size*0.10)
+
+  } else {
+    // ── Face-on / tilted: disk + spiral arms ────────────────────────────
+
+    // Outer disk / halo
+    const disk = ctx.createRadialGradient(0, 0, size*0.06, 0, 0, size)
+    disk.addColorStop(0,   `rgba(${dr},${dg},${db},${(alpha*0.52).toFixed(3)})`)
+    disk.addColorStop(0.38,`rgba(${dr},${dg},${db},${(alpha*0.30).toFixed(3)})`)
+    disk.addColorStop(0.72,`rgba(${ar},${ag},${ab},${(alpha*0.10).toFixed(3)})`)
+    disk.addColorStop(1,   'rgba(0,0,0,0)')
+    ctx.beginPath(); ctx.arc(0, 0, size, 0, Math.PI*2); ctx.fillStyle = disk; ctx.fill()
+
+    // Spiral arms — logarithmic spiral particle clouds
+    // r = size * 0.10 * e^(b*θ), wound ~1.3 turns
+    const B          = 0.26   // tightness (higher = tighter)
+    const maxTheta   = Math.PI * 2.6
+    const numClouds  = 68
+
+    for (let arm = 0; arm < numArms; arm++) {
+      const base = armBase + (arm / numArms) * Math.PI * 2
+      for (let i = 0; i < numClouds; i++) {
+        const t     = i / numClouds
+        const theta = t * maxTheta
+        const rr2   = size * 0.10 * Math.exp(B * theta)
+        if (rr2 > size * 0.88) break
+        const px    = rr2 * Math.cos(base + theta)
+        const py    = rr2 * Math.sin(base + theta)
+
+        // Blend from warm disk colour (inner) to blue-white arms (outer)
+        const pR = Math.round(dr + t * (ar - dr))
+        const pG = Math.round(dg + t * (ag - dg))
+        const pB = Math.round(db + t * (ab - db))
+        const cloudR = Math.max(1.5, size * (0.115 - t * 0.048))
+        const cloudA = (alpha * (0.30 - t * 0.13)).toFixed(3)
+        if (parseFloat(cloudA) <= 0.01) continue
+
+        ctx.beginPath()
+        ctx.arc(px, py, cloudR, 0, Math.PI*2)
+        ctx.fillStyle = `rgba(${pR},${pG},${pB},${cloudA})`
+        ctx.fill()
+      }
+    }
   }
 
-  // Bright core
-  ctx.save()
-  ctx.scale(1, tilt * 0.65)
-  const core = ctx.createRadialGradient(0, 0, 0, 0, 0, size * 0.28)
-  core.addColorStop(0,   `rgba(${cr},${cg},${cb},${(alpha * 0.90).toFixed(3)})`)
-  core.addColorStop(0.45,`rgba(${cr},${cg},${cb},${(alpha * 0.50).toFixed(3)})`)
-  core.addColorStop(1,   `rgba(${mr},${mg},${mb},0)`)
-  ctx.beginPath()
-  ctx.arc(0, 0, size * 0.28, 0, Math.PI * 2)
-  ctx.fillStyle = core
-  ctx.fill()
-  ctx.restore()
+  // ── Core bulge — always on top ──────────────────────────────────────────
+  const core = ctx.createRadialGradient(0, 0, 0, 0, 0, size*0.26)
+  core.addColorStop(0,    `rgba(${cr},${cg},${cb},${(alpha*0.96).toFixed(3)})`)
+  core.addColorStop(0.30, `rgba(${cr},${cg},${cb},${(alpha*0.68).toFixed(3)})`)
+  core.addColorStop(0.70, `rgba(${dr},${dg},${db},${(alpha*0.35).toFixed(3)})`)
+  core.addColorStop(1,    'rgba(0,0,0,0)')
+  ctx.beginPath(); ctx.arc(0, 0, size*0.26, 0, Math.PI*2); ctx.fillStyle = core; ctx.fill()
+
+  // Nuclear point — tiny brilliant star-like centre
+  ctx.beginPath(); ctx.arc(0, 0, size*0.028, 0, Math.PI*2)
+  ctx.fillStyle = `rgba(${cr},${cg},${cb},${(alpha*0.98).toFixed(3)})`; ctx.fill()
 
   ctx.restore()
+}
+
+function buildGalaxyCanvas() {
+  // Render all galaxies once to an offscreen canvas — they never animate
+  galaxyCanvas = document.createElement('canvas')
+  galaxyCanvas.width  = w
+  galaxyCanvas.height = h
+  const gctx = galaxyCanvas.getContext('2d')
+  for (const g of galaxies) {
+    gctx.save(); gctx.translate(g.x, g.y); renderGalaxy(gctx, g); gctx.restore()
+  }
 }
 
 // ── Black Hole ─────────────────────────────────────────────────────────────
@@ -156,10 +203,11 @@ function mkBlackHole() {
   const margin = 170
   const r = 55 + Math.random() * 35
   return {
-    x: margin + Math.random() * (w - margin * 2),
-    y: margin + Math.random() * (h - margin * 2),
+    x:          margin + Math.random() * (w - margin * 2),
+    y:          margin + Math.random() * (h - margin * 2),
     r,
-    haloPhase: Math.random() * Math.PI * 2,
+    diskTilt:   Math.random() * Math.PI,   // random orientation each page load
+    haloPhase:  Math.random() * Math.PI * 2,
   }
 }
 
@@ -171,6 +219,7 @@ function drawBlackHole(ctx, bh) {
 
   ctx.save()
   ctx.translate(x, y)
+  ctx.rotate(bh.diskTilt)   // random orientation — applied before all arcs
 
   // ── 1. Outer diffuse glow ──────────────────────────────────────────────
   const og = ctx.createRadialGradient(0, 0, r * 0.7, 0, 0, r * 6.2)
@@ -249,6 +298,7 @@ function initDark() {
   comets    = []; nextCometAt = 200
   blackHole = mkBlackHole()
   galaxies  = Array.from({ length: GALAXY_COUNT },   () => mkGalaxy())
+  buildGalaxyCanvas()
 }
 
 // ── drawDark ───────────────────────────────────────────────────────────────
@@ -257,8 +307,8 @@ function drawDark(ctx, frame) {
   currentMx += (targetMx - currentMx) * 0.06
   currentMy += (targetMy - currentMy) * 0.06
 
-  // Galaxies — deepest background
-  for (const g of galaxies) drawGalaxy(ctx, g)
+  // Galaxies — deepest background (pre-rendered, static)
+  if (galaxyCanvas) ctx.drawImage(galaxyCanvas, 0, 0)
 
   // Stars — with mouse parallax
   for (const s of stars) {
