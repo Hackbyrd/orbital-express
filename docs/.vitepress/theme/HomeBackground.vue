@@ -84,35 +84,39 @@ const GALAXY_PALETTES = [
   { core: [255,252,238], disk: [198,188,148], arms: [175,212,255] },  // dusty barred spiral
 ]
 
-let galaxyCanvas = null   // pre-rendered offscreen — galaxies are static
-
 function mkGalaxy() {
   // Random inclination: 0=face-on (circle), π/2=edge-on (thin lens)
   const incl   = Math.random() * Math.PI / 2
   const yScale = Math.max(0.06, Math.cos(incl))   // how squished vertically
   const edgeOn = incl > Math.PI * 0.38            // roughly 40% nearly edge-on
+  // Spiral arms wind in the +theta direction (counter-clockwise in math coords,
+  // which is clockwise on canvas). Positive rotSpeed spins in that same direction.
+  const rotSpeed = (0.00008 + Math.random() * 0.00012) * (Math.random() < 0.5 ? 1 : -1)
   return {
     x:        80 + Math.random() * (w - 160),
     y:        80 + Math.random() * (h - 160),
     size:     44 + Math.random() * 44,
-    rot:      Math.random() * Math.PI * 2,         // screen rotation
+    rot:      Math.random() * Math.PI * 2,         // current screen rotation (updated each frame)
+    rotSpeed,
     yScale,
     edgeOn,
     palette:  GALAXY_PALETTES[Math.floor(Math.random() * GALAXY_PALETTES.length)],
     armBase:  Math.random() * Math.PI * 2,         // first arm start angle
     numArms:  Math.random() < 0.35 ? 4 : 2,
     alpha:    0.58 + Math.random() * 0.38,
+    offscreen: null,   // filled by buildGalaxyOffscreens()
+    offR:      0,
   }
 }
 
 function renderGalaxy(ctx, g) {
-  const { size, rot, yScale, palette, armBase, numArms, alpha, edgeOn } = g
+  // rot is applied externally (at draw time) so rotation animates without re-rendering
+  const { size, yScale, palette, armBase, numArms, alpha, edgeOn } = g
   const [cr, cg, cb] = palette.core
   const [dr, dg, db] = palette.disk
   const [ar, ag, ab] = palette.arms
 
   ctx.save()
-  ctx.rotate(rot)
   ctx.scale(1, yScale)   // apply inclination squish
 
   if (edgeOn) {
@@ -187,21 +191,26 @@ function renderGalaxy(ctx, g) {
   ctx.restore()
 }
 
-function buildGalaxyCanvas() {
-  // Render all galaxies once to an offscreen canvas — they never animate
-  galaxyCanvas = document.createElement('canvas')
-  galaxyCanvas.width  = w
-  galaxyCanvas.height = h
-  const gctx = galaxyCanvas.getContext('2d')
+function buildGalaxyOffscreens() {
+  // Render each galaxy's shape once to its own small canvas.
+  // Rotation is applied at draw time (ctx.rotate) so spinning is free.
   for (const g of galaxies) {
-    gctx.save(); gctx.translate(g.x, g.y); renderGalaxy(gctx, g); gctx.restore()
+    const pad = Math.ceil(g.size * 1.18)
+    const dim = pad * 2
+    const c   = document.createElement('canvas')
+    c.width = c.height = dim
+    const gctx = c.getContext('2d')
+    gctx.translate(pad, pad)   // centre
+    renderGalaxy(gctx, g)
+    g.offscreen = c
+    g.offR      = pad           // half-dimension for centering when drawing
   }
 }
 
 // ── Black Hole ─────────────────────────────────────────────────────────────
 function mkBlackHole() {
   const margin = 170
-  const r = 55 + Math.random() * 35
+  const r = 28 + Math.random() * 18
   return {
     x:          margin + Math.random() * (w - margin * 2),
     y:          margin + Math.random() * (h - margin * 2),
@@ -298,7 +307,7 @@ function initDark() {
   comets    = []; nextCometAt = 200
   blackHole = mkBlackHole()
   galaxies  = Array.from({ length: GALAXY_COUNT },   () => mkGalaxy())
-  buildGalaxyCanvas()
+  buildGalaxyOffscreens()
 }
 
 // ── drawDark ───────────────────────────────────────────────────────────────
@@ -307,8 +316,16 @@ function drawDark(ctx, frame) {
   currentMx += (targetMx - currentMx) * 0.06
   currentMy += (targetMy - currentMy) * 0.06
 
-  // Galaxies — deepest background (pre-rendered, static)
-  if (galaxyCanvas) ctx.drawImage(galaxyCanvas, 0, 0)
+  // Galaxies — pre-rendered shapes, rotated each frame
+  for (const g of galaxies) {
+    if (!g.offscreen) continue
+    g.rot += g.rotSpeed
+    ctx.save()
+    ctx.translate(g.x, g.y)
+    ctx.rotate(g.rot)
+    ctx.drawImage(g.offscreen, -g.offR, -g.offR)
+    ctx.restore()
+  }
 
   // Stars — with mouse parallax
   for (const s of stars) {
