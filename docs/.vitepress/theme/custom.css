@@ -17,10 +17,19 @@
   content: '';
   position: absolute;
   inset: -32px -48px;
-  background: radial-gradient(ellipse at 40% 50%, rgba(0,0,0,0.72) 60%, transparent 100%);
   border-radius: 24px;
   z-index: 0;
   pointer-events: none;
+}
+
+/* Dark mode: dark scrim so text reads over the matrix rain */
+.dark .VPHero .container::before {
+  background: radial-gradient(ellipse at 40% 50%, rgba(0,0,0,0.72) 60%, transparent 100%);
+}
+
+/* Light mode: subtle light scrim */
+.VPHero .container::before {
+  background: radial-gradient(ellipse at 40% 50%, rgba(255,255,255,0.82) 60%, transparent 100%);
 }
 
 .VPHero .main,
@@ -37,20 +46,32 @@
   background-clip: text !important;
 }
 
-/* Features section — slight dark glass effect */
+/* Features section — slight glass effect */
 .VPFeatures {
   position: relative;
   z-index: 1;
 }
 
+/* Light mode feature cards */
 .VPFeature {
-  background: rgba(0, 0, 0, 0.55) !important;
-  border: 1px solid rgba(66, 211, 146, 0.15) !important;
+  background: rgba(255, 255, 255, 0.75) !important;
+  border: 1px solid rgba(66, 211, 146, 0.25) !important;
   backdrop-filter: blur(8px);
   transition: border-color 0.2s, background 0.2s;
 }
 
 .VPFeature:hover {
+  border-color: rgba(66, 211, 146, 0.55) !important;
+  background: rgba(255, 255, 255, 0.92) !important;
+}
+
+/* Dark mode feature cards */
+.dark .VPFeature {
+  background: rgba(0, 0, 0, 0.55) !important;
+  border: 1px solid rgba(66, 211, 146, 0.15) !important;
+}
+
+.dark .VPFeature:hover {
   border-color: rgba(66, 211, 146, 0.45) !important;
   background: rgba(0, 0, 0, 0.72) !important;
 }

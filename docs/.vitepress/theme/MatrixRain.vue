@@ -3,10 +3,10 @@
 </template>
 
 <script setup>
-import { ref, onMounted, onUnmounted, computed } from 'vue'
+import { ref, onMounted, onUnmounted, computed, watch } from 'vue'
 import { useData, useRoute } from 'vitepress'
 
-const { page } = useData()
+const { page, isDark } = useData()
 const route = useRoute()
 const canvasRef = ref(null)
 
@@ -15,10 +15,17 @@ const isHome = computed(() => page.value.frontmatter.layout === 'home')
 const CHARS = 'アイウエオカキクケコサシスセソタチツテトナニヌネノハヒフヘホマミムメモヤユヨラリルレロワヲン0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ'
 const FONT_SIZE = 14
 const COLOR = '#42d392'
-const DIM_COLOR = 'rgba(0,0,0,0.05)'
 
 let animId = null
 let cols = []
+
+function getDimColor() {
+  return isDark.value ? 'rgba(0,0,0,0.05)' : 'rgba(255,255,255,0.08)'
+}
+
+function getHeadColor() {
+  return isDark.value ? '#ffffff' : '#42d392'
+}
 
 function initCanvas(canvas) {
   canvas.width = window.innerWidth
@@ -28,10 +35,9 @@ function initCanvas(canvas) {
 }
 
 function draw(canvas, ctx) {
-  ctx.fillStyle = DIM_COLOR
+  ctx.fillStyle = getDimColor()
   ctx.fillRect(0, 0, canvas.width, canvas.height)
 
-  ctx.fillStyle = COLOR
   ctx.font = `${FONT_SIZE}px monospace`
 
   for (let i = 0; i < cols.length; i++) {
@@ -40,7 +46,7 @@ function draw(canvas, ctx) {
     const y = cols[i] * FONT_SIZE
 
     // Brightest (head) character
-    ctx.fillStyle = '#ffffff'
+    ctx.fillStyle = getHeadColor()
     ctx.fillText(char, x, y)
 
     // Trail
@@ -63,8 +69,7 @@ onMounted(() => {
   const ctx = canvas.getContext('2d')
 
   initCanvas(canvas)
-  ctx.fillStyle = '#000'
-  ctx.fillRect(0, 0, canvas.width, canvas.height)
+  // No initial fill — let the page background show through on first frame
 
   function loop() {
     draw(canvas, ctx)
@@ -75,8 +80,6 @@ onMounted(() => {
   function onResize() {
     if (!canvas) return
     initCanvas(canvas)
-    ctx.fillStyle = '#000'
-    ctx.fillRect(0, 0, canvas.width, canvas.height)
   }
   window.addEventListener('resize', onResize)
   resizeObserver = { destroy: () => window.removeEventListener('resize', onResize) }
@@ -98,5 +101,13 @@ onUnmounted(() => {
   z-index: 0;
   pointer-events: none;
   opacity: 0.18;
+}
+
+:global(.dark) .matrix-canvas {
+  opacity: 0.18;
+}
+
+:global(:not(.dark)) .matrix-canvas {
+  opacity: 0.08;
 }
 </style>
