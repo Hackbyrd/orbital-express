@@ -38,19 +38,19 @@ You don't need to master these before starting, but you will encounter all of th
 
 | Library | What it's for | Level | Docs |
 |---|---|---|---|
-| **Sequelize** | PostgreSQL ORM — models, migrations, queries | 🔴 Must Know | [sequelize.org](https://sequelize.org/docs/v6/) |
-| **Joi** | Schema validation for every incoming request | 🔴 Must Know | [joi.dev](https://joi.dev/api/) |
-| **Jest** | Test runner — integration tests, assertions | 🔴 Must Know | [jestjs.io](https://jestjs.io/docs/getting-started) · [Cheatsheet](https://devhints.io/jest) |
-| **Moment.js** | Date/time handling and timezone support | 🔴 Must Know | [momentjs.com](https://momentjs.com/docs/) |
+| **Sequelize** | PostgreSQL ORM — models, migrations, queries | 🟢 Must Know | [sequelize.org](https://sequelize.org/docs/v6/) |
+| **Joi** | Schema validation for every incoming request | 🟢 Must Know | [joi.dev](https://joi.dev/api/) |
+| **Jest** | Test runner — integration tests, assertions | 🟢 Must Know | [jestjs.io](https://jestjs.io/docs/getting-started) · [Cheatsheet](https://devhints.io/jest) |
+| **Moment.js** | Date/time handling and timezone support | 🟢 Must Know | [momentjs.com](https://momentjs.com/docs/) |
+| **Passport.js** | Auth middleware — used under the hood for JWT strategy | 🟢 Must Know | [passportjs.org](https://www.passportjs.org/docs/) |
 | **Redis** | In-memory store — powers queues, sessions, caching | 🟡 Good to Know | [redis.io/docs](https://redis.io/docs/latest/) |
 | **Socket.IO** | Real-time bidirectional events over WebSockets | 🟡 Good to Know | [socket.io/docs](https://socket.io/docs/v4/) |
 | **Bull** | Background job queues — built on top of Redis | 🟡 Good to Know | [github.com/OptimalBits/bull](https://github.com/OptimalBits/bull#readme) |
-| **Passport.js** | Auth middleware — used under the hood for JWT strategy | 🟡 Good to Know | [passportjs.org](https://www.passportjs.org/docs/) |
 | **accounting.js** | Money formatting for display | 🔵 Optional | [accounting.js](http://openexchangerates.github.io/accounting.js/) |
 | **currency.js** | Money math and calculations | 🔵 Optional | [currency.js.org](https://currency.js.org/) |
 
 **Legend:**
-- 🔴 **Must Know** — you will use this on every single feature you build
+- 🟢 **Must Know** — you will use this on every single feature you build
 - 🟡 **Good to Know** — you will encounter it; understanding it prevents confusion
 - 🔵 **Optional** — only relevant for certain project types (e.g. financial apps)
 
