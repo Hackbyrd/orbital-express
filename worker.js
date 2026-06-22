@@ -18,6 +18,7 @@ const path = require('path');
 const throng = require('throng'); // concurrency
 
 // services
+const sentry = require('./services/sentry'); // error tracking (no-op stub if not configured)
 const email = require('./services/email');
 const phone = require('./services/phone');
 const queue = require('./services/queue'); // the queue service for background jobs
@@ -45,6 +46,8 @@ directories.forEach(dir => workerRoutes.push(require(`${dir}/${WORKER_FILE}`)));
 
 // function to start app
 async function startWorker(processId) {
+  sentry.init(); // must be called before queue processors start
+
   const models = require('./models'); // get models
 
   // Print Process Info

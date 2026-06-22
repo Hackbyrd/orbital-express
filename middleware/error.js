@@ -1,60 +1,69 @@
 /**
- * Middleware to handle errors, MUST be the LAST middleware to be called
+ * Middleware to handle errors. MUST be the LAST middleware registered.
  *
- * TODO: Integrate Sentry (or equivalent error monitoring service) here.
- * Replace or supplement the console logging with Sentry.captureException(err) so errors
- * are deduplicated, grouped, and rate-limited.
- *
- * TODO: TEST
+ * Logs a structured JSON line to stdout on every 500 — parseable by Heroku Papertrail,
+ * Datadog Logs, and most log aggregators. If Sentry is configured (SENTRY_DSN set),
+ * the error is also sent there for deduplication and alerting.
  */
 
 'use strict';
 
-const { NODE_ENV } = process.env; // get node env
+const { NODE_ENV } = process.env;
+
+// services
+const sentry = require('../services/sentry');
 
 module.exports = function(err, req, res, next) {
-  let userType = 'Logged Out';
-  let user = { id: 'N/A', email: 'logged@out.com' };
+  let userType = 'loggedOut';
+  let userId = null;
 
-  // print out error
-  console.log('---------- START: URGENT! 500 Server Error! ----------');
-  console.log('requestId:', req.requestId);
-  console.log(err);
-  console.log('---------- END: URGENT! 500 Server Error! ----------');
-
-  // select user type
   if (req.user) {
-    userType = 'User';
-    user = req.user;
+    userType = 'user';
+    userId = req.user.id;
   } else if (req.admin) {
-    userType = 'Admin';
-    user = req.admin;
+    userType = 'admin';
+    userId = req.admin.id;
   } // add more user types here
 
-  // production
+  // Structured JSON log — one line per error, parseable by log aggregators
+  const logEntry = {
+    level: 'error',
+    requestId: req.requestId,
+    method: req.method,
+    url: req.url,
+    userType,
+    userId,
+    errorName: err.name,
+    errorMessage: err.message,
+    ...(NODE_ENV !== 'production' && { stack: err.stack }),
+  };
+  console.error(JSON.stringify(logEntry));
+
+  // Send to Sentry if configured (no-op if services/sentry.js is the stub)
+  sentry.captureException(err, req);
+
+  // production — minimal response (no stack traces)
   if (NODE_ENV === 'production') {
     return res.status(500).json({
       status: 500,
       success: false,
       error: err.name,
       message: err.message,
-      requestId: req.requestId
+      requestId: req.requestId,
     });
   }
 
-  // dev and test
-  else {
-    return res.status(500).json({
-      status: 500,
-      success: false,
-      error: err.name,
-      stack: err.stack,
-      message: err.message,
-      requestId: req.requestId,
-      reqRoute: req.url,
-      reqUserType: userType,
-      reqUser: user,
-      reqArgs: req.args
-    });
-  }
+  // dev + test — full debug response
+  return res.status(500).json({
+    status: 500,
+    success: false,
+    error: err.name,
+    stack: err.stack,
+    message: err.message,
+    requestId: req.requestId,
+    reqRoute: req.url,
+    reqUserType: userType,
+    reqUserId: userId,
+    reqArgs: req.args,
+  });
 };

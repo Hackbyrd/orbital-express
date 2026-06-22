@@ -33,11 +33,14 @@ const {
 } = process.env;
 
 // services
+const sentry = require('./services/sentry'); // error tracking (no-op stub if not configured)
 const socket = require('./services/socket'); // require socket service to initiate socket.io
 const lang = require('./services/language'); // grab i18n after we configured it
 
 // server
 async function server() {
+  sentry.init(); // must be called before any routes or other middleware
+
   // require custom
   const cfgPassport = require('./services/passport'); // configuration for passport
 
