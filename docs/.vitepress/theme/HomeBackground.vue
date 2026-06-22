@@ -239,61 +239,68 @@ function drawBlackHole(ctx, bh) {
   ctx.beginPath(); ctx.arc(0, 0, r*6.2, 0, Math.PI*2)
   ctx.fillStyle = og; ctx.fill()
 
-  // ── 2. Lensing dome — top arching arcs (gravitationally bent far-side disk) ──
-  // Each ring of the disk at radius ρ produces a top lensed arc.
-  // Arc half-width hw ∝ ρ; arc height = sqrt(hw²-r²) × factor.
-  // Inner arcs: tight, near shadow. Outer arcs: wide, sweeping dome.
+  // ── 2. Far-side lensed dome — top arcs, drawn BEFORE shadow ──────────────
+  // Gravitationally bent light from the far side of the disk arches over the top.
+  // Inner arcs hug the photon sphere; outer arcs sweep into a wide dome.
   const N_TOP = 58
   for (let i = 0; i < N_TOP; i++) {
-    const t  = i / (N_TOP - 1)          // 0 = innermost, 1 = outermost
-    const hw = r * (1.055 + t * 2.745)  // r×1.055 → r×3.80
-    const ah = Math.sqrt(Math.max(0, hw*hw - r*r)) * 0.42
-
-    // Deep red-orange: inner bright, outer dark
+    const t  = i / (N_TOP - 1)
+    const hw = r * (1.055 + t * 2.745)
+    const ah = Math.sqrt(Math.max(0, hw * hw - r * r)) * 0.42
     const br = 1.0 - t * 0.82
-    const cr = Math.round(82  + br * 173)  // 82→255
-    const cg = Math.round(2   + br * 83)   // 2→85
+    const cr = Math.round(82  + br * 173)
+    const cg = Math.round(2   + br * 83)
     const ca = (0.07 + br * 0.60) * pulse
-
     ctx.beginPath()
-    ctx.ellipse(0, 0, hw, ah, 0, Math.PI, 0, true)   // top half arc (y < 0 = above)
+    ctx.ellipse(0, 0, hw, ah, 0, Math.PI, 0, true)
     ctx.strokeStyle = `rgba(${cr},${cg},0,${ca.toFixed(3)})`
     ctx.lineWidth   = 0.55 + br * 1.35
     ctx.stroke()
   }
 
-  // ── 3. Bottom near-side ring — compact bright arc below shadow ────────
-  // Primary image of the near side of the disk, appears as a rounded arc.
-  // Rendered as bottom-half ellipses with roughly circular aspect ratio.
-  const N_BOT = 38
-  for (let i = 0; i < N_BOT; i++) {
-    const t  = i / (N_BOT - 1)         // 0 = innermost, 1 = outermost
-    const hw = r * (1.055 + t * 0.90)  // r×1.055 → r×1.955  (compact arc)
-    const ah = hw * 0.46               // roughly circular arc appearance
+  // ── 3. Event horizon shadow — asymmetric: top half extends further ────────
+  // In real lensed images the shadow boundary is pushed toward the bright side:
+  // the top appears larger/taller, the equatorial plane of the disk cuts through
+  // the lower portion of the shadow.  We achieve this by scaling and offsetting.
+  ctx.save()
+  ctx.translate(0, -r * 0.14)   // shift shadow centre upward
+  ctx.scale(1.0, 1.22)          // stretch vertically → top half is taller
+  ctx.beginPath()
+  ctx.arc(0, 0, r, 0, Math.PI * 2)
+  ctx.fillStyle = '#000000'
+  ctx.fill()
+  ctx.restore()
 
-    const br = 1.0 - t * 0.75
-    const cr = Math.round(105 + br * 150)
-    const cg = Math.round(4   + br * 90)
-    const ca = (0.18 + br * 0.68) * pulse
+  // ── 4. Near-side disk — drawn ON TOP of shadow, "cutting across" it ────
+  // The near side of the accretion disk is physically in front of the event
+  // horizon.  Drawing these arcs AFTER the shadow makes them appear in front.
+  // Key: very small ah (flat disc ratio) so the arcs sweep nearly horizontally
+  // across the shadow centre rather than bulging far below it.
+  // The arcs extend to diskRx — well past the shadow edge on both sides — so
+  // the effect reads as a continuous flat disc crossing through the black hole.
+  const N_NEAR = 50
+  for (let i = 0; i < N_NEAR; i++) {
+    const t  = i / (N_NEAR - 1)
+    const hw = r * (1.04 + t * 2.56)          // r×1.04 → r×3.60  (wide disc)
+    const ah = r * (0.11 + t * 0.18)          // very flat — crosses through middle
+
+    const br = 1.0 - t * 0.74
+    const cr = Math.round(112 + br * 143)
+    const cg = Math.round(4   + br * 94)
+    const ca = (0.22 + br * 0.70) * pulse
 
     ctx.beginPath()
-    ctx.ellipse(0, 0, hw, ah, 0, Math.PI, 0, false)  // bottom half arc (y > 0 = below)
+    ctx.ellipse(0, 0, hw, ah, 0, 0, Math.PI, false)  // bottom-half → y ≥ 0
     ctx.strokeStyle = `rgba(${cr},${cg},0,${ca.toFixed(3)})`
-    ctx.lineWidth   = 0.55 + br * 1.45
+    ctx.lineWidth   = 0.65 + br * 1.60
     ctx.stroke()
   }
 
-  // ── 4. Event horizon — perfectly black circle ─────────────────────────
+  // ── 5. Photon ring ────────────────────────────────────────────────────────
   ctx.beginPath()
-  ctx.arc(0, 0, r, 0, Math.PI*2)
-  ctx.fillStyle = '#000000'
-  ctx.fill()
-
-  // ── 5. Photon ring — thin bright ring at edge of shadow ───────────────
-  ctx.beginPath()
-  ctx.arc(0, 0, r * 1.065, 0, Math.PI*2)
-  ctx.strokeStyle = `rgba(255,118,8,${(0.80*pulse).toFixed(3)})`
-  ctx.lineWidth   = r * 0.036
+  ctx.arc(0, 0, r * 1.065, 0, Math.PI * 2)
+  ctx.strokeStyle = `rgba(255,118,8,${(0.78*pulse).toFixed(3)})`
+  ctx.lineWidth   = r * 0.034
   ctx.stroke()
 
   ctx.restore()
