@@ -4,7 +4,7 @@ layout: home
 hero:
   name: "Orbital Express"
   text: "Build production APIs faster. Now with AI."
-  tagline: "Describe a feature to Claude. It reads the playbook, runs the generator, writes the tests, and ships correct code — your architecture, every time. No guessing, no drift."
+  tagline: "Describe a feature to your AI (Claude/Cursor). It reads the playbook, runs the generator, builds the feature, writes the tests, and ships correct code, conventions and architecture, every time. No guessing, no drift, no AI slop."
   image:
     src: /logo.svg
     alt: Orbital Express
