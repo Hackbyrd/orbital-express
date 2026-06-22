@@ -224,91 +224,71 @@ function mkBlackHole() {
 function drawBlackHole(ctx, bh, mx = 0, my = 0) {
   const { x, y, r } = bh
   bh.haloPhase += 0.008
-  const pulse    = 0.88 + 0.12 * Math.sin(bh.haloPhase)
-  const diskRx   = r * 3.80   // full half-width of disk
+  const pulse  = 0.88 + 0.12 * Math.sin(bh.haloPhase)
+  const diskRx = r * 3.5
 
   ctx.save()
   ctx.translate(x + mx * 12, y + my * 12)
-  ctx.rotate(bh.diskTilt)   // random orientation — applied before all arcs
+  ctx.rotate(bh.diskTilt)
 
   // ── 1. Outer diffuse glow ──────────────────────────────────────────────
-  const og = ctx.createRadialGradient(0, 0, r * 0.7, 0, 0, r * 6.2)
-  og.addColorStop(0,    `rgba(255,72,0,${(0.24*pulse).toFixed(3)})`)
-  og.addColorStop(0.30, `rgba(180,24,0,${(0.09*pulse).toFixed(3)})`)
-  og.addColorStop(0.65, `rgba(90,8,0,${(0.03*pulse).toFixed(3)})`)
+  const og = ctx.createRadialGradient(0, 0, r * 0.8, 0, 0, r * 5.8)
+  og.addColorStop(0,    `rgba(255,75,0,${(0.22*pulse).toFixed(3)})`)
+  og.addColorStop(0.38, `rgba(155,18,0,${(0.07*pulse).toFixed(3)})`)
   og.addColorStop(1,    'rgba(0,0,0,0)')
-  ctx.beginPath(); ctx.arc(0, 0, r*6.2, 0, Math.PI*2)
+  ctx.beginPath(); ctx.arc(0, 0, r * 5.8, 0, Math.PI * 2)
   ctx.fillStyle = og; ctx.fill()
 
-  // ── 2. Far-side lensed dome — top arcs, drawn BEFORE shadow ──────────────
-  // Gravitationally bent light from the far side of the disk arches over the top.
-  // Inner arcs hug the photon sphere; outer arcs sweep into a wide dome.
-  const N_TOP = 58
+  // ── 2. Far-side lensed dome — behind shadow ────────────────────────────
+  // Top-half ellipse arcs. Height ah = √(hw²−r²)×0.42 gives correct lensing
+  // geometry: inner arcs barely rise above the shadow; outer arcs dome high.
+  const N_TOP = 55
   for (let i = 0; i < N_TOP; i++) {
     const t  = i / (N_TOP - 1)
-    const hw = r * (1.055 + t * 2.745)
+    const hw = r * (1.055 + t * 2.70)
     const ah = Math.sqrt(Math.max(0, hw * hw - r * r)) * 0.42
-    const br = 1.0 - t * 0.82
+    const br = 1 - t * 0.82
     const cr = Math.round(82  + br * 173)
-    const cg = Math.round(2   + br * 83)
-    const ca = (0.07 + br * 0.60) * pulse
+    const cg = Math.round(2   + br * 80)
+    const ca = (0.07 + br * 0.58) * pulse
     ctx.beginPath()
     ctx.ellipse(0, 0, hw, ah, 0, Math.PI, 0, true)
     ctx.strokeStyle = `rgba(${cr},${cg},0,${ca.toFixed(3)})`
-    ctx.lineWidth   = 0.55 + br * 1.35
+    ctx.lineWidth   = 0.55 + br * 1.30
     ctx.stroke()
   }
 
-  // ── 3. Event horizon shadow — asymmetric: top half extends further ────────
-  // In real lensed images the shadow boundary is pushed toward the bright side:
-  // the top appears larger/taller, the equatorial plane of the disk cuts through
-  // the lower portion of the shadow.  We achieve this by scaling and offsetting.
-  ctx.save()
-  ctx.translate(0, -r * 0.14)   // shift shadow centre upward
-  ctx.scale(1.0, 1.22)          // stretch vertically → top half is taller
+  // ── 3. Event horizon — clean circle, no distortion ────────────────────
   ctx.beginPath()
   ctx.arc(0, 0, r, 0, Math.PI * 2)
   ctx.fillStyle = '#000000'
   ctx.fill()
-  ctx.restore()
 
-  // ── 4. Near-side disk — drawn ON TOP of shadow, "cutting across" it ────
-  // The near side of the accretion disk is physically in front of the event
-  // horizon.  Drawing these arcs AFTER the shadow makes them appear in front.
-  // Key: very small ah (flat disc ratio) so the arcs sweep nearly horizontally
-  // across the shadow centre rather than bulging far below it.
-  // The arcs extend to diskRx — well past the shadow edge on both sides — so
-  // the effect reads as a continuous flat disc crossing through the black hole.
-  const N_NEAR = 50
-  for (let i = 0; i < N_NEAR; i++) {
-    const t  = i / (N_NEAR - 1)
-    const hw = r * (1.04 + t * 2.56)          // r×1.04 → r×3.60  (wide disc)
-    const ah = r * (0.11 + t * 0.18)          // very flat — crosses through middle
-
-    const br = 1.0 - t * 0.74
-    const cr = Math.round(112 + br * 143)
-    const cg = Math.round(4   + br * 94)
-    const ca = (0.22 + br * 0.70) * pulse
-
-    ctx.beginPath()
-    ctx.ellipse(0, 0, hw, ah, 0, 0, Math.PI, false)  // bottom-half → y ≥ 0
-    ctx.strokeStyle = `rgba(${cr},${cg},0,${ca.toFixed(3)})`
-    ctx.lineWidth   = 0.65 + br * 1.60
-    ctx.stroke()
-  }
-
-  // ── 5. Photon ring — must use same shadow transform so it hugs the shadow ──
-  // Drawing at origin would misalign with the shifted/scaled shadow and
-  // cause a ring arc to peek out below the shadow boundary.
-  ctx.save()
-  ctx.translate(0, -r * 0.14)
-  ctx.scale(1.0, 1.22)
+  // ── 4. Near-side disk — gradient fill, drawn ON TOP of shadow ─────────
+  // Physically in front of the event horizon so drawn after it.
+  // Rendered as a soft gradient-filled flat ellipse so it reads as a smooth
+  // glowing disc crossing through the shadow, not harsh stroked lines.
+  // The ellipse spans the full disk width; the linear vertical gradient peaks
+  // near the equatorial plane (y ≈ 0) and fades to transparent at the edges.
+  const dg = ctx.createLinearGradient(0, -r * 0.55, 0, r * 0.65)
+  dg.addColorStop(0,    'rgba(0,0,0,0)')
+  dg.addColorStop(0.18, `rgba(105,20,0,${(0.16*pulse).toFixed(3)})`)
+  dg.addColorStop(0.40, `rgba(238,98,4,${(0.60*pulse).toFixed(3)})`)
+  dg.addColorStop(0.54, `rgba(255,158,10,${(0.88*pulse).toFixed(3)})`)
+  dg.addColorStop(0.68, `rgba(215,70,2,${(0.55*pulse).toFixed(3)})`)
+  dg.addColorStop(0.86, `rgba(88,16,0,${(0.16*pulse).toFixed(3)})`)
+  dg.addColorStop(1,    'rgba(0,0,0,0)')
   ctx.beginPath()
-  ctx.arc(0, 0, r * 1.028, 0, Math.PI * 2)
-  ctx.strokeStyle = `rgba(255,118,8,${(0.78*pulse).toFixed(3)})`
-  ctx.lineWidth   = r * 0.028
+  ctx.ellipse(0, r * 0.05, diskRx, r * 0.60, 0, 0, Math.PI * 2)
+  ctx.fillStyle = dg
+  ctx.fill()
+
+  // ── 5. Photon ring — clean circle just outside shadow ─────────────────
+  ctx.beginPath()
+  ctx.arc(0, 0, r * 1.058, 0, Math.PI * 2)
+  ctx.strokeStyle = `rgba(255,120,8,${(0.72*pulse).toFixed(3)})`
+  ctx.lineWidth   = r * 0.026
   ctx.stroke()
-  ctx.restore()
 
   ctx.restore()
 }
