@@ -27,9 +27,9 @@
   background: radial-gradient(ellipse at 40% 50%, rgba(0,0,0,0.55) 55%, transparent 100%);
 }
 
-/* Light mode: subtle light scrim */
+/* Light mode: soft scrim so warp streaks bleed through at the edges */
 .VPHero .container::before {
-  background: radial-gradient(ellipse at 40% 50%, rgba(255,255,255,0.82) 60%, transparent 100%);
+  background: radial-gradient(ellipse at 40% 50%, rgba(255,255,255,0.78) 45%, rgba(255,255,255,0.30) 70%, transparent 100%);
 }
 
 .VPHero .main,
