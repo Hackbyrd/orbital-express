@@ -3,8 +3,8 @@ layout: home
 
 hero:
   name: "Orbital Express"
-  text: "Build production APIs, faster."
-  tagline: "An opinionated Express.js + Sequelize framework with feature-folder architecture, built-in auth, background jobs, and real-time support."
+  text: "Build production APIs faster. Now with AI."
+  tagline: "Describe a feature to Claude. It reads the playbook, runs the generator, writes the tests, and ships correct code — your architecture, every time. No guessing, no drift."
   image:
     src: /logo.svg
     alt: Orbital Express
@@ -17,6 +17,9 @@ hero:
       link: https://github.com/Hackbyrd/orbital-express
 
 features:
+  - icon: 🤖
+    title: Ship Entire Features with AI
+    details: Tell Claude what you need. It reads the skill playbook, runs yarn gen, fills in the logic, writes the tests — and everything follows your conventions. Not a generic guess. Your architecture.
   - icon: 📁
     title: Feature-Folder Architecture
     details: Everything for a feature lives in one folder. No bouncing between controllers/, models/, routes/. Scale to hundreds of features without chaos.
@@ -31,8 +34,5 @@ features:
     details: Bull/Redis queue built into the framework. Actions enqueue work, tasks process it. Separate worker process, retry logic included.
   - icon: 📡
     title: Real-Time Ready
-    details: Socket.IO integrated at the framework level. Emit after commit. Room-based broadcasting. Testable socket actions. <a href="/realtime/sockets">Read more →</a>
-  - icon: 🤖
-    title: AI-Native Skills
-    details: 18 .claude/skills/ playbooks. Junior engineers describe what they need, the AI agent follows the playbook end-to-end.
+    details: Socket.IO integrated at the framework level. Emit after commit. Room-based broadcasting. Testable socket actions.
 ---

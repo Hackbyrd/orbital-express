@@ -3,8 +3,8 @@ layout: home
 
 hero:
   name: "Orbital Express"
-  text: "更快建構正式環境 API。"
-  tagline: "一個固執己見的 Express.js + Sequelize framework，具備功能資料夾架構、內建 auth、背景任務與即時支援。"
+  text: "更快建構正式環境 API。現在搭配 AI。"
+  tagline: "告訴 Claude 你需要什麼功能。它讀取操作手冊、執行產生器、撰寫測試，並以正確的方式產生程式碼——完全遵循你的架構，每次都是。"
   image:
     src: /logo.svg
     alt: Orbital Express
@@ -17,6 +17,9 @@ hero:
       link: https://github.com/Hackbyrd/orbital-express
 
 features:
+  - icon: 🤖
+    title: 用 AI 完整交付功能
+    details: 告訴 Claude 你要什麼。它讀取 skill 操作手冊、執行 yarn gen、填入邏輯、撰寫測試——所有內容都遵循你的慣例。不是隨意猜測，而是你的架構。
   - icon: 📁
     title: 功能資料夾架構
     details: 一個功能的所有程式碼都在同一個資料夾。不需要在 controllers/、models/、routes/ 之間來回跳轉。即使擴展到數百個功能也不會陷入混亂。
@@ -31,8 +34,5 @@ features:
     details: Bull/Redis queue 內建於 framework。Actions 將工作加入佇列，tasks 負責處理。獨立的 worker process，已包含重試邏輯。
   - icon: 📡
     title: 即時就緒
-    details: Socket.IO 整合於 framework 層級。commit 後立即 emit。基於 room 的廣播。可測試的 socket actions。<a href="/zh-TW/realtime/sockets">了解更多 →</a>
-  - icon: 🤖
-    title: AI 原生技能
-    details: 18 個 .claude/skills/ 操作手冊。初級工程師描述需求，AI agent 端對端按手冊執行。
+    details: Socket.IO 整合於 framework 層級。commit 後立即 emit。基於 room 的廣播。可測試的 socket actions。
 ---

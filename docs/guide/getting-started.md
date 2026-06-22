@@ -27,6 +27,13 @@ You need to deeply understand how JavaScript actually works — not just the syn
 
 - **Learn and Understand NodeJS** by Anthony Alicea (Udemy) — covers the Node runtime, the event loop, streams, modules, and how Express fits in. Go through **Section 9** and stop there — you don't need beyond that to use this framework effectively.
 
+### Express.js *(required)*
+
+Orbital Express is built on top of Express. You don't need to be an expert, but you should understand routing, middleware, the request/response cycle, and how next() works.
+
+- [Express.js Official Guide](https://expressjs.com/en/guide/routing.html) — start with Routing and Writing Middleware
+- [Express on MDN](https://developer.mozilla.org/en-US/docs/Learn/Server-side/Express_Nodejs) — beginner-friendly walkthrough
+
 ### Databases — PostgreSQL
 
 - [PostgreSQL Tutorial](https://www.postgresqltutorial.com/) — practical SQL from scratch
