@@ -22,9 +22,9 @@
   pointer-events: none;
 }
 
-/* Dark mode: dark scrim so text reads over the matrix rain */
+/* Dark mode: soft scrim so text reads over the space background */
 .dark .VPHero .container::before {
-  background: radial-gradient(ellipse at 40% 50%, rgba(0,0,0,0.72) 60%, transparent 100%);
+  background: radial-gradient(ellipse at 40% 50%, rgba(0,0,0,0.55) 55%, transparent 100%);
 }
 
 /* Light mode: subtle light scrim */
