@@ -154,120 +154,89 @@ function drawGalaxy(ctx, g) {
 // ── Black Hole ─────────────────────────────────────────────────────────────
 function mkBlackHole() {
   const margin = 170
-  const r = 52 + Math.random() * 38
+  const r = 55 + Math.random() * 35
   return {
     x: margin + Math.random() * (w - margin * 2),
     y: margin + Math.random() * (h - margin * 2),
     r,
-    haloPhase:    Math.random() * Math.PI * 2,
-    hotAngle:     Math.random() * Math.PI * 2,  // Doppler hotspot orbit angle
+    haloPhase: Math.random() * Math.PI * 2,
   }
-}
-
-// Draw the accretion disk rings (called twice: once clipped to back, once to front)
-function drawDisk(ctx, diskRx, diskRy, bh) {
-  // Rings from outer (cool, dim) to inner (hot, bright)
-  const rings = [
-    { f: 0.97, lw: 0.14, col: [138, 36,  5],  a: 0.28 },
-    { f: 0.86, lw: 0.12, col: [195, 65, 11],  a: 0.46 },
-    { f: 0.76, lw: 0.10, col: [248,112, 20],  a: 0.61 },
-    { f: 0.67, lw: 0.09, col: [255,152, 36],  a: 0.72 },
-    { f: 0.58, lw: 0.08, col: [255,190, 62],  a: 0.80 },
-    { f: 0.50, lw: 0.07, col: [255,222,106],  a: 0.86 },
-    { f: 0.43, lw: 0.06, col: [255,242,172],  a: 0.91 },
-    { f: 0.37, lw: 0.05, col: [255,252,222],  a: 0.95 },
-  ]
-  for (const rg of rings) {
-    ctx.beginPath()
-    ctx.ellipse(0, 0, diskRx * rg.f, diskRy * rg.f, 0, 0, Math.PI * 2)
-    const [r, g, b] = rg.col
-    ctx.strokeStyle = `rgba(${r},${g},${b},${rg.a})`
-    ctx.lineWidth   = diskRx * rg.lw
-    ctx.stroke()
-  }
-
-  // Relativistic Doppler hotspot — bright blob orbiting slowly
-  const hx = diskRx * 0.60 * Math.cos(bh.hotAngle)
-  const hy = diskRy * 0.60 * Math.sin(bh.hotAngle)
-  ctx.save()
-  ctx.scale(1, diskRy / diskRx)
-  const hot = ctx.createRadialGradient(hx, hx * (diskRy / diskRx), 0, hx, hx * (diskRy / diskRx), diskRx * 0.50)
-  hot.addColorStop(0,    'rgba(255,255,238,0.62)')
-  hot.addColorStop(0.28, 'rgba(255,230,155,0.36)')
-  hot.addColorStop(0.65, 'rgba(255,175, 55,0.14)')
-  hot.addColorStop(1,    'rgba(255,115, 18,0.00)')
-  ctx.beginPath()
-  ctx.arc(0, 0, diskRx, 0, Math.PI * 2)
-  ctx.fillStyle = hot
-  ctx.fill()
-  ctx.restore()
 }
 
 function drawBlackHole(ctx, bh) {
   const { x, y, r } = bh
-
-  // Advance animations
-  bh.hotAngle   += 0.0007   // very slow hotspot orbit
-  bh.haloPhase  += 0.009
-
-  const diskRx    = r * 2.65
-  const diskRy    = r * 0.40
-  const pulse     = 0.85 + 0.15 * Math.sin(bh.haloPhase)
+  bh.haloPhase += 0.008
+  const pulse    = 0.88 + 0.12 * Math.sin(bh.haloPhase)
+  const diskRx   = r * 3.80   // full half-width of disk
 
   ctx.save()
   ctx.translate(x, y)
 
-  // 1. Outer diffuse glow — pulsing orange halo
-  const outerGlow = ctx.createRadialGradient(0, 0, r * 0.5, 0, 0, r * 6.2)
-  outerGlow.addColorStop(0,    `rgba(255,145,30,${(0.20 * pulse).toFixed(3)})`)
-  outerGlow.addColorStop(0.30, `rgba(210, 88,14,${(0.08 * pulse).toFixed(3)})`)
-  outerGlow.addColorStop(0.65, `rgba(140, 48, 5,${(0.03 * pulse).toFixed(3)})`)
-  outerGlow.addColorStop(1,    'rgba(0,0,0,0)')
-  ctx.beginPath()
-  ctx.arc(0, 0, r * 6.2, 0, Math.PI * 2)
-  ctx.fillStyle = outerGlow
-  ctx.fill()
+  // ── 1. Outer diffuse glow ──────────────────────────────────────────────
+  const og = ctx.createRadialGradient(0, 0, r * 0.7, 0, 0, r * 6.2)
+  og.addColorStop(0,    `rgba(255,72,0,${(0.24*pulse).toFixed(3)})`)
+  og.addColorStop(0.30, `rgba(180,24,0,${(0.09*pulse).toFixed(3)})`)
+  og.addColorStop(0.65, `rgba(90,8,0,${(0.03*pulse).toFixed(3)})`)
+  og.addColorStop(1,    'rgba(0,0,0,0)')
+  ctx.beginPath(); ctx.arc(0, 0, r*6.2, 0, Math.PI*2)
+  ctx.fillStyle = og; ctx.fill()
 
-  // 2. Far side of disk — top half (behind the event horizon)
-  ctx.save()
-  ctx.beginPath()
-  ctx.rect(-diskRx * 1.6, -diskRy * 7, diskRx * 3.2, diskRy * 7)
-  ctx.clip()
-  drawDisk(ctx, diskRx, diskRy, bh)
-  ctx.restore()
+  // ── 2. Lensing dome — top arching arcs (gravitationally bent far-side disk) ──
+  // Each ring of the disk at radius ρ produces a top lensed arc.
+  // Arc half-width hw ∝ ρ; arc height = sqrt(hw²-r²) × factor.
+  // Inner arcs: tight, near shadow. Outer arcs: wide, sweeping dome.
+  const N_TOP = 58
+  for (let i = 0; i < N_TOP; i++) {
+    const t  = i / (N_TOP - 1)          // 0 = innermost, 1 = outermost
+    const hw = r * (1.055 + t * 2.745)  // r×1.055 → r×3.80
+    const ah = Math.sqrt(Math.max(0, hw*hw - r*r)) * 0.42
 
-  // 3. Event horizon — perfectly black
+    // Deep red-orange: inner bright, outer dark
+    const br = 1.0 - t * 0.82
+    const cr = Math.round(82  + br * 173)  // 82→255
+    const cg = Math.round(2   + br * 83)   // 2→85
+    const ca = (0.07 + br * 0.60) * pulse
+
+    ctx.beginPath()
+    ctx.ellipse(0, 0, hw, ah, 0, Math.PI, 0, true)   // top half arc (y < 0 = above)
+    ctx.strokeStyle = `rgba(${cr},${cg},0,${ca.toFixed(3)})`
+    ctx.lineWidth   = 0.55 + br * 1.35
+    ctx.stroke()
+  }
+
+  // ── 3. Bottom near-side ring — compact bright arc below shadow ────────
+  // Primary image of the near side of the disk, appears as a rounded arc.
+  // Rendered as bottom-half ellipses with roughly circular aspect ratio.
+  const N_BOT = 38
+  for (let i = 0; i < N_BOT; i++) {
+    const t  = i / (N_BOT - 1)         // 0 = innermost, 1 = outermost
+    const hw = r * (1.055 + t * 0.90)  // r×1.055 → r×1.955  (compact arc)
+    const ah = hw * 0.46               // roughly circular arc appearance
+
+    const br = 1.0 - t * 0.75
+    const cr = Math.round(105 + br * 150)
+    const cg = Math.round(4   + br * 90)
+    const ca = (0.18 + br * 0.68) * pulse
+
+    ctx.beginPath()
+    ctx.ellipse(0, 0, hw, ah, 0, Math.PI, 0, false)  // bottom half arc (y > 0 = below)
+    ctx.strokeStyle = `rgba(${cr},${cg},0,${ca.toFixed(3)})`
+    ctx.lineWidth   = 0.55 + br * 1.45
+    ctx.stroke()
+  }
+
+  // ── 4. Event horizon — perfectly black circle ─────────────────────────
   ctx.beginPath()
-  ctx.arc(0, 0, r, 0, Math.PI * 2)
+  ctx.arc(0, 0, r, 0, Math.PI*2)
   ctx.fillStyle = '#000000'
   ctx.fill()
 
-  // 4. Near side of disk — bottom half (in front of event horizon)
-  ctx.save()
+  // ── 5. Photon ring — thin bright ring at edge of shadow ───────────────
   ctx.beginPath()
-  ctx.rect(-diskRx * 1.6, 0, diskRx * 3.2, diskRy * 7)
-  ctx.clip()
-  drawDisk(ctx, diskRx, diskRy, bh)
-  ctx.restore()
-
-  // 5. Photon ring — thin bright ring at innermost stable orbit
-  ctx.beginPath()
-  ctx.arc(0, 0, r * 1.09, 0, Math.PI * 2)
-  ctx.strokeStyle = `rgba(255,218,108,${(0.68 * pulse).toFixed(3)})`
-  ctx.lineWidth   = r * 0.055
+  ctx.arc(0, 0, r * 1.065, 0, Math.PI*2)
+  ctx.strokeStyle = `rgba(255,118,8,${(0.80*pulse).toFixed(3)})`
+  ctx.lineWidth   = r * 0.036
   ctx.stroke()
-
-  // 6. Einstein lensing arc — bent light from back of disk arching over the top
-  ctx.save()
-  ctx.beginPath()
-  ctx.rect(-diskRx * 1.6, -diskRy * 7, diskRx * 3.2, 0)  // top half only
-  ctx.clip()
-  ctx.beginPath()
-  ctx.ellipse(0, 0, diskRx * 0.80, diskRy * 1.05, 0, 0, Math.PI * 2)
-  ctx.strokeStyle = `rgba(255,192,65,${(0.30 * pulse).toFixed(3)})`
-  ctx.lineWidth   = r * 0.075
-  ctx.stroke()
-  ctx.restore()
 
   ctx.restore()
 }
