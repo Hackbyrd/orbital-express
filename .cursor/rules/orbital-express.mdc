@@ -1,0 +1,65 @@
+---
+description: Orbital Express framework conventions — applies to all files in this repo
+alwaysApply: true
+---
+
+# Orbital Express — AI Agent Rules
+
+This project uses **Orbital Express**, an opinionated Express.js + Sequelize framework.
+Read `AGENTS.md` in the repo root for the full rulebook. The summary below covers the non-negotiables.
+
+## The MCP server (preferred)
+
+The `orbital-express-mcp` MCP server is configured in `.cursor/mcp.json`. Use it to:
+- `get_framework_overview` — full architecture and golden rules
+- `get_conventions` — complete naming, HTTP, DB, auth, test rulebook
+- `list_skills` / `get_skill` — step-by-step playbooks for every task
+- `search_docs` — search across all docs, skills, and conventions
+
+Always call `get_framework_overview` at the start of a session.
+
+## Never hand-create feature files
+
+Always use the generator:
+```bash
+yarn gen Feature              # scaffold full feature
+yarn gen Feature -a V1Action  # add an action
+yarn gen Feature -t V1Task    # add a background task
+yarn gen Feature -m Mailer    # add a mailer
+yarn del Feature -a V1Action  # remove generated files (never rm)
+```
+
+After scaffolding, remove placeholder files with `yarn del`.
+
+## File structure — every feature lives in `app/<Feature>/`
+
+```
+app/Order/
+  languages/        # i18n keys
+  mailers/          # transactional emails
+  models/           # Sequelize model
+  routes/           # Express router
+  tests/
+    integration/    # one test file per action
+    tasks/          # one test file per task
+  V1CreateOrder.js  # action files at feature root
+  V1CreateOrderTask.js
+```
+
+## Golden rules
+
+- **HTTP**: POST and GET only. Use `req.args` (never `req.body`/`req.query`). Responses: `{ status, success: true, ...payload }` — no `data` nesting. Status `200` default, `201` on create, `202` on background-job handoff.
+- **Naming**: actions `V{version}{Action}[By{Role}][On{Device}]`; tasks append `Task`; feature folders singular PascalCase; constants `UPPER_CASE`; booleans `is/has/can/does` prefix; FK columns `<entity>Id`.
+- **No magic strings**: any reused string constant lives in `helpers/constants.js`.
+- **Errors**: HTTP actions return `errorResponse(req, ERROR_CODES.X)`; tasks `throw`. Never return a 500 manually.
+- **Models**: UUID v4 PKs; `paranoid: true` soft-deletes; always index FKs; named indexes `{Table}_{col}_{idx|unique}`.
+- **Tests**: every action and task has a test; every `ERROR_CODE` in the JSDoc has a test; test who *cannot* do something; run with `--runInBand`.
+- **i18n**: after editing any `languages/*.js` file, run `yarn lang`.
+- **Packages**: `yarn add <pkg> --exact` only. No `^` or `~`.
+- **JS file structure**: header comment → `'use strict'` → env → built-ins → third-party → services → helpers → models → queues → constants → `module.exports` → method definitions. Close every function with `// END <name>`.
+
+## Available skills (run via `get_skill` on the MCP server)
+
+`create-feature`, `add-action`, `add-query-action`, `add-task`, `add-migration`, `add-auth-user-type`, `add-error-code`, `add-constant`, `add-fixtures`, `add-mailer`, `add-cronjob`, `add-socket-event`, `add-locale`, `write-tests`, `review-conventions`, `sync-docs`, `sync-translations`, `release`, `setup-and-ops`
+
+After any non-trivial change, run `get_skill` for `review-conventions` and self-audit before declaring done.
