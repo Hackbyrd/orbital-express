@@ -1,10 +1,10 @@
-# AGENTS.md — Agent guide for Orbital Express
+# AGENTS.md — Agent guide for Orbital-Express
 
 Canonical, tool-agnostic instructions for any AI agent working in this repo (Claude Code reads it via `CLAUDE.md`; Cursor/Codex/Copilot read `AGENTS.md` directly). Keep this file concise — it points to the deep docs rather than duplicating them.
 
 ## What this is
 
-**Orbital Express** is an open-source, opinionated Express.js + Sequelize (PostgreSQL) framework for building really good backend APIs. **Feature-folder architecture** (Django + Rails hybrid): everything for a feature — model, routes, controller, actions, tasks, tests, i18n, mailers — lives in one folder under `app/`. A background-job system (Bull/Redis) and Socket.IO layer sit alongside.
+**Orbital-Express** is an opinionated Express.js + Sequelize (PostgreSQL) framework for building really good backend APIs. **Feature-folder architecture** (Django + Rails hybrid): everything for a feature — model, routes, controller, actions, tasks, tests, i18n, mailers — lives in one folder under `app/`. A background-job system (Bull/Redis) and Socket.IO layer sit alongside.
 
 ## Where the knowledge lives (read these for depth)
 
@@ -12,8 +12,8 @@ Canonical, tool-agnostic instructions for any AI agent working in this repo (Cla
 - **`docs/conventions.txt`** — the terse, authoritative rulebook (naming, file structure, DB, auth, sockets, etc.). When a rule is ambiguous, this wins.
 - **`database/schema.sql`** — documentation of every table (not executed). The column-order / naming template is at the top.
 - **`docs/auth-migration.md`** — the access+refresh auth design and status.
+- **`docs/google-oauth-setup.md`** — how to provision Google OAuth for "Sign in with Google".
 - **`docs/workflow.md`** — the feature-development lifecycle (Path A new feature, Path B modify existing). The high-level map; the `create-feature`/`modify-feature` skills are the step-by-step.
-- **`docs/core/request-lifecycle.md`** — the full HTTP request lifecycle: middleware stack order, `req.args` normalization, auth, controller dispatch, response shape, error flow.
 - **`.claude/skills/`** — step-by-step playbooks for common tasks (see "Skills" below). Prefer running these.
 
 > ⚠️ **Historical/outdated:** `docs/tests.txt` predates the current setup (it mentions mocha). Ignore it — `write-tests`, the README, and `conventions.txt` are authoritative.
@@ -23,11 +23,11 @@ Canonical, tool-agnostic instructions for any AI agent working in this repo (Cla
 1. **Never hand-create feature files. Use the generator:** `yarn gen Feature`, `yarn gen Feature -a V1Action`, `yarn gen Feature -t V1Task`, `yarn gen Feature -m Mailer`. Then fill in the generated file. **Immediately after scaffolding, remove the generator's default placeholder files** with `yarn del` — never `rm`. `yarn del` automatically removes the entry from `actions/index.js` (or `tasks/index.js`); `rm` does not, leaving a broken export pointing at a deleted file: `yarn del <Feature> -a V1Example`, `yarn del <Feature> -t V1ExampleTask`, and delete `tests/helper.test.js` via the appropriate flag.
 2. **Install exact versions only:** `yarn add <pkg> --exact` (and `--dev` for dev deps). Never `^`/`~`.
 3. **JS file structure** (every `.js` file): header comment → `'use strict'` → env → built-ins → third-party → services → helpers → models → **queues** (`queue.get('XQueue')` instances, right after models; the queue *service* is required up in services) → module-level consts → `module.exports` (before the methods) → method definitions. Imports ordered by **increasing length**, plain requires before destructured. Close every function with `// END <name>`. (README: "JavaScript File Structure".)
-4. **Naming:** actions `V{version}{Action}[By{Role}][On{Device}]`; tasks append `Task`; feature folders singular PascalCase; controllers plural, actions singular; constants `UPPER_CASE`; booleans start with `is/has/can/does`; FK columns `<entity>Id` → PascalCase plural table. (Deep reference: `docs/core/actions.md`.)
+4. **Naming:** actions `V{version}{Action}[By{Role}][On{Device}]`; tasks append `Task`; feature folders singular PascalCase; controllers plural, actions singular; constants `UPPER_CASE`; booleans start with `is/has/can/does`; FK columns `<entity>Id` → PascalCase plural table.
 4b. **No magic strings.** Any string literal used — or likely to be used — in more than one place (statuses, types, roles, locales, enum-like values) lives once in `helpers/constants.js` and is referenced, e.g. `LOCALE.EN` not `'en'`. Use the `add-constant` skill. (Migrations stay literal — frozen snapshots.)
 5. **HTTP:** POST and GET only. Use `req.args` (never `req.body`/`req.query`). Responses are **flat**: `{ status, success: true, ...payload }` — no `data` nesting. Status: `200` default, `201` on create, `202` on background-job handoff. Route URLs are **lowercase, no separators**, even multi-word (`V1LogoutAll` → `/v1/users/logoutall`, not `logout_all`/`-all`/camelCase).
 6. **Errors:** HTTP actions return `errorResponse(req, ERROR_CODES.X, ...)`; tasks & socket-invoked actions `throw`. Never return a 500 manually — let it propagate to `middleware/error.js`.
-7. **Models:** UUID v4 PKs; `paranoid: true` soft-deletes (use `scope(null)` to bypass); always index FKs; carry the **owner FK onto every descendant** + protect with a composite FK; named indexes `{Table}_{col}_{idx|unique}` in BOTH model and migration. (Deep reference: `docs/core/models.md`.)
+7. **Models:** UUID v4 PKs; `paranoid: true` soft-deletes (use `scope(null)` to bypass); always index FKs; carry the **owner FK onto every descendant** + protect with a composite FK; named indexes `{Table}_{col}_{idx|unique}` in BOTH model and migration.
 8. **i18n:** keys are `NAMESPACE[snake_case]`; edit feature `languages/*.js`, then run **`yarn lang`** (it compiles `locales/` and validates keys — required, and `yarn test` runs it first).
 9. **Tests:** every action and task has a test; every `ERROR_CODE` in the JSDoc has a test; test who **cannot** do something; fixtures are **baselines** you mutate in-test; run with **`--runInBand`** (the `yarn test` script already does). Postgres **and** Redis must be running. **Test file location mirrors source location** — never drop a test in `test/` root: feature action tests → `app/<Feature>/tests/integration/`, task tests → `app/<Feature>/tests/tasks/`, global helper tests → `test/helpers/<name>.test.js`, global service tests → `test/services/<name>.test.js`.
 10. **One user type = one table** (Admin, User, …) — never a single table with a role column. Auth is access token + revocable refresh token; see the `add-auth-user-type` skill.
