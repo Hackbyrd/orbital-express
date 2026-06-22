@@ -220,14 +220,14 @@ function mkBlackHole() {
   }
 }
 
-function drawBlackHole(ctx, bh) {
+function drawBlackHole(ctx, bh, mx = 0, my = 0) {
   const { x, y, r } = bh
   bh.haloPhase += 0.008
   const pulse    = 0.88 + 0.12 * Math.sin(bh.haloPhase)
   const diskRx   = r * 3.80   // full half-width of disk
 
   ctx.save()
-  ctx.translate(x, y)
+  ctx.translate(x + mx * 12, y + my * 12)
   ctx.rotate(bh.diskTilt)   // random orientation — applied before all arcs
 
   // ── 1. Outer diffuse glow ──────────────────────────────────────────────
@@ -323,12 +323,12 @@ function drawDark(ctx, frame) {
   currentMx += (targetMx - currentMx) * 0.06
   currentMy += (targetMy - currentMy) * 0.06
 
-  // Galaxies — pre-rendered shapes, rotated each frame
+  // Galaxies — pre-rendered shapes, rotated each frame + mouse parallax
   for (const g of galaxies) {
     if (!g.offscreen) continue
     g.rot += g.rotSpeed
     ctx.save()
-    ctx.translate(g.x, g.y)
+    ctx.translate(g.x + currentMx * 4, g.y + currentMy * 4)
     ctx.rotate(g.rot)
     ctx.drawImage(g.offscreen, -g.offR, -g.offR)
     ctx.restore()
@@ -355,8 +355,8 @@ function drawDark(ctx, frame) {
     }
   }
 
-  // Black hole — sits in the scene, occluding stars behind it
-  drawBlackHole(ctx, blackHole)
+  // Black hole — parallax between galaxies and stars
+  drawBlackHole(ctx, blackHole, currentMx, currentMy)
 
   // Asteroids
   for (const a of asteroids) {
