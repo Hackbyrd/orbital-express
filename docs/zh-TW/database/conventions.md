@@ -2,15 +2,15 @@
 
 ## UUID 主鍵
 
-永遠使用 UUID v4，在 ORM 層產生（`defaultValue: DataTypes.UUIDV4`）。
+永遠使用 UUID v7，在 ORM 層產生（`defaultValue: () => uuidv7()`）。
 
 ```javascript
 id: {
   type: DataTypes.UUID,
   allowNull: false,
-  defaultValue: DataTypes.UUIDV4,
+  defaultValue: () => uuidv7(),
   primaryKey: true,
-  validate: { isUUID: 4 }
+  validate: { isUUID: 7 }
 }
 ```
 

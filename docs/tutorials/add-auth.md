@@ -50,9 +50,9 @@ const attrs = {
   id: {
     type: DataTypes.UUID,
     allowNull: false,
-    defaultValue: DataTypes.UUIDV4,
+    defaultValue: () => uuidv7(),
     primaryKey: true,
-    validate: { isUUID: 4 }
+    validate: { isUUID: 7 }
   },
 
   // owner FK — carries the User's id onto every session row

@@ -455,7 +455,7 @@ Action 回傳一個純物件 `{ status, success, ...data }`。Controller 呼叫 
 Model 定義了 feature 資料表的 Sequelize schema。每個 `model.js` 都遵循相同的佈局，由上至下：
 
 1. **敏感與私有資料陣列** — 在 model 之前定義，從預設 scope 中排除。
-2. **`id` 欄位** — 永遠是 UUID v4，永遠在 ORM 層產生。
+2. **`id` 欄位** — 永遠是 UUID v7，永遠在 ORM 層產生。
 3. **外鍵佔位注釋** — FK 由關聯加入，而不是在欄位區塊中。
 4. **一般欄位** — 所有 feature 專屬欄位。
 5. **Model 選項** — `timestamps`、`paranoid`、`freezeTableName`、`tableName`、`defaultScope`、`hooks`、`indexes`。

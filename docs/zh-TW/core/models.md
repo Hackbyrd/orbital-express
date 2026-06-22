@@ -54,19 +54,19 @@ const privateData = sensitiveData.concat(['phone', 'birthdate']);
 
 ---
 
-### 2. `id` 欄位 — 永遠是 UUID v4
+### 2. `id` 欄位 — 永遠是 UUID v7
 
 ```javascript
 id: {
   type: DataTypes.UUID,
   allowNull: false,
-  defaultValue: DataTypes.UUIDV4,  // 在 ORM 層產生，在 INSERT 之前
+  defaultValue: () => uuidv7(),  // 在 ORM 層產生，在 INSERT 之前
   primaryKey: true,
-  validate: { isUUID: 4 }
+  validate: { isUUID: 7 }
 },
 ```
 
-永遠使用 UUID v4。在 ORM 層產生，使你在資料庫寫入之前就知道 ID — 在建構相關記錄或在 insert 確認前回傳工作 payload 時很有用。
+永遠使用 UUID v7。在 ORM 層產生，使你在資料庫寫入之前就知道 ID — 在建構相關記錄或在 insert 確認前回傳工作 payload 時很有用。
 
 ---
 
@@ -488,13 +488,13 @@ const privateData = sensitiveData.slice();
 module.exports = (sequelize, DataTypes) => {
   const User = sequelize.define('user', {
 
-    // 永遠是 UUID v4，在 ORM 層產生（不是由 DB trigger 產生）
+    // 永遠是 UUID v7，在 ORM 層產生（不是由 DB trigger 產生）
     id: {
       type: DataTypes.UUID,
       allowNull: false,
-      defaultValue: DataTypes.UUIDV4,
+      defaultValue: () => uuidv7(),
       primaryKey: true,
-      validate: { isUUID: 4 }
+      validate: { isUUID: 7 }
     },
 
     // All foreign keys are added in associations

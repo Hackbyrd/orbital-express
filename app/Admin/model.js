@@ -6,6 +6,9 @@
 
 'use strict';
 
+// third-party modules
+const { v7: uuidv7 } = require('uuid');
+
 // helpers
 const bcrypt = require('bcrypt');
 const constants = require('../../helpers/constants');
@@ -16,6 +19,14 @@ const sensitiveData = ['salt', 'password'];
 
 module.exports = (sequelize, DataTypes) => {
   const Admin = sequelize.define('admin', {
+
+    id: {
+      type: DataTypes.UUID,
+      allowNull: false,
+      defaultValue: () => uuidv7(),
+      primaryKey: true,
+      validate: { isUUID: 7 },
+    },
 
     // All foreign keys are added in associations
 

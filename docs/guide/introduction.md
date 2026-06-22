@@ -150,15 +150,17 @@ This means you never need to think about whether the endpoint is POST or GET whe
 
 ### UUID Primary Keys and Soft Deletes
 
-Every table uses UUID v4 primary keys (not auto-increment integers). Every table uses Sequelize's `paranoid: true` for soft deletes — records are never physically removed unless explicitly bypassed with `scope(null)`.
+Every table uses UUID v7 primary keys (time-ordered, better index performance than v4). Every table uses Sequelize's `paranoid: true` for soft deletes — records are never physically removed unless explicitly bypassed with `scope(null)`.
 
 ```javascript
 // model.js
+const { v7: uuidv7 } = require('uuid');
+
 module.exports = (sequelize, DataTypes) => {
   const Order = sequelize.define('order', {
     id: {
       type: DataTypes.UUID,
-      defaultValue: DataTypes.UUIDV4,
+      defaultValue: () => uuidv7(),
       primaryKey: true
     },
     // ...columns

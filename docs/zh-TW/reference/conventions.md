@@ -369,7 +369,7 @@ Semver 參考：`MAJOR.MINOR.PATCH`（例如 `v2.3.2`）。
 
 | 規則 | 詳情 |
 |---|---|
-| 主鍵 | UUID v4 |
+| 主鍵 | UUID v7 |
 | 軟刪除 | `paranoid: true`；使用 `scope(null)` 略過 |
 | FK 索引 | 永遠為外鍵欄位建立索引 |
 | 具名索引 | `{Table}_{col}_{idx\|unique}`，model 和 migration 中都要有 |

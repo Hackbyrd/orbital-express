@@ -243,9 +243,9 @@ module.exports = (sequelize, DataTypes) => {
     id: {
       type:         DataTypes.UUID,
       allowNull:    false,
-      defaultValue: DataTypes.UUIDV4,
+      defaultValue: () => uuidv7(),
       primaryKey:   true,
-      validate:     { isUUID: 4 }
+      validate:     { isUUID: 7 }
     },
 
     // 所有外鍵在下方的 associate() 中新增
@@ -505,7 +505,7 @@ async function V1Query(req, res) {
     page:   joi.number().integer().min(1).default(1),
     limit:  joi.number().integer().min(1).max(MAX_PAGE_SIZE).default(DEFAULT_PAGE_SIZE),
     status: joi.string().valid(...POST_STATUSES).optional(),
-    userId: joi.string().uuid({ version: 'uuidv4' }).optional()
+    userId: joi.string().uuid({ version: 'uuidv7' }).optional()
   });
 
   const { error, value } = schema.validate(req.args);
@@ -599,7 +599,7 @@ module.exports = {
  */
 async function V1Update(req, res) {
   const schema = joi.object({
-    postId:      joi.string().uuid({ version: 'uuidv4' }).required(),
+    postId:      joi.string().uuid({ version: 'uuidv7' }).required(),
     title:       joi.string().trim().min(1).max(500).optional(),
     body:        joi.string().trim().allow('').optional(),
     status:      joi.string().valid(...POST_STATUSES).optional(),

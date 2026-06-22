@@ -150,7 +150,7 @@ async function V1Update(req, res) {
 
 ### UUID 主鍵與 Soft Delete
 
-每張表使用 UUID v4 主鍵（不使用自動遞增整數）。每張表使用 Sequelize 的 `paranoid: true` 進行 soft delete——記錄永遠不會被物理刪除，除非明確使用 `scope(null)` 繞過。
+每張表使用 UUID v7 主鍵（不使用自動遞增整數）。每張表使用 Sequelize 的 `paranoid: true` 進行 soft delete——記錄永遠不會被物理刪除，除非明確使用 `scope(null)` 繞過。
 
 ```javascript
 // model.js
@@ -158,7 +158,7 @@ module.exports = (sequelize, DataTypes) => {
   const Order = sequelize.define('order', {
     id: {
       type: DataTypes.UUID,
-      defaultValue: DataTypes.UUIDV4,
+      defaultValue: () => uuidv7(),
       primaryKey: true
     },
     // ...欄位

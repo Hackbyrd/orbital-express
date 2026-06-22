@@ -23,7 +23,7 @@ Generate the file, then fill it. Two documented ways (both produce a timestamped
 ## Rules
 - **Wrap `up` and `down` in `queryInterface.sequelize.transaction(async t => { ... }, { transaction: t })`** on every call.
 - **Never** delete columns/tables or rename in place (rollback safety). To rename: add new column, copy data, drop the old one much later. We don't auto-destroy data.
-- IDs: `DataTypes.UUID` default `DataTypes.UUIDV4` (match the model). FK column types must match the referenced PK type.
+- IDs: `DataTypes.UUID` with no DB-level default (the model's `defaultValue: () => uuidv7()` always provides the ID before insert). FK column types must match the referenced PK type.
 - **Named indexes**, `{Table}_{col}_{idx|unique}`, matching the model's `indexes` array exactly. `addIndex(table, [cols], { name, unique, transaction: t })`.
 - Foreign keys: `references: { model, key }`, explicit `onDelete`/`onUpdate`. For self-referencing or composite FKs use `addConstraint(table, { fields, type:'foreign key', name, references:{ table, field }, onDelete, onUpdate, transaction: t })`.
 - **Flattened ownership:** when data is nested, carry **every ancestor's id** onto the descendant — not just the immediate parent, but the parent's parent, on up to the top-level owner (e.g. `userId`). It looks redundant on purpose: it flattens the hierarchy so you can query "all X for *any* ancestor" (and scope security to `userId`) as a single indexed `where` with **no joins**. The duplication can't drift because a **composite FK** enforces it (parent needs a `UNIQUE (id, userId)`; child FKs `(parentId, userId)` → parent `(id, userId)`, so Postgres rejects any mismatch). See README "Carry the Owner Foreign Key Down to Every Descendant".

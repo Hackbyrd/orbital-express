@@ -324,7 +324,7 @@ const schema = joi.object({
     .error(new Error(req.__('ADMIN[invalid_password_format]'))),
 
   // UUID
-  orderId: joi.string().guid({ version: 'uuidv4' }).required()
+  orderId: joi.string().guid({ version: 'uuidv7' }).required()
 });
 
 const { error, value } = schema.validate(req.args);
@@ -504,7 +504,7 @@ async function V1Create(req, res) {
 ```javascript
 async function V1Read(req, res) {
   const schema = joi.object({
-    orderId: joi.string().guid({ version: 'uuidv4' }).required()
+    orderId: joi.string().guid({ version: 'uuidv7' }).required()
   });
 
   const { error, value } = schema.validate(req.args);
@@ -539,7 +539,7 @@ async function V1Read(req, res) {
 ```javascript
 async function V1Update(req, res) {
   const schema = joi.object({
-    orderId: joi.string().guid({ version: 'uuidv4' }).required(),
+    orderId: joi.string().guid({ version: 'uuidv7' }).required(),
     notes: joi.string().trim().optional(),
     status: joi.string().valid('pending', 'complete').optional()
   });
@@ -585,7 +585,7 @@ async function V1Update(req, res) {
 ```javascript
 async function V1Delete(req, res) {
   const schema = joi.object({
-    orderId: joi.string().guid({ version: 'uuidv4' }).required()
+    orderId: joi.string().guid({ version: 'uuidv7' }).required()
   });
 
   const { error, value } = schema.validate(req.args);
@@ -647,7 +647,7 @@ async function V1CreateByAdmin(req, res) {
 // PRIVATE: 共用的主要邏輯 — 不在 module.exports 中，不被 controller 呼叫
 async function V1Create(req, { isAdmin }) {
   const schema = joi.object({
-    userId: joi.string().guid({ version: 'uuidv4' }).required(),
+    userId: joi.string().guid({ version: 'uuidv7' }).required(),
     item: joi.string().trim().min(1).required(),
     amount: joi.number().integer().min(0).required(),
     status: isAdmin

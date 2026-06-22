@@ -52,7 +52,7 @@ app/Order/
 - **Naming**: actions `V{version}{Action}[By{Role}][On{Device}]`; tasks append `Task`; feature folders singular PascalCase; constants `UPPER_CASE`; booleans `is/has/can/does` prefix; FK columns `<entity>Id`.
 - **No magic strings**: any reused string constant lives in `helpers/constants.js`.
 - **Errors**: HTTP actions return `errorResponse(req, ERROR_CODES.X)`; tasks `throw`. Never return a 500 manually.
-- **Models**: UUID v4 PKs; `paranoid: true` soft-deletes; always index FKs; named indexes `{Table}_{col}_{idx|unique}`.
+- **Models**: UUID v7 PKs; `paranoid: true` soft-deletes; always index FKs; named indexes `{Table}_{col}_{idx|unique}`.
 - **Tests**: every action and task has a test; every `ERROR_CODE` in the JSDoc has a test; test who *cannot* do something; run with `--runInBand`.
 - **i18n**: after editing any `languages/*.js` file, run `yarn lang`.
 - **Packages**: `yarn add <pkg> --exact` only. No `^` or `~`.

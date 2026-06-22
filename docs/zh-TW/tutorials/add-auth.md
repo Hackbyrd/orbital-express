@@ -50,9 +50,9 @@ const attrs = {
   id: {
     type: DataTypes.UUID,
     allowNull: false,
-    defaultValue: DataTypes.UUIDV4,
+    defaultValue: () => uuidv7(),
     primaryKey: true,
-    validate: { isUUID: 4 }
+    validate: { isUUID: 7 }
   },
 
   // 擁有者 FK — 將 User 的 id 帶到每個 session 資料列

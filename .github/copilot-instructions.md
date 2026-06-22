@@ -43,7 +43,7 @@ model, routes, actions, tasks, tests, languages, mailers.
 
 ## Models
 
-- UUID v4 primary keys
+- UUID v7 primary keys
 - `paranoid: true` on every model (soft-delete via `deletedAt`)
 - Always index foreign keys
 - Named indexes: `{Table}_{col}_{idx|unique}`

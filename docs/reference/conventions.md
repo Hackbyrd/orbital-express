@@ -369,7 +369,7 @@ Semver reference: `MAJOR.MINOR.PATCH` (e.g. `v2.3.2`).
 
 | Rule | Detail |
 |---|---|
-| Primary keys | UUID v4 |
+| Primary keys | UUID v7 |
 | Soft deletes | `paranoid: true`; use `scope(null)` to bypass |
 | FK indexes | Always index foreign key columns |
 | Named indexes | `{Table}_{col}_{idx\|unique}` in both model and migration |

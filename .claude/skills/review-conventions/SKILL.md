@@ -26,7 +26,7 @@ Run this against the files you created/changed BEFORE saying a task is done, or 
 - [ ] Generated via `yarn gen` (not hand-created); `actions/index.js` updated by the generator.
 
 ## Models / migrations
-- [ ] UUID v4 PK; `paranoid: true`; `tableName` PascalCase plural; `sensitiveData`/`privateData` + `getSensitiveData()`/`getPrivateData()` where there are sensitive fields.
+- [ ] UUID v7 PK (`defaultValue: () => uuidv7()`, `validate: { isUUID: 7 }`); `paranoid: true`; `tableName` PascalCase plural; `sensitiveData`/`privateData` + `getSensitiveData()`/`getPrivateData()` where there are sensitive fields.
 - [ ] FKs in `associate` with explicit `onDelete`/`onUpdate` + plain-English comment; every FK indexed.
 - [ ] Booleans `is/has/can/does`; FK cols `<entity>Id`; vendor IDs prefixed; column order (id→FK→vendor→custom→timestamps).
 - [ ] ENUM type name ALL CAPS no underscores; ENUM values ALL_CAPS_WITH_UNDERSCORES, synced with the constants array.

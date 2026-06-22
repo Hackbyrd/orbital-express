@@ -54,19 +54,21 @@ const privateData = sensitiveData.concat(['phone', 'birthdate']);
 
 ---
 
-### 2. The `id` column — always UUID v4
+### 2. The `id` column — always UUID v7
 
 ```javascript
+const { v7: uuidv7 } = require('uuid');
+
 id: {
   type: DataTypes.UUID,
   allowNull: false,
-  defaultValue: DataTypes.UUIDV4,  // generated at the ORM level, before the INSERT
+  defaultValue: () => uuidv7(),  // generated at the ORM level, before the INSERT
   primaryKey: true,
-  validate: { isUUID: 4 }
+  validate: { isUUID: 7 }
 },
 ```
 
-UUID v4, always. Generated at the ORM level so you know the ID before the database write — useful when constructing related records or returning a job payload before the insert confirms.
+UUID v7, always. Time-ordered for better index performance than random UUID v4. Generated at the ORM level so you know the ID before the database write — useful when constructing related records or returning a job payload before the insert confirms.
 
 ---
 
@@ -488,13 +490,13 @@ const privateData = sensitiveData.slice();
 module.exports = (sequelize, DataTypes) => {
   const User = sequelize.define('user', {
 
-    // Always UUID v4, generated at the ORM level (not by the DB trigger)
+    // Always UUID v7, generated at the ORM level (not by the DB trigger)
     id: {
       type: DataTypes.UUID,
       allowNull: false,
-      defaultValue: DataTypes.UUIDV4,
+      defaultValue: () => uuidv7(),
       primaryKey: true,
-      validate: { isUUID: 4 }
+      validate: { isUUID: 7 }
     },
 
     // All foreign keys are added in associations

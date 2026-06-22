@@ -455,7 +455,7 @@ The action returns a plain object `{ status, success, ...data }`. The controller
 The model defines the Sequelize schema for the feature's table. Every `model.js` follows the same layout, top to bottom:
 
 1. **Sensitive and private data arrays** — defined before the model, excluded from default scopes.
-2. **The `id` column** — always UUID v4, always generated at the ORM level.
+2. **The `id` column** — always UUID v7, always generated at the ORM level.
 3. **Foreign key placeholder comment** — FKs are added by associations, not in the field block.
 4. **Regular columns** — all feature-specific fields.
 5. **Model options** — `timestamps`, `paranoid`, `freezeTableName`, `tableName`, `defaultScope`, `hooks`, `indexes`.

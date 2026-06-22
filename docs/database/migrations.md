@@ -150,9 +150,10 @@ module.exports = {
     await queryInterface.createTable('Products', {
 
       // ── Primary key ──────────────────────────────────────────────────────────
+      // No DB-level default — the model's defaultValue: () => uuidv7() always
+      // provides the ID before insert. UUID v7 is time-ordered (better index perf).
       id: {
         type: Sequelize.UUID,
-        defaultValue: Sequelize.UUIDV4,
         primaryKey: true,
         allowNull: false,
       },

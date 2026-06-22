@@ -110,7 +110,7 @@ module.exports = {
  */
 async function V1Publish(req, res) {
   const schema = joi.object({
-    postId: joi.string().uuid({ version: 'uuidv4' }).required()
+    postId: joi.string().uuid({ version: 'uuidv7' }).required()
   });
 
   // validate
@@ -322,7 +322,7 @@ module.exports = {
  */
 async function V1PublishTask(job) {
   const schema = joi.object({
-    postId: joi.string().uuid({ version: 'uuidv4' }).required()
+    postId: joi.string().uuid({ version: 'uuidv7' }).required()
   });
 
   const { error, value } = schema.validate(job.data);

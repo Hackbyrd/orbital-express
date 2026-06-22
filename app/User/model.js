@@ -13,6 +13,7 @@
 'use strict';
 
 // require custom node modules
+const { v7: uuidv7 } = require('uuid');
 const bcrypt = require('bcrypt');
 const constants = require('../../helpers/constants');
 
@@ -26,10 +27,10 @@ module.exports = (sequelize, DataTypes) => {
     id: {
       type: DataTypes.UUID,
       allowNull: false,
-      defaultValue: DataTypes.UUIDV4,
+      defaultValue: () => uuidv7(),
       primaryKey: true,
       validate: {
-        isUUID: 4
+        isUUID: 7
       }
     },
 

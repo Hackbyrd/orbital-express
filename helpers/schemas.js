@@ -104,12 +104,12 @@ function emailSchema() {
 }
 
 /**
- * UUID v4 schema.
+ * UUID v7 schema.
  *
- * Example: '550e8400-e29b-41d4-a716-446655440000'
+ * Example: '019eed95-083e-7065-83c8-7ac1bc009fae'
  */
 function uuidSchema() {
-  return joi.string().uuid({ version: 'uuidv4' });
+  return joi.string().uuid({ version: 'uuidv7' });
 }
 
 /**

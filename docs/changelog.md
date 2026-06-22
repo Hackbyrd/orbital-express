@@ -34,7 +34,7 @@ Third-generation rewrite of Orbital Express. The framework has been significantl
 - **Route URL convention** — all lowercase, no separators (`V1LogoutAll` → `/v1/users/logoutall`)
 - **Controller pattern** — role check in controller; action returns plain `{ status, success, ...payload }`
 - **Error handling** — HTTP actions return `errorResponse`; tasks/sockets `throw`
-- **Model conventions** — UUID v4 PKs; `paranoid: true` default; named indexes on every FK; owner FK carried to all descendants
+- **Model conventions** — UUID v7 PKs; `paranoid: true` default; named indexes on every FK; owner FK carried to all descendants
 - **Constants pattern** — dual export: `ADMIN_ROLE` (object) + `ADMIN_ROLES` (array)
 - **Test file location** — mirrors source location exactly
 

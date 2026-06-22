@@ -134,7 +134,7 @@ module.exports = {
       // ── 主鍵 ──────────────────────────────────────────────────────────────
       id: {
         type: Sequelize.UUID,
-        defaultValue: Sequelize.UUIDV4,
+        // No DB-level default — model's defaultValue: () => uuidv7() provides the ID
         primaryKey: true,
         allowNull: false,
       },

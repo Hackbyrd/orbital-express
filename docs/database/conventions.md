@@ -2,19 +2,21 @@
 
 ## UUID Primary Keys
 
-Always UUID v4, generated at the ORM level (`defaultValue: DataTypes.UUIDV4`).
+Always UUID v7, generated at the ORM level using the `uuid` package.
 
 ```javascript
+const { v7: uuidv7 } = require('uuid');
+
 id: {
   type: DataTypes.UUID,
   allowNull: false,
-  defaultValue: DataTypes.UUIDV4,
+  defaultValue: () => uuidv7(),
   primaryKey: true,
-  validate: { isUUID: 4 }
+  validate: { isUUID: 7 }
 }
 ```
 
-Why not auto-increment integers: UUIDs are unpredictable and safe to expose in URLs. ORM-level generation means you know the ID before the insert — useful when constructing related records or returning a job payload before the database write confirms.
+UUID v7 is time-ordered, which means sequential inserts don't fragment the B-tree index the way random UUID v4 does — better insert performance at scale. ORM-level generation means you know the ID before the insert — useful when constructing related records or returning a job payload before the database write confirms. The `uuid` package is a project dependency; no DB-level default needed in migrations.
 
 ---
 

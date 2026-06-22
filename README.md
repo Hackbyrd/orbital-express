@@ -1101,13 +1101,13 @@ const privateData = sensitiveData.concat(['phone', 'birthdate', 'lastOnlineAt'])
 id: {
   type: DataTypes.UUID,
   allowNull: false,
-  defaultValue: DataTypes.UUIDV4,
+  defaultValue: () => uuidv7(),
   primaryKey: true,
-  validate: { isUUID: 4 }
+  validate: { isUUID: 7 }
 }
 ```
 
-Always UUID v4, always generated at the ORM level (`DataTypes.UUIDV4`). The advantage of ORM-level generation is that you know the ID before the insert — useful when constructing related records or returning a job payload before the database write confirms.
+Always UUID v7, always generated at the ORM level. UUID v7 is time-ordered — better B-tree index performance than random v4. The advantage of ORM-level generation is that you know the ID before the insert — useful when constructing related records or returning a job payload before the database write confirms.
 
 **3. Foreign key placeholder comment**
 
