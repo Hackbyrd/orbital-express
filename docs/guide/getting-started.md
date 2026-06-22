@@ -1,8 +1,8 @@
 # Getting Started
 
-Orbital-Express is an opinionated Express.js + Sequelize (PostgreSQL) framework for building really good backend APIs fast. It combines Django's **feature-based folder structure** with Rails' Model-View-Controller concept, and layers in a background-job system (Bull/Redis) and real-time Socket.IO alongside the web server.
+Orbital Express is an opinionated Express.js + Sequelize (PostgreSQL) framework for building really good backend APIs fast. It combines Django's **feature-based folder structure** with Rails' Model-View-Controller concept, and layers in a background-job system (Bull/Redis) and real-time Socket.IO alongside the web server.
 
-This guide gets you from zero to a running local environment. If you have not read [What is Orbital-Express?](../index.md) yet, do that first — it explains the mental model before you touch any code.
+This guide gets you from zero to a running local environment. If you have not read [What is Orbital Express?](../index.md) yet, do that first — it explains the mental model before you touch any code.
 
 ---
 
@@ -18,17 +18,47 @@ Before you install anything, make sure your machine has:
 | **Yarn** | 1.x (classic) | `npm install -g yarn` |
 
 ::: tip Knowledge assumed
-Orbital-Express is not a "hello world" starter. This guide assumes you understand JavaScript (ES6+), Node.js, and the basic request/response lifecycle of an Express app. If any of those feel shaky, read up on them before continuing.
+Orbital Express is not a "hello world" starter. This guide assumes you understand JavaScript (ES6+), Node.js, and the basic request/response lifecycle of an Express app. If any of those feel shaky, read up on them before continuing.
 :::
 
 ---
 
 ## Installation
 
-### 1. Clone the repo and install dependencies
+There are two ways to start a new project. **Option A is recommended.**
+
+### Option A — `create-orbital-app` (Recommended)
+
+The fastest way to start. The CLI scaffolds a complete, configured project in seconds — picks your database name, auth providers, email provider, and optional integrations, then wires them all up for you.
 
 ```bash
-git clone <your-orbital-express-repo> my-api
+npx create-orbital-app my-api
+```
+
+That's it. Answer the prompts, then:
+
+```bash
+cd my-api
+cp config/.env.template config/.env.development
+# fill in your environment variables
+createdb my_api_dev
+createdb my_api_test
+yarn migrate
+yarn s
+```
+
+::: tip Source
+`create-orbital-app` is a separate open-source package — view the source at [github.com/Hackbyrd/create-orbital-app](https://github.com/Hackbyrd/create-orbital-app).
+:::
+
+---
+
+### Option B — Clone the repo manually
+
+If you want to start from the raw framework repo and configure everything yourself:
+
+```bash
+git clone https://github.com/Hackbyrd/orbital-express.git my-api
 cd my-api
 yarn install
 ```

@@ -58,6 +58,28 @@ Full steps are in [docs/redis.txt](docs/redis.txt). Redis must be running for th
 
 ## Getting Started
 
+### Option A — `create-orbital-app` (Recommended)
+
+The fastest way to start a new project. The CLI scaffolds a complete, configured project in seconds:
+
+```bash
+npx create-orbital-app my-api
+```
+
+Answer the prompts (database name, auth providers, integrations), then follow the printed next steps. Source: [github.com/Hackbyrd/create-orbital-app](https://github.com/Hackbyrd/create-orbital-app)
+
+### Option B — Clone the repo manually
+
+```bash
+git clone https://github.com/Hackbyrd/orbital-express.git my-api
+cd my-api
+yarn install
+```
+
+Then follow the setup steps below.
+
+---
+
 This opinionated framework was built and modeled after two of the most famous web frameworks in the world, Python/Django and Ruby on Rails. The combined Django's feature-based development with Ruby on Rails Model-View-Controller concept. We believe together, they make a really solid structure. **This guide assumes you have some experience in building API/web applications and understand the basic flow of an API. Ideally, you should have some experience with other web frameworks.**
 
 
