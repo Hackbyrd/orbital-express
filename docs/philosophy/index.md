@@ -1,14 +1,14 @@
 # The Philosophy
 
-Every decision in Orbital Express comes back to one thing:
+The goal of a startup is simple: **build a great product fast, survive long enough to win, and run an operation that doesn't eat itself.**
 
-**How do we ship the most features, as fast as possible, with whatever team we have right now — and keep doing it as the team changes?**
+It is not to build the greatest technical platform. It is not to impress other engineers. It is not to implement the architecture the big tech companies use at a scale you won't reach for years, if ever. It is just to build a great business — and do it before you run out of time and money.
 
-Not "what's the most technically impressive architecture." Not "what would scale to a billion users." Not "what do the big tech companies use." Just: how fast can a real team build a real product, sustainably, over years.
+Orbital Express exists because every decision in software development is really a business decision in disguise. The framework you choose determines how fast you hire, how long onboarding takes, how much you pay engineers to argue instead of build, whether your codebase survives a team change, and whether you wake up at 2 AM to fight infrastructure fires. These are not technical outcomes. They are business outcomes.
 
-That question has a surprising answer. The bottleneck is almost never the technology. It's the people — how long it takes them to onboard, how much time they spend arguing about architectural decisions, how quickly they can read unfamiliar code, how fast a new hire can contribute something real.
+**Every opinion in this framework was chosen to help you build a great business — not a great technical platform.**
 
-Orbital Express is built around eliminating every one of those bottlenecks.
+The bottleneck is almost never the technology. It's the people — how long it takes them to onboard, how much time they spend arguing about architectural decisions, how fast a new hire can contribute something real, and how much of the team's energy goes to operations instead of product.
 
 ---
 
@@ -62,5 +62,5 @@ That is a different kind of framework. [Read the full argument →](/philosophy/
 ---
 
 ::: tip The bottom line
-The best engineering team isn't the one with the best technology. It's the one that ships the most, learns the fastest, and doesn't break down every time someone new joins. Build for that team.
+Your startup is on the clock. Every week you spend on the wrong architecture, on unnecessary complexity, on infrastructure you don't need, is a week you're not shipping product. The framework that helps you survive and win is the one that gets out of your way and lets you build. That is what this is for.
 :::

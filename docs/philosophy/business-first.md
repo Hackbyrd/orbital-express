@@ -1,5 +1,9 @@
 # Built for Business, Not for Engineers
 
+The goal of a startup is to build a great product fast, survive, and build a great business. Not to build a great technical platform.
+
+That distinction sounds obvious. In practice, almost every engineering decision in a startup gets made the wrong way — optimized for technical correctness instead of business survival. The framework you choose, the language you use, the architecture you adopt, the infrastructure you build — these are all treated as technical decisions. They are not. They are business decisions with technical consequences.
+
 Every popular framework you've heard of was built by engineers, for engineers. They solve engineering problems: how do we structure code, how do we handle types, how do we scale to millions of requests, how do we deploy to Kubernetes. These are real problems — but they are not your problems.
 
 Your problems are different. You need to ship a feature before a competitor does. You need a new hire contributing real work within a week, not a month. You need to avoid the $10,000-a-month infrastructure decision that feels like the right call at the time. You need your engineering team to still be moving fast two years from now, with a different set of people than you have today.
@@ -106,10 +110,12 @@ Every opinion in this framework has a price tag. We chose the opinions with the 
 
 ## The bottom line
 
+Your startup is on the clock. You have a runway. You have a competitor who is shipping right now. You have engineers whose time costs real money every day.
+
+The right framework is not the most impressive one. It is not the one with the best benchmarks, the largest ecosystem, or the architecture that senior engineers will nod at in a code review. The right framework is the one that helps you build a great product fast, run a lean operation, and survive long enough to win.
+
 If you are an engineer who loves building complex systems for their own sake, Orbital Express will feel constraining. That is intentional.
 
-If you are building a product, trying to compete, trying to hire and keep engineers, trying to turn engineering investment into business outcomes — this framework was built for you.
-
-The best technology is the technology that ships the most product. The best architecture is the one any engineer can understand. The best framework is the one that makes every decision your team would have argued about, correctly, before you even started.
+If you are building a business — this framework was built for you.
 
 **Stop paying for engineering debates. Start shipping.**
