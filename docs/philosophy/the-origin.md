@@ -1,7 +1,7 @@
 # The Story Behind Orbital Express
 
 <div style="display:flex;align-items:center;gap:24px;margin:32px 0 40px;">
-  <img src="/orbital-express/jonathan.jpg" alt="Jonathan Chen" style="width:120px;height:120px;border-radius:50%;object-fit:cover;object-position:top;border:3px solid #42d392;flex-shrink:0;" />
+  <img src="/jonathan.jpg" alt="Jonathan Chen" style="width:120px;height:120px;border-radius:50%;object-fit:cover;object-position:top;border:3px solid #42d392;flex-shrink:0;" />
   <div>
     <strong style="font-size:1.15rem;">Jonathan Chen</strong><br/>
     <span style="color:var(--vp-c-text-2);font-size:0.95rem;">Creator of Orbital Express · Co-founder &amp; CTO at Nitra · Former CTO at FiscalNote<br/>
