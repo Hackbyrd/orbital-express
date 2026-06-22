@@ -294,9 +294,30 @@ await UserQueue.add('V1SomeTask', {
 
 **What it does:**
 
-1. Logs the error with `requestId` to the console (or error monitoring service in production).
-2. Determines the user type from `req.user` / `req.admin` for log context.
+1. Emits a structured JSON log line to stdout — parseable by Heroku Papertrail, Datadog Logs, and most log aggregators.
+2. Sends the error to Sentry (if configured) with `requestId` and user context attached.
 3. Returns a `500` JSON response. In production, the stack trace is omitted; in dev/test, it is included.
+
+### Structured log line
+
+Every 500 writes one JSON line to `stderr`:
+
+```json
+{
+  "level": "error",
+  "requestId": "019eed95-083e-7065-83c8-7ac1bc009fae",
+  "method": "POST",
+  "url": "/v1/users/create",
+  "userType": "loggedOut",
+  "userId": null,
+  "errorName": "SequelizeUniqueConstraintError",
+  "errorMessage": "email must be unique"
+}
+```
+
+The `requestId` ties this log line to the `X-Request-ID` response header, so you can grep logs by the ID a client reports in a bug.
+
+### HTTP responses
 
 ```javascript
 // production response
@@ -308,7 +329,7 @@ await UserQueue.add('V1SomeTask', {
   requestId: 'abc-123'
 }
 
-// dev / test response — includes stack, route, user, and args for debugging
+// dev / test response — includes stack and request context for debugging
 {
   status: 500,
   success: false,
@@ -317,15 +338,24 @@ await UserQueue.add('V1SomeTask', {
   message: 'Something went wrong',
   requestId: 'abc-123',
   reqRoute: '/v1/admins/read',
-  reqUserType: 'Admin',
-  reqUser: { id: 1, email: 'admin@example.com' },
+  reqUserType: 'admin',
+  reqUserId: 'uuid-here',
   reqArgs: { id: 5 }
 }
 ```
 
-**The `requestId`** is attached to every request by the `middleware/requestId.js` middleware. Include it when reporting a bug — it links the client-visible error back to the server log entry.
+### Sentry integration
 
-**Adding new user types:** When you add a new authenticated user type, add an `else if (req.<type>)` branch to `middleware/error.js` so the error log correctly identifies who made the request.
+`services/sentry.js` is a stub (no-op) by default. To enable Sentry error tracking:
+
+1. Select **Sentry** during `npx create-orbital-app` setup, **or** manually:
+   - `yarn add @sentry/node --exact`
+   - Replace `services/sentry.js` with the real implementation (see the Sentry integration in `create-orbital-app`)
+2. Set `SENTRY_DSN` in your environment
+
+When Sentry is configured, every unhandled error is sent to your Sentry project with the `requestId` as a searchable tag and the authenticated user attached. No other code changes are needed — `middleware/error.js` calls `sentry.captureException(err, req)` automatically.
+
+**Adding new user types:** When you add a new authenticated user type, add an `else if (req.<type>)` branch to `middleware/error.js` so both the log line and Sentry event correctly identify who made the request.
 
 ---
 

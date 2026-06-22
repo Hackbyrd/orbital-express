@@ -294,9 +294,30 @@ await UserQueue.add('V1SomeTask', {
 
 **它的功能：**
 
-1. 將帶有 `requestId` 的錯誤記錄到 console（或正式環境中的錯誤監控服務）。
-2. 從 `req.user` / `req.admin` 確定 user 類型以用於日誌上下文。
+1. 向 stdout 輸出一行結構化 JSON 日誌——可被 Heroku Papertrail、Datadog Logs 和大多數日誌聚合器解析。
+2. 將錯誤傳送至 Sentry（若已設定），並附上 `requestId` 和用戶上下文。
 3. 回傳 `500` JSON 回應。在正式環境中省略 stack trace；在開發/測試中包含。
+
+### 結構化日誌格式
+
+每個 500 錯誤會向 `stderr` 寫入一行 JSON：
+
+```json
+{
+  "level": "error",
+  "requestId": "019eed95-083e-7065-83c8-7ac1bc009fae",
+  "method": "POST",
+  "url": "/v1/users/create",
+  "userType": "loggedOut",
+  "userId": null,
+  "errorName": "SequelizeUniqueConstraintError",
+  "errorMessage": "email must be unique"
+}
+```
+
+`requestId` 將此日誌行與回應 header `X-Request-ID` 連結，因此可以用客戶端回報的 ID 搜尋日誌。
+
+### HTTP 回應
 
 ```javascript
 // 正式環境回應
@@ -308,7 +329,7 @@ await UserQueue.add('V1SomeTask', {
   requestId: 'abc-123'
 }
 
-// 開發 / 測試回應 — 包含 stack、route、user 和 args 以便除錯
+// 開發 / 測試回應 — 包含 stack 和請求上下文以便除錯
 {
   status: 500,
   success: false,
@@ -317,15 +338,24 @@ await UserQueue.add('V1SomeTask', {
   message: 'Something went wrong',
   requestId: 'abc-123',
   reqRoute: '/v1/admins/read',
-  reqUserType: 'Admin',
-  reqUser: { id: 1, email: 'admin@example.com' },
+  reqUserType: 'admin',
+  reqUserId: 'uuid-here',
   reqArgs: { id: 5 }
 }
 ```
 
-**`requestId`** 由 `middleware/requestId.js` middleware 附加到每個請求。回報 bug 時包含它 — 它將客戶端可見的錯誤連結回伺服器日誌條目。
+### Sentry 整合
 
-**新增 user 類型：** 當你新增一個新的已認證 user 類型時，在 `middleware/error.js` 中加入一個 `else if (req.<type>)` 分支，使錯誤日誌能正確識別是誰發出請求。
+`services/sentry.js` 預設為 stub（無操作）。啟用 Sentry 錯誤追蹤：
+
+1. 在 `npx create-orbital-app` 設定時選擇 **Sentry**，**或**手動：
+   - `yarn add @sentry/node --exact`
+   - 以真實實作取代 `services/sentry.js`
+2. 在環境中設定 `SENTRY_DSN`
+
+設定 Sentry 後，每個未處理的錯誤都會傳送至你的 Sentry 專案，並附上可搜尋的 `requestId` tag 和已認證的用戶資訊。不需要其他程式碼變更。
+
+**新增 user 類型：** 當你新增一個新的已認證 user 類型時，在 `middleware/error.js` 中加入一個 `else if (req.<type>)` 分支，使日誌行和 Sentry 事件能正確識別是誰發出請求。
 
 ---
 
