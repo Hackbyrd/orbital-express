@@ -113,21 +113,25 @@ If you are building a public REST API that external developers will consume and 
 
 ### POST and GET Only
 
-Orbital Express uses only POST and GET. There is no PUT, PATCH, or DELETE.
+Orbital Express uses only POST and GET for all internal routes. No PUT, PATCH, or DELETE.
 
-The REST HTTP method convention was designed for document-centric systems. It breaks down when you have real business logic. What method is `V1ArchiveAndNotifyUser`? DELETE because archiving? PATCH because updating a status? POST because there are side effects?
+**The real reason is velocity.** Every decision a developer has to make during implementation is cognitive overhead — even a small one. "Should this be a PUT or a PATCH? Is this a DELETE or a POST with a status update?" sounds trivial until you realize it happens dozens of times a day, across every engineer on the team, on every feature, forever. That's not one decision — it's a constant low-level tax on focus. The time spent thinking about the right HTTP verb is time not spent building the feature. Multiply that across a team and across months and it adds up to real, measurable velocity loss.
+
+The REST HTTP method convention was designed for document-centric systems. It breaks down almost immediately with real business logic. What method is `V1ArchiveAndNotifyUser`? DELETE because archiving? PATCH because updating a status field? POST because there are side effects? There is no right answer — and that's precisely the problem. A "close account" action might soft-delete the user, update their status, cancel their subscription, and send an email all at once. What HTTP method is that? The question is unanswerable.
 
 ```javascript
-// REST approach — the method choice is ambiguous
-DELETE /v1/users/123          // is this soft-delete? hard-delete? archive?
+// REST approach — the method is ambiguous and forces a pointless debate
+DELETE /v1/users/123          // soft-delete? hard-delete? archive?
 PATCH  /v1/users/123/archive  // mixing PATCH with a verb path?
 
-// Orbital Express — the action name carries all the semantic meaning
+// Orbital Express — the action name carries all semantic meaning, no debate
 POST /v1/users/archive        // V1Archive — unambiguous
-POST /v1/users/closeaccount   // V1CloseAccount — clear, even with multiple side effects
+POST /v1/users/closeaccount   // V1CloseAccount — clear even with multiple side effects
 ```
 
-The rule: use POST for almost everything. Use GET only when there is no request body and the arguments fit cleanly in the URL query string (list/search endpoints).
+The rule: use POST for almost everything. Use GET only when there is no request body and the arguments fit cleanly in the URL query string (list/search endpoints). When you join this codebase you never have to think about HTTP methods again.
+
+**Exception — third-party integrations:** when an external system dictates the HTTP method (a webhook, OAuth callback, or partner API), accommodate it for that one route. Other methods technically work — all routes are registered with `router.all()` so Express accepts any verb. `req.args` is populated normally for POST and GET; for other methods fall back to `req.all` if needed. This exception applies only to routes where you do not control the caller.
 
 ### `req.args` Everywhere
 
