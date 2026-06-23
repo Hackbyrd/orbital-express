@@ -131,7 +131,7 @@ POST /v1/users/closeaccount   // V1CloseAccount — clear even with multiple sid
 
 The rule: use POST for almost everything. Use GET only when there is no request body and the arguments fit cleanly in the URL query string (list/search endpoints). When you join this codebase you never have to think about HTTP methods again.
 
-**Exception — third-party integrations:** when an external system dictates the HTTP method (a webhook, OAuth callback, or partner API), accommodate it for that one route. Other methods technically work — all routes are registered with `router.all()` so Express accepts any verb. `req.args` is populated normally for POST and GET; for other methods fall back to `req.all` if needed. This exception applies only to routes where you do not control the caller.
+**What about third-party integrations that force a specific method?** You don't need to do anything special. The framework already handles it. Routes are registered with `router.all()`, and `middleware/args.js` assigns `req.args` from `req.query` for GET and from `req.body` for everything else — POST, PUT, PATCH, DELETE all work identically out of the box. If a Stripe webhook, OAuth callback, or partner API sends a DELETE or PATCH, your action receives it in `req.args` exactly the same way. The recommendation to use POST and GET is purely about eliminating unnecessary decisions for routes you control — not a technical limitation.
 
 ### `req.args` Everywhere
 
